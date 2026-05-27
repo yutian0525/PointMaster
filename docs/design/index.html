@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PointMaster 慧刷题</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    button { cursor: pointer; font-family: inherit; }
+    ul { list-style: none; }
+
+    /* ===== TOKENS ===== */
+    :root {
+      --p:       #9fb997;
+      --p-lt:    #c8d4c0;
+      --p-dk:    #6b8c64;
+      --bg:      #f4f2f0;
+      --bg2:     #eceae7;
+      --white:   #ffffff;
+      --t1:      #1e2822;
+      --t2:      #4a5248;
+      --t3:      #7a8578;
+      --border:  rgba(159,185,151,.22);
+      --bord2:   rgba(159,185,151,.44);
+      --sh-sm:   0 1px 6px rgba(30,40,34,.06);
+      --sh-md:   0 4px 22px rgba(30,40,34,.09);
+      --sh-lg:   0 8px 44px rgba(30,40,34,.13);
+      --r-sm: 8px; --r-md: 14px; --r-lg: 22px; --r-xl: 28px;
+      --sidebar: 232px;
+      --ff-d: 'Fraunces', Georgia, serif;
+      --ff-b: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    html, body { height: 100%; font-family: var(--ff-b); font-size: 14px;
+      line-height: 1.6; color: var(--t1); background: var(--bg);
+      -webkit-font-smoothing: antialiased; }
+
+    /* ===== GRAIN ===== */
+    body::after {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      opacity: .028;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 160px;
+    }
+
+    /* ===== LAYOUT ===== */
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: var(--sidebar); flex-shrink: 0;
+      background: var(--white); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+      position: relative;
+    }
+    .sidebar::after {
+      content: ''; position: absolute; bottom: -50px; right: -50px;
+      width: 160px; height: 160px;
+      background: radial-gradient(circle, var(--p-lt) 0%, transparent 70%);
+      opacity: .25; pointer-events: none;
+    }
+
+    /* Logo */
+    .sb-logo { padding: 24px 20px 22px; border-bottom: 1px solid var(--border); }
+    .sb-logo-row { display: flex; align-items: center; gap: 10px; }
+    .sb-icon {
+      width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-dk) 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sb-icon svg { width: 17px; height: 17px; stroke: white; fill: none; stroke-width: 2; }
+    .sb-name { font-family: var(--ff-d); font-size: 14.5px; font-weight: 600;
+      color: var(--t1); letter-spacing: -.02em; }
+    .sb-sub { font-size: 10px; color: var(--t3); letter-spacing: .06em;
+      text-transform: uppercase; }
+
+    /* Nav */
+    .sb-nav { flex: 1; padding: 16px 10px; overflow-y: auto; }
+    .nav-section { margin-bottom: 20px; }
+    .nav-label { font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--t3); padding: 0 10px; margin-bottom: 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+      border-radius: var(--r-sm); cursor: pointer; color: var(--t2);
+      font-size: 13px; font-weight: 500; transition: all .15s ease;
+      position: relative; user-select: none;
+    }
+    .nav-item:hover { background: var(--bg); color: var(--t1); }
+    .nav-item.active { background: rgba(159,185,151,.15); color: var(--p-dk); }
+    .nav-item.active::before {
+      content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      width: 3px; height: 18px; background: var(--p-dk);
+      border-radius: 0 3px 3px 0;
+    }
+    .nav-ic { width: 16px; height: 16px; flex-shrink: 0; opacity: .65;
+      stroke: currentColor; fill: none; stroke-width: 2; }
+    .nav-item.active .nav-ic { opacity: 1; }
+    .nav-badge {
+      margin-left: auto; background: var(--p); color: white;
+      font-size: 9.5px; font-weight: 700; padding: 1px 7px; border-radius: 20px;
+    }
+
+    /* Sidebar footer */
+    .sb-footer { padding: 16px 20px 20px; border-top: 1px solid var(--border); }
+    .user-row { display: flex; align-items: center; gap: 9px; }
+    .user-av {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--p-lt), var(--p));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--p-dk);
+    }
+    .user-nm { font-size: 12.5px; font-weight: 600; color: var(--t1); }
+    .user-st { font-size: 11px; color: var(--t3); }
+
+    /* ===== MAIN ===== */
+    .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* ===== PAGES ===== */
+    .page { display: none; flex-direction: column; height: 100%;
+      overflow-y: auto; animation: fadeUp .28s ease; }
+    .page.active { display: flex; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ph { padding: 30px 38px 0; flex-shrink: 0; }
+    .ph-ey { font-size: 10.5px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--p-dk); margin-bottom: 5px; }
+    .ph-tt { font-family: var(--ff-d); font-size: 26px; font-weight: 600;
+      color: var(--t1); letter-spacing: -.03em; line-height: 1.2; }
+    .ph-st { margin-top: 5px; font-size: 13.5px; color: var(--t3); }
+    .pc { flex: 1; padding: 24px 38px 38px; overflow-y: auto; }
+
+    /* ===== PRIMITIVES ===== */
+    .card {
+      background: var(--white); border-radius: var(--r-md);
+      border: 1px solid var(--border); padding: 22px;
+      box-shadow: var(--sh-sm);
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: 9px; border: none;
+      font-size: 13px; font-weight: 600; transition: all .16s ease;
+    }
+    .btn-p {
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-dk) 100%);
+      color: white; box-shadow: 0 2px 10px rgba(107,140,100,.28);
+    }
+    .btn-p:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(107,140,100,.38); }
+    .btn-s { background: var(--bg); color: var(--t2); border: 1px solid var(--bord2); }
+    .btn-s:hover { background: var(--white); color: var(--t1); }
+    .btn-g { background: transparent; color: var(--p-dk); }
+    .btn-g:hover { background: rgba(159,185,151,.1); }
+
+    .chip {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500;
+    }
+    .chip-g { background: rgba(159,185,151,.2); color: var(--p-dk); }
+    .chip-w { background: rgba(200,165,110,.18); color: #7a5820; }
+    .chip-r { background: rgba(200,100,90,.14); color: #9a3830; }
+
+    .prog-wrap { width: 100%; height: 5px; background: var(--bg2);
+      border-radius: 10px; overflow: hidden; }
+    .prog-bar { height: 100%; border-radius: 10px;
+      background: linear-gradient(90deg, var(--p) 0%, var(--p-dk) 100%);
+      transition: width .7s cubic-bezier(.34,1.56,.64,1); }
+    .prog-bar-r { background: linear-gradient(90deg, #c97878 0%, #aa5050 100%); }
+
+    .sec-tt { font-family: var(--ff-d); font-size: 16px; font-weight: 600;
+      color: var(--t1); letter-spacing: -.02em; margin-bottom: 14px; }
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+    .flex { display: flex; }
+    .fcol { flex-direction: column; }
+    .aic { align-items: center; }
+    .jb { justify-content: space-between; }
+    .g8 { gap: 8px; } .g12 { gap: 12px; } .g16 { gap: 16px; } .g20 { gap: 20px; }
+    .mt8 { margin-top: 8px; } .mt12 { margin-top: 12px; }
+    .mt16 { margin-top: 16px; } .mt20 { margin-top: 20px; } .mt24 { margin-top: 24px; }
+    .mb8 { margin-bottom: 8px; } .mb16 { margin-bottom: 16px; }
+    .txs { font-size: 11.5px; } .tm { color: var(--t3); }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--p-lt); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--p); }
+
+    /* ============================================================
+       PAGE 1 · HOME (进行中)
+    ============================================================ */
+    .today-row { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .today-pill {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 50px; padding: 6px 14px;
+    }
+    .today-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--p); }
+    .today-lbl { font-size: 12px; color: var(--t3); }
+    .today-val { font-size: 12.5px; font-weight: 700; color: var(--t1); }
+
+    /* Active session card */
+    .active-card {
+      background: linear-gradient(135deg, var(--p-dk) 0%, #4a7044 100%);
+      border-radius: var(--r-xl); padding: 28px; color: white;
+      margin-bottom: 24px; position: relative; overflow: hidden;
+    }
+    .active-card::before {
+      content: ''; position: absolute; top: -50px; right: -50px;
+      width: 180px; height: 180px;
+      background: rgba(255,255,255,.08); border-radius: 50%;
+    }
+    .active-card::after {
+      content: ''; position: absolute; bottom: -40px; right: 80px;
+      width: 110px; height: 110px;
+      background: rgba(255,255,255,.05); border-radius: 50%;
+    }
+    .ac-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,.18); border-radius: 20px;
+      padding: 3px 10px; font-size: 10.5px; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .ac-pulse { width: 7px; height: 7px; border-radius: 50%;
+      background: #a0f080; box-shadow: 0 0 0 0 rgba(160,240,128,.5);
+      animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(160,240,128,.5); }
+      70%  { box-shadow: 0 0 0 6px rgba(160,240,128,0); }
+      100% { box-shadow: 0 0 0 0 rgba(160,240,128,0); }
+    }
+    .ac-title { font-family: var(--ff-d); font-size: 22px; font-weight: 700;
+      letter-spacing: -.02em; margin-bottom: 4px; position: relative; z-index: 1; }
+    .ac-sub { font-size: 12.5px; opacity: .75; margin-bottom: 18px;
+      position: relative; z-index: 1; }
+    .ac-kp-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+      position: relative; z-index: 1; }
+    .ac-kp-label { font-size: 11px; opacity: .65; }
+    .ac-kp-name { font-size: 13.5px; font-weight: 700; }
+    .ac-kp-num { font-size: 11px; opacity: .65; }
+    .ac-progress { margin-bottom: 20px; position: relative; z-index: 1; }
+    .ac-prog-lbl { display: flex; justify-content: space-between;
+      font-size: 11.5px; opacity: .8; margin-bottom: 6px; }
+    .ac-prog-track { height: 6px; background: rgba(255,255,255,.2);
+      border-radius: 10px; overflow: hidden; }
+    .ac-prog-fill { height: 100%; border-radius: 10px;
+      background: rgba(255,255,255,.85); }
+    .ac-actions { display: flex; gap: 10px; position: relative; z-index: 1; }
+    .btn-white { background: white; color: var(--p-dk);
+      font-size: 13px; padding: 9px 20px; }
+    .btn-white:hover { background: rgba(255,255,255,.9); transform: translateY(-1px); }
+    .btn-ghost-white { background: rgba(255,255,255,.15); color: white; border: none;
+      font-size: 12.5px; padding: 9px 16px; }
+    .btn-ghost-white:hover { background: rgba(255,255,255,.25); }
+
+    /* Recent sessions */
+    .session-list { display: flex; flex-direction: column; gap: 10px; }
+    .session-row {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 14px 18px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: all .15s ease;
+    }
+    .session-row:hover { box-shadow: var(--sh-sm); border-color: var(--bord2); }
+    .session-ic { font-size: 22px; flex-shrink: 0; }
+    .session-info { flex: 1; min-width: 0; }
+    .session-nm { font-size: 13.5px; font-weight: 600; color: var(--t1); }
+    .session-mt { font-size: 11.5px; color: var(--t3); margin-top: 1px; }
+    .session-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+    .session-pct { font-size: 13px; font-weight: 700; color: var(--p-dk); }
+    .session-mini-bar { width: 80px; }
+
+    /* ============================================================
+       PAGE 1b · BANKS (题库管理)
+    ============================================================ */
+    .upload-strip {
+      display: flex; align-items: center; gap: 16px;
+      border: 1.5px dashed var(--bord2); border-radius: var(--r-lg);
+      padding: 18px 22px; margin-bottom: 24px; cursor: pointer;
+      background: rgba(200,212,192,.04); transition: all .18s ease;
+    }
+    .upload-strip:hover { border-color: var(--p); background: rgba(159,185,151,.07); }
+    .upload-strip-ic {
+      width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--p-lt), var(--bg));
+      border: 1px solid var(--bord2); display: flex; align-items: center; justify-content: center;
+    }
+    .upload-strip-ic svg { width: 19px; height: 19px; stroke: var(--p-dk); fill: none; stroke-width: 2; }
+    .upload-strip-txt { flex: 1; }
+    .upload-strip-tt { font-size: 13.5px; font-weight: 600; color: var(--t1); margin-bottom: 2px; }
+    .upload-strip-st { font-size: 12px; color: var(--t3); }
+
+    .bank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+    .bank-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 18px;
+      transition: all .2s ease; position: relative; overflow: hidden;
+    }
+    .bank-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--p), var(--p-dk)); border-radius: 3px 3px 0 0;
+    }
+    .bank-card:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+    .bank-ic { font-size: 28px; margin-bottom: 12px; }
+    .bank-nm { font-family: var(--ff-d); font-size: 15.5px; font-weight: 600;
+      color: var(--t1); margin-bottom: 3px; }
+    .bank-mt { font-size: 11.5px; color: var(--t3); margin-bottom: 12px; }
+    .mastery-mini-lbl { font-size: 11px; color: var(--t3); display: flex;
+      justify-content: space-between; margin-bottom: 4px; }
+    .bank-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+    .bank-btns { display: flex; gap: 7px; }
+
+    /* ============================================================
+       PAGE 2 · BANK DETAIL
+    ============================================================ */
+    .detail-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+    .info-chips { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+    .stats4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
+    .stat-card { background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 18px; }
+    .stat-big { font-family: var(--ff-d); font-size: 34px; font-weight: 700;
+      color: var(--t1); line-height: 1; }
+    .stat-sub { font-size: 12.5px; color: var(--t3); margin-top: 2px; }
+    .stat-note { font-size: 11.5px; color: var(--p-dk); margin-top: 8px; }
+    .stat-note-r { font-size: 11.5px; color: #aa6060; margin-top: 8px; }
+
+    /* Graph */
+    .graph-wrap {
+      position: relative; background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-lg); margin-top: 22px; overflow: hidden; height: 340px;
+    }
+    .graph-lbl { padding: 16px 22px 0; font-size: 12.5px; font-weight: 600;
+      color: var(--t2); letter-spacing: .02em; }
+    .graph-node {
+      position: absolute; transform: translate(-50%, -50%);
+      background: var(--white); border: 2px solid var(--p);
+      border-radius: 50px; padding: 6px 14px;
+      font-size: 12px; font-weight: 600; color: var(--p-dk);
+      white-space: nowrap; cursor: pointer; z-index: 2;
+      box-shadow: var(--sh-sm); transition: all .18s ease;
+    }
+    .graph-node:hover { background: var(--p); color: white;
+      transform: translate(-50%,-50%) scale(1.05); box-shadow: 0 4px 14px rgba(107,140,100,.3); }
+    .graph-node.root { background: var(--p-dk); color: white; border-color: var(--p-dk);
+      font-size: 13px; padding: 8px 18px; }
+    .graph-node.weak { border-color: #c07070; color: #9a3838; }
+    .graph-node.weak:hover { background: #c07070; color: white; }
+    .graph-svg { position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 1; pointer-events: none; }
+    .graph-legend { margin-top: 10px; display: flex; gap: 16px;
+      font-size: 11.5px; color: var(--t3); }
+    .legend-dot { display: inline-block; width: 11px; height: 11px;
+      border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+    /* ============================================================
+       PAGE 3 · MODE SELECT
+    ============================================================ */
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 6px; }
+    .mode-card {
+      background: var(--white); border: 2px solid var(--border);
+      border-radius: var(--r-xl); padding: 28px; cursor: pointer;
+      transition: all .22s ease; position: relative; overflow: hidden;
+    }
+    .mode-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(159,185,151,.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .mode-card:hover { border-color: var(--p); transform: translateY(-3px); box-shadow: var(--sh-lg); }
+    .mode-card.sel { border-color: var(--p-dk);
+      box-shadow: 0 0 0 4px rgba(159,185,151,.18), var(--sh-md); }
+    .mode-ic { font-size: 30px; margin-bottom: 18px; }
+    .mode-nm { font-family: var(--ff-d); font-size: 20px; font-weight: 700;
+      color: var(--t1); margin-bottom: 8px; letter-spacing: -.02em; }
+    .mode-desc { font-size: 13px; color: var(--t2); line-height: 1.65; margin-bottom: 18px; }
+    .mode-feats li { display: flex; align-items: flex-start; gap: 7px;
+      font-size: 12.5px; color: var(--t3); padding: 3px 0; }
+    .mode-feats li::before { content: '→'; color: var(--p); font-weight: 700; flex-shrink: 0; }
+    .mode-foot { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; }
+    .mode-tag { font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; }
+    .tag-g { color: var(--p-dk); }
+    .tag-w { color: #9a7030; }
+    .suggest-box {
+      background: linear-gradient(135deg, rgba(159,185,151,.06), rgba(200,212,192,.04));
+      border: 1px solid var(--border); border-radius: var(--r-md); padding: 20px;
+    }
+
+    /* ============================================================
+       PAGE 4 · QUIZ
+    ============================================================ */
+    .quiz-topbar { display: flex; align-items: center; gap: 14px; margin-top: 18px; }
+    .kp-badge {
+      display: flex; align-items: center; gap: 7px; background: var(--white);
+      border: 1px solid var(--bord2); border-radius: 50px; padding: 5px 13px; flex-shrink: 0;
+    }
+    .kp-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--p); }
+    .kp-nm { font-size: 12.5px; font-weight: 600; color: var(--t1); }
+    .kp-num { font-size: 11px; color: var(--t3); }
+    .qprog { flex: 1; }
+    .qprog-lbl { display: flex; justify-content: space-between; font-size: 11px;
+      color: var(--t3); margin-bottom: 4px; }
+    .quiz-layout { display: grid; grid-template-columns: 1fr 270px; gap: 20px; align-items: start; }
+    .quiz-card { background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh-sm); }
+    .qc-head { padding: 18px 26px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; }
+    .q-num { font-size: 11.5px; font-weight: 600; color: var(--t3); letter-spacing: .04em; }
+    .q-diff { display: flex; gap: 3px; }
+    .dd { width: 6px; height: 6px; border-radius: 50%; background: var(--bg2); }
+    .dd.f { background: var(--p); }
+    .qc-body { padding: 26px; }
+    .q-text { font-size: 15.5px; line-height: 1.72; color: var(--t1);
+      font-weight: 500; margin-bottom: 24px; }
+    .q-opts { display: flex; flex-direction: column; gap: 10px; }
+    .q-opt {
+      display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
+      border: 1.5px solid var(--border); border-radius: var(--r-md); cursor: pointer;
+      transition: all .15s ease;
+    }
+    .q-opt:hover { border-color: var(--p); background: rgba(159,185,151,.05); }
+    .q-opt.sel { border-color: var(--p-dk); background: rgba(159,185,151,.1); }
+    .q-opt.ok { border-color: var(--p-dk); background: rgba(107,140,100,.07); }
+    .q-opt.ng { border-color: #c97070; background: rgba(201,112,112,.05); }
+    .opt-lt {
+      width: 26px; height: 26px; border-radius: 7px; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11.5px; font-weight: 700; color: var(--t2); flex-shrink: 0;
+      transition: all .15s ease;
+    }
+    .q-opt.sel .opt-lt { background: var(--p-dk); color: white; }
+    .opt-tx { font-size: 13.5px; color: var(--t1); line-height: 1.5; padding-top: 3px; }
+    .qc-foot { padding: 16px 26px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; }
+    .answer-fb {
+      margin-top: 14px; padding: 16px 20px;
+      background: rgba(159,185,151,.06); border: 1px solid var(--p-lt);
+      border-radius: var(--r-md);
+    }
+    .fb-hdr { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+    .fb-ok { font-size: 14px; font-weight: 700; color: var(--p-dk); }
+    .fb-time { font-size: 11px; color: var(--t3); margin-left: auto; }
+    .fb-txt { font-size: 13px; color: var(--t2); line-height: 1.7; }
+
+    /* Quiz sidebar */
+    .qsb { background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 18px; }
+    .qsb-tt { font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--t3); margin-bottom: 12px; }
+    .kp-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .kp-rh { display: flex; justify-content: space-between; align-items: center; }
+    .kp-rn { font-size: 12.5px; font-weight: 500; color: var(--t1); }
+    .kp-pct { font-size: 12px; font-weight: 700; color: var(--p-dk); }
+    .kp-pct-r { color: #aa5050; }
+    .quiz-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+    .qnum-box { background: var(--bg); border-radius: var(--r-sm); padding: 12px; text-align: center; }
+    .qnum-big { font-family: var(--ff-d); font-size: 26px; font-weight: 700; line-height: 1; }
+    .qnum-lbl { font-size: 10.5px; color: var(--t3); margin-top: 2px; }
+
+    /* ============================================================
+       PAGE 5 · MICRO LEARNING
+    ============================================================ */
+    .ml-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; position: relative; }
+    .ml-col { display: flex; flex-direction: column; gap: 18px; }
+    .ml-card {
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: var(--r-md); overflow: hidden;
+      box-shadow: var(--sh-sm); transition: all .18s ease;
+    }
+    .ml-card:hover { box-shadow: var(--sh-md); border-color: var(--p-lt); }
+    .ml-card.ext { border-style: dashed; border-color: #c8aa68; }
+    .ml-ch { padding: 12px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px; }
+    .ml-ch-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .d-concept { background: var(--p-dk); }
+    .d-signal  { background: #7a68b0; }
+    .d-tpl     { background: #5a8ab8; }
+    .d-pit     { background: #b85858; }
+    .d-ex      { background: #6a8c60; }
+    .d-ext     { background: #b89040; }
+    .ml-ch-type { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .t-concept { color: var(--p-dk); }
+    .t-signal  { color: #5a48a0; }
+    .t-tpl     { color: #3a6898; }
+    .t-pit     { color: #a04040; }
+    .t-ex      { color: #4a7040; }
+    .t-ext     { color: #a07020; }
+    .ml-ch-ext { font-size: 10.5px; color: var(--t3); margin-left: auto; }
+    .ml-cb { padding: 16px 18px; }
+    .ml-ct { font-family: var(--ff-d); font-size: 15px; font-weight: 600;
+      color: var(--t1); margin-bottom: 9px; letter-spacing: -.01em; }
+    .ml-cx { font-size: 13px; line-height: 1.72; color: var(--t2); }
+    .ml-cx mark {
+      background: rgba(159,185,151,.32); border-radius: 3px; padding: 0 2px;
+      color: var(--t1); font-weight: 500; cursor: pointer; transition: background .14s ease;
+    }
+    .ml-cx mark:hover { background: rgba(107,140,100,.28); }
+    .ml-cf { padding: 10px 18px; background: var(--bg); border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; }
+    .ml-hint { font-size: 10.5px; color: var(--t3); }
+    .ml-hint-w { color: #a07020; }
+
+    /* conn lines */
+    .conn-overlay {
+      position: absolute; top: 0; left: 50%; width: 0; height: 100%;
+      pointer-events: none; z-index: 10;
+    }
+    .conn-line {
+      position: absolute; left: -60px; width: 120px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--p-lt), transparent);
+    }
+    .conn-line-w {
+      background: linear-gradient(90deg, transparent, #c8aa68, transparent);
+    }
+    .conn-tag {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      top: -10px; background: var(--white); border: 1px solid;
+      border-radius: 20px; padding: 1px 8px; font-size: 9.5px;
+      font-weight: 700; white-space: nowrap;
+    }
+    .conn-tag-g { border-color: var(--p-lt); color: var(--p-dk); }
+    .conn-tag-w { border-color: #c8aa68; color: #8a6020; }
+
+    .ml-fullcard { margin-top: 16px; }
+    .ml-fullcard .ml-cb { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .ml-ex-ans { background: var(--bg); border-radius: var(--r-sm); padding: 14px; }
+    .ml-ex-ans-tt { font-size: 11.5px; font-weight: 700; color: var(--t2); margin-bottom: 8px; }
+    .ml-ex-ans-tx { font-size: 13px; color: var(--t2); line-height: 2; }
+    .ml-done { text-align: center; margin-top: 24px; padding-top: 22px;
+      border-top: 1px solid var(--border); }
+    .ml-done-st { font-size: 12.5px; color: var(--t3); margin-bottom: 14px; }
+
+    /* Selection popup */
+    #sel-pop {
+      position: fixed; background: var(--t1); color: white;
+      border-radius: 9px; padding: 7px 13px; font-size: 12px; font-weight: 500;
+      cursor: pointer; box-shadow: var(--sh-lg); z-index: 10000;
+      display: none; align-items: center; gap: 5px; white-space: nowrap;
+    }
+    #sel-pop.vis { display: flex; }
+    #sel-pop::after {
+      content: ''; position: absolute; bottom: -5px; left: 50%;
+      transform: translateX(-50%); width: 10px; height: 6px;
+      background: var(--t1); clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+
+    /* ============================================================
+       PAGE 6 · REPORT
+    ============================================================ */
+    .report-hero {
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-dk) 100%);
+      border-radius: var(--r-lg); padding: 28px; color: white;
+      margin-bottom: 22px; position: relative; overflow: hidden;
+    }
+    .report-hero::before { content: ''; position: absolute; top: -40px; right: -40px;
+      width: 160px; height: 160px; background: rgba(255,255,255,.08); border-radius: 50%; }
+    .report-hero::after { content: ''; position: absolute; bottom: -60px; right: 80px;
+      width: 100px; height: 100px; background: rgba(255,255,255,.05); border-radius: 50%; }
+    .rh-tt { font-family: var(--ff-d); font-size: 22px; font-weight: 700;
+      margin-bottom: 5px; position: relative; z-index: 1; }
+    .rh-st { font-size: 12.5px; opacity: .78; position: relative; z-index: 1; }
+    .rh-stats { display: flex; gap: 28px; margin-top: 20px; position: relative; z-index: 1; }
+    .rhs-num { font-family: var(--ff-d); font-size: 30px; font-weight: 700; line-height: 1; }
+    .rhs-lbl { font-size: 11.5px; opacity: .7; margin-top: 1px; }
+    .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .mast-list { display: flex; flex-direction: column; gap: 14px; }
+    .mast-row { display: flex; flex-direction: column; gap: 5px; }
+    .mast-rh { display: flex; align-items: center; justify-content: space-between; }
+    .mast-nm { font-size: 13px; font-weight: 600; color: var(--t1); }
+    .mast-pct { font-size: 12.5px; font-weight: 700; }
+    .mst { font-size: 10.5px; padding: 1px 8px; border-radius: 20px; }
+    .mst-ok { background: rgba(107,140,100,.14); color: var(--p-dk); }
+    .mst-wn { background: rgba(200,155,70,.14); color: #7a5818; }
+    .mst-bd { background: rgba(200,90,90,.14); color: #9a2828; }
+    .ai-box { background: linear-gradient(135deg, rgba(159,185,151,.07), rgba(200,212,192,.04));
+      border: 1px solid var(--bord2); border-radius: var(--r-md); padding: 22px; }
+    .ai-hdr { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+    .ai-badge { background: linear-gradient(135deg, var(--p), var(--p-dk));
+      color: white; font-size: 9.5px; font-weight: 700; letter-spacing: .06em;
+      padding: 2px 10px; border-radius: 20px; }
+    .ai-tt { font-size: 13.5px; font-weight: 700; color: var(--t1); }
+    .ai-tx { font-size: 13px; color: var(--t2); line-height: 1.8; }
+    .ai-tx strong { color: var(--p-dk); font-weight: 700; }
+    .lift-grid { display: flex; flex-direction: column; gap: 7px; }
+    .lift-row { display: flex; justify-content: space-between; font-size: 12.5px; }
+    .lift-nm { color: var(--t2); }
+    .lift-val { color: var(--p-dk); font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        </div>
+        <div>
+          <div class="sb-name">PointMaster</div>
+          <div class="sb-sub">慧刷题</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-section">
+        <div class="nav-label">学习</div>
+        <div class="nav-item active" data-page="home" onclick="go('home')">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          首页
+        </div>
+        <div class="nav-item" data-page="banks" onclick="go('banks')">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          题库管理
+        </div>
+        <div class="nav-item" data-page="mode" onclick="go('mode')">
+          <svg class="nav-ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16 10,8"/></svg>
+          练习模式
+          <span class="nav-badge">新</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">进行中</div>
+        <div class="nav-item" data-page="quiz" onclick="go('quiz')">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          自适应刷题
+        </div>
+        <div class="nav-item" data-page="micro" onclick="go('micro')">
+          <svg class="nav-ic" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          微学习
+        </div>
+        <div class="nav-item" data-page="report" onclick="go('report')">
+          <svg class="nav-ic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          掌握报告
+        </div>
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-av">倪</div>
+        <div>
+          <div class="user-nm">倪镭</div>
+          <div class="user-st">🔥 连续 7 天</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN ==================== -->
+  <main class="main">
+
+    <!-- ===== PAGE 1: HOME ===== -->
+    <div class="page active" id="page-home">
+      <div class="ph">
+        <div class="ph-ey">2026年5月27日 · 星期三</div>
+        <div class="ph-tt">你好，倪镭 👋</div>
+        <div class="ph-st">继续昨天的进度，距离掌握「积分」还差一步</div>
+        <div class="today-row">
+          <div class="today-pill">
+            <div class="today-dot"></div>
+            <span class="today-lbl">今日已刷</span>
+            <span class="today-val">18 题</span>
+          </div>
+          <div class="today-pill">
+            <div class="today-dot" style="background:#c0a050"></div>
+            <span class="today-lbl">学习时长</span>
+            <span class="today-val">32 分钟</span>
+          </div>
+          <div class="today-pill">
+            <div class="today-dot" style="background:#9898c0"></div>
+            <span class="today-lbl">连续打卡</span>
+            <span class="today-val">🔥 7 天</span>
+          </div>
+        </div>
+      </div>
+      <div class="pc">
+
+        <!-- Active session -->
+        <div class="active-card">
+          <div class="ac-badge"><div class="ac-pulse"></div>进行中</div>
+          <div class="ac-title">高等数学 · 快速刷题模式</div>
+          <div class="ac-sub">上次练习：2 小时前 · 已完成 148 / 320 题</div>
+          <div class="ac-kp-row">
+            <span class="ac-kp-label">当前知识点</span>
+            <span class="ac-kp-name">导数</span>
+            <span class="ac-kp-num">3 / 12</span>
+          </div>
+          <div class="ac-progress">
+            <div class="ac-prog-lbl">
+              <span>知识点掌握度</span>
+              <span style="font-weight:700">72%</span>
+            </div>
+            <div class="ac-prog-track">
+              <div class="ac-prog-fill" style="width:72%"></div>
+            </div>
+          </div>
+          <div class="ac-actions">
+            <button class="btn btn-white" onclick="go('quiz')">继续刷题 →</button>
+            <button class="btn btn-ghost-white" onclick="go('mode')">切换模式</button>
+            <button class="btn btn-ghost-white" onclick="go('report')">查看报告</button>
+          </div>
+        </div>
+
+        <!-- Recent sessions -->
+        <div class="sec-tt">近期练习记录</div>
+        <div class="session-list">
+          <div class="session-row" onclick="go('quiz')">
+            <div class="session-ic">⚖️</div>
+            <div class="session-info">
+              <div class="session-nm">民法典精讲 · 查缺补漏模式</div>
+              <div class="session-mt">昨天 20:14 · 做了 22 题 · 进入微学习 1 次</div>
+            </div>
+            <div class="session-right">
+              <span class="session-pct">41%</span>
+              <div class="session-mini-bar">
+                <div class="prog-wrap"><div class="prog-bar" style="width:41%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="session-row" onclick="go('quiz')">
+            <div class="session-ic">📐</div>
+            <div class="session-info">
+              <div class="session-nm">高等数学 · 快速刷题模式</div>
+              <div class="session-mt">5月26日 · 做了 30 题 · 掌握「极限」知识点</div>
+            </div>
+            <div class="session-right">
+              <span class="session-pct">62%</span>
+              <div class="session-mini-bar">
+                <div class="prog-wrap"><div class="prog-bar" style="width:62%"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="session-row" onclick="go('micro')">
+            <div class="session-ic">📖</div>
+            <div class="session-info">
+              <div class="session-nm">微学习 · 导数与极值</div>
+              <div class="session-mt">5月25日 · 阅读 4 张知识卡片 · 生成 2 张延伸卡片</div>
+            </div>
+            <div class="session-right">
+              <span class="chip chip-g" style="font-size:10.5px">已完成</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== PAGE 2: BANKS (题库管理) ===== -->
+    <div class="page" id="page-banks">
+      <div class="ph">
+        <div class="ph-ey">题库管理</div>
+        <div class="ph-tt">我的题库</div>
+        <div class="ph-st">管理、上传题库，点击题库可查看详情与知识图谱</div>
+      </div>
+      <div class="pc">
+        <!-- Upload strip -->
+        <div class="upload-strip">
+          <div class="upload-strip-ic">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-strip-txt">
+            <div class="upload-strip-tt">导入新题库</div>
+            <div class="upload-strip-st">支持 Excel、JSON、TXT 格式 — AI 自动提取知识点并构建知识图谱</div>
+          </div>
+          <button class="btn btn-p" style="flex-shrink:0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            选择文件
+          </button>
+        </div>
+
+        <!-- Bank grid -->
+        <div class="sec-tt">全部题库（3）</div>
+        <div class="bank-grid">
+          <div class="bank-card" onclick="go('bankdetail')">
+            <div class="bank-ic">📐</div>
+            <div class="bank-nm">高等数学</div>
+            <div class="bank-mt">320 题 · 12 知识点 · 导入 2026-05-20</div>
+            <div class="flex g8 mb8">
+              <span class="chip chip-g">进行中</span>
+              <span class="chip chip-w">快速刷题</span>
+            </div>
+            <div class="bank-foot">
+              <span class="txs tm">上次练习：2 小时前</span>
+              <div class="bank-btns">
+                <button class="btn btn-s" style="padding:5px 10px;font-size:11.5px" onclick="event.stopPropagation();go('bankdetail')">详情</button>
+                <button class="btn btn-p" style="padding:5px 10px;font-size:11.5px" onclick="event.stopPropagation();go('mode')">练习 →</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bank-card" onclick="go('bankdetail')">
+            <div class="bank-ic">⚖️</div>
+            <div class="bank-nm">民法典精讲</div>
+            <div class="bank-mt">480 题 · 18 知识点 · 导入 2026-05-10</div>
+            <div class="flex g8 mb8">
+              <span class="chip chip-w">暂停中</span>
+            </div>
+            <div class="bank-foot">
+              <span class="txs tm">上次练习：昨天</span>
+              <div class="bank-btns">
+                <button class="btn btn-s" style="padding:5px 10px;font-size:11.5px" onclick="event.stopPropagation();go('bankdetail')">详情</button>
+                <button class="btn btn-p" style="padding:5px 10px;font-size:11.5px" onclick="event.stopPropagation();go('mode')">练习 →</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bank-card" onclick="go('bankdetail')">
+            <div class="bank-ic">💻</div>
+            <div class="bank-nm">Python 数据结构</div>
+            <div class="bank-mt">156 题 · 8 知识点 · 导入 2026-05-24</div>
+            <div class="flex g8 mb8">
+              <span class="chip" style="background:rgba(159,185,151,.1);color:var(--t3)">AI 解析中…</span>
+            </div>
+            <div class="bank-foot">
+              <span class="txs tm">尚未开始练习</span>
+              <div class="bank-btns">
+                <button class="btn btn-s" style="padding:5px 10px;font-size:11.5px" onclick="event.stopPropagation();go('bankdetail')">详情</button>
+                <button class="btn btn-p" style="padding:5px 10px;font-size:11.5px" onclick="event.stopPropagation();go('mode')">练习 →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 2b: BANK DETAIL ===== -->
+    <div class="page" id="page-bankdetail">
+      <div class="ph">
+        <div class="ph-ey" style="display:flex;align-items:center;gap:10px">
+          <button class="btn btn-g" style="padding:3px 8px;font-size:12px;gap:4px" onclick="go('banks')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+            题库管理
+          </button>
+          <span style="color:var(--border)">／</span>
+          <span>高等数学</span>
+        </div>
+        <div class="detail-hdr" style="margin-top:8px">
+          <div>
+            <div class="ph-tt">📐 高等数学</div>
+            <div class="info-chips">
+              <span class="chip chip-g">320 题</span>
+              <span class="chip chip-g">12 知识点</span>
+              <span class="chip chip-w">难度：中等</span>
+              <span class="chip chip-g">导入 2026-05-20</span>
+            </div>
+          </div>
+          <button class="btn btn-p" onclick="go('mode')" style="margin-top:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16 10,8"/></svg>
+            开始练习
+          </button>
+        </div>
+      </div>
+      <div class="pc">
+        <div class="stats4">
+          <div class="stat-card">
+            <div class="stat-big">320</div>
+            <div class="stat-sub">题目总数</div>
+            <div class="stat-note">单选 240 · 多选 48 · 判断 32</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-big">12</div>
+            <div class="stat-sub">知识点总数</div>
+            <div class="stat-note">AI 自动提取，含依赖关系</div>
+          </div>
+          <div class="stat-card" style="grid-column:span 2">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div>
+                <div class="stat-big" style="font-size:24px">AI 解析完成</div>
+                <div class="stat-sub">题目解析任务进度</div>
+              </div>
+              <span class="chip chip-g">✓ 100%</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+              <div style="background:var(--bg);border-radius:var(--r-sm);padding:10px;text-align:center">
+                <div style="font-family:var(--ff-d);font-size:18px;font-weight:700;color:var(--t1)">320</div>
+                <div style="font-size:10.5px;color:var(--t3)">知识点标注</div>
+              </div>
+              <div style="background:var(--bg);border-radius:var(--r-sm);padding:10px;text-align:center">
+                <div style="font-family:var(--ff-d);font-size:18px;font-weight:700;color:var(--t1)">320</div>
+                <div style="font-size:10.5px;color:var(--t3)">难度评分</div>
+              </div>
+              <div style="background:var(--bg);border-radius:var(--r-sm);padding:10px;text-align:center">
+                <div style="font-family:var(--ff-d);font-size:18px;font-weight:700;color:var(--t1)">12</div>
+                <div style="font-size:10.5px;color:var(--t3)">知识图谱节点</div>
+              </div>
+              <div style="background:var(--bg);border-radius:var(--r-sm);padding:10px;text-align:center">
+                <div style="font-family:var(--ff-d);font-size:18px;font-weight:700;color:var(--t1)">16</div>
+                <div style="font-size:10.5px;color:var(--t3)">依赖关系</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Knowledge Graph (no mastery coloring) -->
+        <div class="graph-wrap">
+          <div class="graph-lbl">知识图谱 — AI 自动构建的知识点依赖关系</div>
+          <svg class="graph-svg" id="graph-svg"></svg>
+          <div class="graph-node root" id="n0" style="left:50%;top:20%">高等数学</div>
+          <div class="graph-node" id="n1" style="left:18%;top:40%">极限</div>
+          <div class="graph-node" id="n2" style="left:50%;top:40%">导数</div>
+          <div class="graph-node" id="n3" style="left:82%;top:40%">积分</div>
+          <div class="graph-node" id="n4" style="left:10%;top:63%">连续性</div>
+          <div class="graph-node" id="n5" style="left:35%;top:63%">求导法则</div>
+          <div class="graph-node" id="n6" style="left:60%;top:63%">极值</div>
+          <div class="graph-node" id="n7" style="left:84%;top:63%">定积分</div>
+          <div class="graph-node" id="n8" style="left:32%;top:84%">单调性</div>
+          <div class="graph-node" id="n9" style="left:57%;top:84%">曲线积分</div>
+          <div class="graph-node" id="n10" style="left:80%;top:84%">级数</div>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--t3)">
+          箭头方向 = 学习依赖关系（需先掌握前置节点）· 点击节点可查看该知识点下的题目
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 3: MODE SELECT ===== -->
+    <div class="page" id="page-mode">
+      <div class="ph">
+        <div class="ph-ey">高等数学 · 开始练习</div>
+        <div class="ph-tt">选择练习模式</div>
+        <div class="ph-st">根据你的目标选择最适合的学习方式</div>
+      </div>
+      <div class="pc">
+        <div class="mode-grid">
+          <div class="mode-card" id="mc1" onclick="pickMode(this);go('quiz')">
+            <div class="mode-ic">🚀</div>
+            <div class="mode-nm">快速刷题模式</div>
+            <div class="mode-desc">按照知识图谱顺序，逐一系统性掌握每个知识点。适合从头建立知识体系，循序渐进。</div>
+            <ul class="mode-feats">
+              <li>按知识点依赖顺序逐一推进</li>
+              <li>自适应评估当前知识点掌握度</li>
+              <li>掌握度低时自动触发微学习</li>
+              <li>可手动跳过至下一知识点</li>
+            </ul>
+            <div class="mode-foot">
+              <span class="mode-tag tag-g">推荐 · 系统学习</span>
+              <button class="btn btn-p" style="padding:7px 14px;font-size:12px">选择 →</button>
+            </div>
+          </div>
+
+          <div class="mode-card" id="mc2" onclick="pickMode(this);go('quiz')">
+            <div class="mode-ic">🎯</div>
+            <div class="mode-nm">查缺补漏模式</div>
+            <div class="mode-desc">全面混合出题，AI 动态分析各知识点掌握情况，自动定位薄弱环节并集中突破。</div>
+            <ul class="mode-feats">
+              <li>混合出题，全面探测知识水平</li>
+              <li>AI 自动识别掌握度最低的知识点</li>
+              <li>集中进入微学习强化弱点</li>
+              <li>退出时生成详细掌握报告 + AI 建议</li>
+            </ul>
+            <div class="mode-foot">
+              <span class="mode-tag tag-w">针对性提升</span>
+              <button class="btn btn-s" style="padding:7px 14px;font-size:12px;border-color:#c0a060;color:#7a6020">选择 →</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="suggest-box mt24">
+          <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:7px">💡 系统建议</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.75">
+            根据你的学习记录，当前 <strong style="color:var(--p-dk)">积分</strong>（34%）、
+            <strong style="color:var(--p-dk)">曲线积分</strong>（28%）、
+            <strong style="color:var(--p-dk)">级数</strong>（31%）掌握度较低。
+            推荐使用 <strong style="color:var(--p-dk)">查缺补漏模式</strong> 集中突破这 3 个知识点。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 4: QUIZ ===== -->
+    <div class="page" id="page-quiz">
+      <div class="ph">
+        <div class="ph-ey">快速刷题模式 · 高等数学</div>
+        <div class="quiz-topbar">
+          <div class="kp-badge">
+            <div class="kp-dot"></div>
+            <span class="kp-nm">导数</span>
+            <span class="kp-num">知识点 3 / 12</span>
+          </div>
+          <div class="qprog">
+            <div class="qprog-lbl"><span>本知识点掌握度</span><span style="font-weight:700;color:var(--p-dk)">72%</span></div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:72%"></div></div>
+          </div>
+          <button class="btn btn-g" style="font-size:12.5px;padding:6px 12px;flex-shrink:0" onclick="go('micro')">进入微学习 →</button>
+        </div>
+      </div>
+
+      <div class="pc" style="padding-top:14px">
+        <div class="quiz-layout">
+          <div>
+            <div class="quiz-card">
+              <div class="qc-head">
+                <span class="q-num">第 7 题 / 共 320 题</span>
+                <div class="flex aic g8">
+                  <div class="q-diff">
+                    <div class="dd f"></div><div class="dd f"></div>
+                    <div class="dd f"></div><div class="dd"></div><div class="dd"></div>
+                  </div>
+                  <span class="txs tm">中等难度</span>
+                </div>
+              </div>
+              <div class="qc-body">
+                <div class="q-text">设函数 f(x) = x³ − 3x + 2，下列关于 f(x) 极值的说法，正确的是？</div>
+                <div class="q-opts">
+                  <div class="q-opt" onclick="pickOpt(this)">
+                    <div class="opt-lt">A</div>
+                    <div class="opt-tx">f(x) 在 x = 1 处取得极大值，在 x = −1 处取得极小值</div>
+                  </div>
+                  <div class="q-opt sel" onclick="pickOpt(this)">
+                    <div class="opt-lt">B</div>
+                    <div class="opt-tx">f(x) 在 x = −1 处取得极大值，在 x = 1 处取得极小值</div>
+                  </div>
+                  <div class="q-opt" onclick="pickOpt(this)">
+                    <div class="opt-lt">C</div>
+                    <div class="opt-tx">f(x) 在 x = 0 处取得极值</div>
+                  </div>
+                  <div class="q-opt" onclick="pickOpt(this)">
+                    <div class="opt-lt">D</div>
+                    <div class="opt-tx">f(x) 没有极值</div>
+                  </div>
+                </div>
+              </div>
+              <div class="qc-foot">
+                <button class="btn btn-g" style="font-size:12.5px">跳过此题</button>
+                <div class="flex g8">
+                  <button class="btn btn-s" style="font-size:12.5px">查看解析</button>
+                  <button class="btn btn-p" style="font-size:12.5px">确认答案 →</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Feedback -->
+            <div class="answer-fb">
+              <div class="fb-hdr">
+                <span style="font-size:15px">✅</span>
+                <span class="fb-ok">回答正确！</span>
+                <span class="fb-time">用时 18 秒（预期 30 秒）</span>
+              </div>
+              <div class="fb-txt">
+                <strong>解析：</strong>f'(x) = 3x² − 3 = 3(x+1)(x−1)，令 f'(x) = 0 得 x = ±1。
+                f''(−1) = −6 &lt; 0，故 x = −1 为极大值点；f''(1) = 6 &gt; 0，故 x = 1 为极小值点。
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="flex fcol g16">
+            <div class="qsb">
+              <div class="qsb-tt">知识点掌握度</div>
+              <div class="kp-row">
+                <div class="kp-rh"><span class="kp-rn">极限</span><span class="kp-pct">88%</span></div>
+                <div class="prog-wrap"><div class="prog-bar" style="width:88%"></div></div>
+              </div>
+              <div class="kp-row">
+                <div class="kp-rh"><span class="kp-rn">导数</span><span class="kp-pct">72%</span></div>
+                <div class="prog-wrap"><div class="prog-bar" style="width:72%"></div></div>
+              </div>
+              <div class="kp-row">
+                <div class="kp-rh"><span class="kp-rn">求导法则</span><span class="kp-pct">65%</span></div>
+                <div class="prog-wrap"><div class="prog-bar" style="width:65%"></div></div>
+              </div>
+              <div class="kp-row">
+                <div class="kp-rh">
+                  <span class="kp-rn" style="color:#aa5050">积分</span>
+                  <span class="kp-pct kp-pct-r">34%</span>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar prog-bar-r" style="width:34%"></div></div>
+              </div>
+            </div>
+
+            <div class="qsb">
+              <div class="qsb-tt">本次答题统计</div>
+              <div class="quiz-nums">
+                <div class="qnum-box">
+                  <div class="qnum-big" style="color:var(--p-dk)">6</div>
+                  <div class="qnum-lbl">正确</div>
+                </div>
+                <div class="qnum-box">
+                  <div class="qnum-big" style="color:#aa5050">1</div>
+                  <div class="qnum-lbl">错误</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="txs tm" style="line-height:1.65">
+                置信度 <strong style="color:var(--t1)">0.74</strong>，
+                掌握度 <strong style="color:var(--t1)">72%</strong>，
+                系统继续评估中…
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 5: MICRO LEARNING ===== -->
+    <div class="page" id="page-micro">
+      <div class="ph">
+        <div class="ph-ey">微学习 · 导数</div>
+        <div class="ph-tt">快速掌握这个知识点</div>
+        <div class="ph-st">阅读以下卡片，掌握核心概念。<mark style="background:rgba(159,185,151,.28);border-radius:3px;padding:0 3px">选中文字</mark>可向 AI 提问，自动生成延伸卡片。</div>
+      </div>
+
+      <div class="pc">
+        <div class="ml-cols">
+          <!-- Left col -->
+          <div class="ml-col">
+            <!-- Card: concept -->
+            <div class="ml-card">
+              <div class="ml-ch">
+                <div class="ml-ch-dot d-concept"></div>
+                <span class="ml-ch-type t-concept">核心概念</span>
+              </div>
+              <div class="ml-cb">
+                <div class="ml-ct">导数与极值的关系</div>
+                <div class="ml-cx">
+                  <mark>导数为 0 的点</mark>称为<mark>驻点</mark>，驻点是极值点的必要不充分条件。<br><br>
+                  判断极值的方法：<br>
+                  ① f'(x) 在 x₀ 两侧<mark>变号</mark>，则 x₀ 为极值点<br>
+                  ② f''(x₀) &gt; 0 → 极小值点<br>
+                  ③ f''(x₀) &lt; 0 → 极大值点
+                </div>
+              </div>
+              <div class="ml-cf">
+                <span class="ml-hint">💬 选中文字可提问</span>
+                <span class="chip chip-g" style="font-size:10px">必读</span>
+              </div>
+            </div>
+
+            <!-- Card: template -->
+            <div class="ml-card">
+              <div class="ml-ch">
+                <div class="ml-ch-dot d-tpl"></div>
+                <span class="ml-ch-type t-tpl">解题模板</span>
+              </div>
+              <div class="ml-cb">
+                <div class="ml-ct">求极值的标准步骤</div>
+                <div class="ml-cx">
+                  <strong>① 求 f'(x)</strong><br>
+                  <strong>② 令 f'(x) = 0</strong>，解出所有驻点<br>
+                  <strong>③ 判断极值类型</strong>：用二阶导数法或符号变化法<br>
+                  <strong>④ 代入求极值</strong>：计算 f(x₀)
+                </div>
+              </div>
+              <div class="ml-cf">
+                <span class="ml-hint">💬 选中文字可提问</span>
+                <span class="chip chip-g" style="font-size:10px">必读</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Conn lines overlay -->
+          <div class="conn-overlay">
+            <div class="conn-line conn-line" style="top:38%">
+              <div class="conn-tag conn-tag-g">延伸说明</div>
+            </div>
+            <div class="conn-line conn-line-w" style="top:74%">
+              <div class="conn-tag conn-tag-w">反例</div>
+            </div>
+          </div>
+
+          <!-- Right col -->
+          <div class="ml-col">
+            <!-- Card: pitfall -->
+            <div class="ml-card">
+              <div class="ml-ch">
+                <div class="ml-ch-dot d-pit"></div>
+                <span class="ml-ch-type t-pit">⚠️ 易错点</span>
+              </div>
+              <div class="ml-cb">
+                <div class="ml-ct">驻点 ≠ 极值点</div>
+                <div class="ml-cx">
+                  f'(x₀) = 0 <strong>不能</strong>直接断定 x₀ 是极值点！<br><br>
+                  <strong>反例：</strong>f(x) = x³<br>
+                  f'(0) = 0，但 f'(x) 在 x=0 两侧均 ≥ 0，<mark>不变号</mark>。<br>
+                  ∴ x = 0 不是极值点，而是<mark>拐点</mark>。
+                </div>
+              </div>
+              <div class="ml-cf">
+                <span class="ml-hint">💬 选中文字可提问</span>
+                <span class="chip chip-r" style="font-size:10px">重点</span>
+              </div>
+            </div>
+
+            <!-- Card: extended (AI generated) -->
+            <div class="ml-card ext">
+              <div class="ml-ch" style="background:rgba(200,170,104,.06)">
+                <div class="ml-ch-dot d-ext"></div>
+                <span class="ml-ch-type t-ext">延伸卡片</span>
+                <span class="ml-ch-ext">由你提问生成 · 「拐点」</span>
+              </div>
+              <div class="ml-cb">
+                <div class="ml-ct">什么是拐点？</div>
+                <div class="ml-cx">
+                  <mark>拐点</mark>是函数凹凸性发生改变的点，即 f''(x) 改变符号的位置。<br><br>
+                  与极值点的区别：<br>
+                  · 极值点：关注 <strong>f' 变号</strong><br>
+                  · 拐点：关注 <strong>f'' 变号</strong><br><br>
+                  注意：f''(x₀) = 0 也不一定是拐点（同理驻点逻辑）。
+                </div>
+              </div>
+              <div class="ml-cf">
+                <span class="ml-hint ml-hint-w">↳ 由「驻点」卡片延伸而来</span>
+                <span class="chip" style="background:rgba(200,170,104,.15);color:#8a6020;font-size:10px">延伸</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Example Card (full width) -->
+        <div class="ml-card ml-fullcard">
+          <div class="ml-ch">
+            <div class="ml-ch-dot d-ex"></div>
+            <span class="ml-ch-type t-ex">典型例题</span>
+          </div>
+          <div class="ml-cb">
+            <div>
+              <div class="ml-ct" style="font-size:14px">求 f(x) = 2x³ − 9x² + 12x − 3 的极值</div>
+              <div class="ml-cx">
+                <strong>解：</strong><br>
+                f'(x) = 6x² − 18x + 12 = 6(x−1)(x−2)<br>
+                令 f'(x) = 0，得 x₁ = 1，x₂ = 2<br><br>
+                f''(x) = 12x − 18<br>
+                f''(1) = −6 &lt; 0 → <strong style="color:var(--p-dk)">x=1 极大值点</strong><br>
+                f''(2) = 6 &gt; 0 → <strong style="color:var(--p-dk)">x=2 极小值点</strong>
+              </div>
+            </div>
+            <div class="ml-ex-ans">
+              <div class="ml-ex-ans-tt">计算结果</div>
+              <div class="ml-ex-ans-tx">
+                极大值：f(1) = 2 − 9 + 12 − 3 = <strong style="color:var(--p-dk)">2</strong><br>
+                极小值：f(2) = 16 − 36 + 24 − 3 = <strong style="color:var(--p-dk)">1</strong>
+              </div>
+            </div>
+          </div>
+          <div class="ml-cf">
+            <span class="ml-hint">💬 选中文字可提问</span>
+            <span class="chip chip-g" style="font-size:10px">例题</span>
+          </div>
+        </div>
+
+        <!-- Done -->
+        <div class="ml-done">
+          <div class="ml-done-st">已阅读 4 / 4 个基础卡片 ✓</div>
+          <button class="btn btn-p" style="padding:11px 28px;font-size:13.5px" onclick="go('quiz')">
+            ✅ 完成学习，继续刷题
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 6: REPORT ===== -->
+    <div class="page" id="page-report">
+      <div class="ph">
+        <div class="ph-ey">查缺补漏模式 · 学习完成</div>
+        <div class="ph-tt">知识掌握报告</div>
+      </div>
+
+      <div class="pc">
+        <div class="report-hero">
+          <div class="rh-tt">本次学习完成 🎉</div>
+          <div class="rh-st">高等数学 · 查缺补漏模式 · 2026-05-27  09:00 — 10:12</div>
+          <div class="rh-stats">
+            <div><div class="rhs-num">42</div><div class="rhs-lbl">题目完成</div></div>
+            <div><div class="rhs-num">3</div><div class="rhs-lbl">微学习次数</div></div>
+            <div><div class="rhs-num">72'</div><div class="rhs-lbl">学习时长</div></div>
+            <div><div class="rhs-num">+18%</div><div class="rhs-lbl">整体提升</div></div>
+          </div>
+        </div>
+
+        <div class="report-grid">
+          <!-- Mastery -->
+          <div class="card">
+            <div class="sec-tt">各知识点掌握度</div>
+            <div class="mast-list">
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">导数</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:var(--p-dk)">82%</span>
+                    <span class="mst mst-ok">良好 ✅</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar" style="width:82%"></div></div>
+              </div>
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">求导法则</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:var(--p-dk)">75%</span>
+                    <span class="mst mst-ok">良好 ✅</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar" style="width:75%"></div></div>
+              </div>
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">极限</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:#8a6010">61%</span>
+                    <span class="mst mst-wn">待提升 📌</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar" style="width:61%;background:linear-gradient(90deg,#c8a850,#a07820)"></div></div>
+              </div>
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">积分</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:#aa4040">34%</span>
+                    <span class="mst mst-bd">薄弱 ⚠️</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar prog-bar-r" style="width:34%"></div></div>
+              </div>
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">曲线积分</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:#aa4040">28%</span>
+                    <span class="mst mst-bd">薄弱 ⚠️</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar prog-bar-r" style="width:28%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats + Lift -->
+          <div class="flex fcol g16">
+            <div class="card">
+              <div class="sec-tt" style="margin-bottom:12px">答题行为分析</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px;text-align:center">
+                  <div style="font-family:var(--ff-d);font-size:22px;font-weight:700;color:var(--t1)">28s</div>
+                  <div class="txs tm">平均答题时间</div>
+                </div>
+                <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px;text-align:center">
+                  <div style="font-family:var(--ff-d);font-size:22px;font-weight:700;color:var(--p-dk)">81%</div>
+                  <div class="txs tm">正确率</div>
+                </div>
+                <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px;text-align:center">
+                  <div style="font-family:var(--ff-d);font-size:22px;font-weight:700;color:var(--t1)">8</div>
+                  <div class="txs tm">覆盖知识点</div>
+                </div>
+                <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px;text-align:center">
+                  <div style="font-family:var(--ff-d);font-size:22px;font-weight:700;color:#c09040">3</div>
+                  <div class="txs tm">微学习次数</div>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="background:rgba(159,185,151,.04);border-color:var(--p-lt)">
+              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">本次掌握度提升</div>
+              <div class="lift-grid">
+                <div class="lift-row"><span class="lift-nm">积分</span><span class="lift-val">+22% ↑</span></div>
+                <div class="lift-row"><span class="lift-nm">曲线积分</span><span class="lift-val">+18% ↑</span></div>
+                <div class="lift-row"><span class="lift-nm">导数</span><span class="lift-val">+8% ↑</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Suggestion -->
+        <div class="ai-box">
+          <div class="ai-hdr">
+            <span class="ai-badge">AI 建议</span>
+            <span class="ai-tt">个性化学习建议</span>
+          </div>
+          <div class="ai-tx">
+            本次学习成效显著，<strong>积分</strong>提升 22%，但距掌握阈值（70%）仍有差距。
+            建议明天继续针对 <strong>积分</strong> 和 <strong>曲线积分</strong> 各做一轮查缺补漏。<br><br>
+            从答题行为分析，你在 <strong>换元积分法</strong> 的符号处理上容易出错（本次 3 道错题中有 2 道属于此类），
+            建议在下次微学习中重点阅读「解题模板」卡片并完成配套例题练习。<br><br>
+            预计再学习 <strong>2~3 次</strong>后，「积分」知识点可达到良好水平（&gt;70%）。
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex g12 mt24">
+          <button class="btn btn-p" style="flex:1;justify-content:center;padding:13px;font-size:13.5px" onclick="go('mode')">继续学习 →</button>
+          <button class="btn btn-s" style="padding:13px 22px;font-size:13.5px" onclick="go('home')">返回首页</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Selection popup -->
+<div id="sel-pop">
+  💬 对「<span id="sel-word"></span>」提问
+</div>
+
+<script>
+  /* ---- NAV ---- */
+  function go(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const pg = document.getElementById('page-' + id);
+    const ni = document.querySelector('[data-page="' + id + '"]');
+    if (pg) pg.classList.add('active');
+    if (ni) ni.classList.add('active');
+    if (id === 'bankdetail') setTimeout(drawGraph, 60);
+  }
+
+  /* ---- OPTION PICK ---- */
+  function pickOpt(el) {
+    el.closest('.q-opts').querySelectorAll('.q-opt').forEach(o => o.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  /* ---- MODE PICK ---- */
+  function pickMode(el) {
+    document.querySelectorAll('.mode-card').forEach(m => m.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  /* ---- KNOWLEDGE GRAPH ---- */
+  function drawGraph() {
+    const wrap = document.querySelector('.graph-wrap');
+    const svg  = document.getElementById('graph-svg');
+    if (!wrap || !svg) return;
+    const edges = [
+      ['n0','n1'],['n0','n2'],['n0','n3'],
+      ['n1','n4'],['n2','n5'],['n2','n6'],
+      ['n3','n7'],['n5','n8'],['n6','n8'],
+      ['n7','n9'],['n7','n10']
+    ];
+    const cr = wrap.getBoundingClientRect();
+    let html = '';
+    edges.forEach(([a, b]) => {
+      const na = document.getElementById(a);
+      const nb = document.getElementById(b);
+      if (!na || !nb) return;
+      const ra = na.getBoundingClientRect(), rb = nb.getBoundingClientRect();
+      const x1 = ra.left + ra.width/2  - cr.left;
+      const y1 = ra.top  + ra.height/2 - cr.top;
+      const x2 = rb.left + rb.width/2  - cr.left;
+      const y2 = rb.top  + rb.height/2 - cr.top;
+      html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+        stroke="#9fb997" stroke-width="1.5" stroke-opacity=".55"/>`;
+    });
+    svg.innerHTML = html;
+  }
+
+  /* ---- SELECTION POPUP ---- */
+  const pop  = document.getElementById('sel-pop');
+  const sword = document.getElementById('sel-word');
+
+  document.addEventListener('mouseup', e => {
+    const sel = window.getSelection();
+    const txt = sel ? sel.toString().trim() : '';
+    if (txt.length > 0 && txt.length < 18) {
+      const range = sel.getRangeAt(0);
+      const rect  = range.getBoundingClientRect();
+      pop.style.top  = (rect.top - 44 + window.scrollY) + 'px';
+      pop.style.left = (rect.left + rect.width/2 - 90) + 'px';
+      sword.textContent = txt;
+      pop.classList.add('vis');
+    } else {
+      pop.classList.remove('vis');
+    }
+  });
+  document.addEventListener('mousedown', e => {
+    if (!e.target.closest('#sel-pop')) pop.classList.remove('vis');
+  });
+
+  /* ---- INIT ---- */
+  window.addEventListener('load', () => {
+    // observe page switches to re-draw graph
+    const obs = new MutationObserver(() => {
+      const bp = document.getElementById('page-bankdetail');
+      if (bp && bp.classList.contains('active')) setTimeout(drawGraph, 50);
+    });
+    document.querySelectorAll('.page').forEach(p =>
+      obs.observe(p, { attributes: true, attributeFilter: ['class'] })
+    );
+  });
+  window.addEventListener('resize', () => {
+    const bd = document.getElementById('page-bankdetail');
+    if (bd && bd.classList.contains('active')) drawGraph();
+  });
+</script>
+</body>
+</html>
