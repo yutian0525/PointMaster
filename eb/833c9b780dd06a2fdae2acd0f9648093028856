@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-05-28-import-knowledge-graph.md
+  s_3e59716f4b974e::t_c739d0886052c7 1-2400
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "eb833c9b780dd06a2fdae2acd0f9648093028856",
+  "prompts": {},
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
