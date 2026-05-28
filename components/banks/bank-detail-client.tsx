@@ -82,7 +82,7 @@ export function BankDetailClient({ bankId, initialBank }: BankDetailClientProps)
 
   async function handleRetry() {
     await fetch(`/api/banks/${bankId}/process`, { method: "POST" });
-    setBank((prev) => ({ ...prev, status: "extracting", progress: 0 }));
+    setBank((prev) => ({ ...prev, status: "building_graph", progress: 0 }));
   }
 
   return (

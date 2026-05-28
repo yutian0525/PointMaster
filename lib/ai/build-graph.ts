@@ -15,13 +15,16 @@ export type GraphResult = z.infer<typeof graphResultSchema>;
 
 export async function buildKnowledgeGraph(
   bankName: string,
-  knowledgePointsWithCount: { name: string; count: number }[]
+  allQuestions: { content: string; options: string[]; answer: string; analysis?: string }[]
 ): Promise<GraphResult> {
   const client = getAIClient();
 
-  const listText = knowledgePointsWithCount
-    .map((kp) => `- ${kp.name} (${kp.count}题)`)
-    .join("\n");
+  const questionsText = allQuestions
+    .map((q, i) => {
+      const opts = q.options.map((opt, j) => `${String.fromCharCode(65 + j)}. ${opt}`).join(" | ");
+      return `${i + 1}. ${q.content}\n   选项：${opts}\n   答案：${q.answer}${q.analysis ? `\n   解析：${q.analysis}` : ""}`;
+    })
+    .join("\n\n");
 
   const response = await client.chat.completions.create({
     model: getModel(),
@@ -29,15 +32,20 @@ export async function buildKnowledgeGraph(
       {
         role: "system",
         content:
-          "你是一个教育领域的知识体系专家。请根据给定的知识点列表，分析它们之间的学习依赖关系，构建知识图谱。",
+          "你是一个教育领域的知识体系专家。请根据给定的题库所有题目，提炼出核心知识点并构建知识图谱（学习依赖关系）。",
       },
       {
         role: "user",
         content: `学科领域：${bankName}
-知识点列表（含关联题目数）：
-${listText}
+题目总数：${allQuestions.length}
 
-请以 JSON 格式返回知识图谱：
+以下是该题库的所有题目：
+
+${questionsText}
+
+请综合分析所有题目，提炼出该题库涵盖的**核心知识点**（不要过于细碎，保持 3-8 个左右，根据题库规模调整），并构建知识图谱。
+
+以 JSON 格式返回：
 {
   "knowledge_points": [
     {
@@ -54,7 +62,9 @@ ${listText}
 }
 
 要求：
-- prerequisites 只填直接依赖的知识点名称（必须是列表中存在的名称）
+- 知识点数量适中：5 题左右的小题库提炼 3-5 个知识点，20 题以上的中等题库提炼 5-8 个
+- 知识点名称简洁（2-6 字），如"导数"、"极值"、"定积分"
+- prerequisites 只填直接依赖的知识点名称（必须是你返回的列表中存在的名称）
 - 构建有向无环图（DAG），不能出现循环依赖
 - 基础知识点 prerequisites 为空
 - description 用一句话概括该知识点的核心含义
