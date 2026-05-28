@@ -1,0 +1,24 @@
+components/micro-learning/selection-popup.tsx
+  s_0ac36b487ae60a::t_6c4c62a9c8a424 1-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "41a3772f1af9d1fcd199d281232cc67fd449416d",
+  "prompts": {},
+  "humans": {
+    "h_71c0863b823da1": {
+      "author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
