@@ -463,77 +463,165 @@
     .qnum-lbl { font-size: 10.5px; color: var(--t3); margin-top: 2px; }
 
     /* ============================================================
-       PAGE 5 · MICRO LEARNING
+       NODE POPUP (knowledge graph)
     ============================================================ */
-    .ml-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; position: relative; }
-    .ml-col { display: flex; flex-direction: column; gap: 18px; }
-    .ml-card {
+    .node-popup-backdrop {
+      position: fixed; inset: 0; background: rgba(30,40,34,.32);
+      z-index: 2000; display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+    .node-popup-backdrop.open { display: flex; animation: fadeIn .18s ease; }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    .node-popup {
+      background: var(--white); border-radius: var(--r-xl);
+      width: 520px; max-height: 80vh; overflow: hidden;
+      display: flex; flex-direction: column;
+      box-shadow: 0 20px 60px rgba(30,40,34,.22), 0 4px 16px rgba(30,40,34,.1);
+      animation: popUp .2s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popUp {
+      from { opacity:0; transform: scale(.9) translateY(12px); }
+      to   { opacity:1; transform: scale(1) translateY(0); }
+    }
+    .np-head {
+      padding: 22px 24px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .np-title { font-family: var(--ff-d); font-size: 22px; font-weight: 700;
+      color: var(--t1); letter-spacing: -.03em; margin-bottom: 6px; }
+    .np-desc { font-size: 13px; color: var(--t2); line-height: 1.65; max-width: 380px; }
+    .np-close {
+      width: 30px; height: 30px; border-radius: 50%; background: var(--bg);
+      border: none; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; color: var(--t3); transition: all .15s;
+    }
+    .np-close:hover { background: var(--bg2); color: var(--t1); }
+    .np-body { overflow-y: auto; padding: 20px 24px 24px; }
+    .np-chips { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 18px; }
+    .np-sec { font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--t3); margin-bottom: 10px; }
+    .np-q {
+      background: var(--bg); border-radius: var(--r-sm); padding: 12px 14px;
+      font-size: 13px; color: var(--t2); line-height: 1.6; margin-bottom: 8px;
+      border-left: 3px solid var(--p);
+    }
+    .np-q-ans { font-size: 12px; color: var(--p-dk); font-weight: 600;
+      margin-top: 6px; }
+    .np-footer { padding: 14px 24px; border-top: 1px solid var(--border);
+      display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
+
+    /* ============================================================
+       PAGE 5 · MICRO LEARNING (canvas board)
+    ============================================================ */
+    /* Toolbar */
+    .ml-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px; border-bottom: 1px solid var(--border);
+      background: var(--white); flex-shrink: 0; gap: 16px;
+    }
+    .ml-tb-left { display: flex; align-items: center; gap: 12px; }
+    .ml-tb-kp { display: flex; align-items: center; gap: 7px;
+      background: var(--bg); border: 1px solid var(--bord2);
+      border-radius: 50px; padding: 4px 12px; }
+    .ml-tb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--p); flex-shrink:0; }
+    .ml-tb-nm { font-size: 13px; font-weight: 700; color: var(--t1); }
+    .ml-tb-hint { font-size: 12px; color: var(--t3); }
+    .ml-tb-right { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+    .ml-tb-prog { font-size: 12px; color: var(--t3); white-space: nowrap; }
+
+    /* Viewport & world */
+    .ml-viewport {
+      flex: 1; position: relative; overflow: hidden;
+      cursor: grab;
+      background-color: var(--bg);
+      background-image: radial-gradient(circle, rgba(159,185,151,.3) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+    .ml-viewport.panning { cursor: grabbing; }
+    .ml-world { position: absolute; width: 2400px; height: 1600px; top: 0; left: 0; }
+    .ml-svg-layer {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; overflow: visible;
+    }
+
+    /* Draggable cards */
+    .mlc {
+      position: absolute; width: 280px;
       background: var(--white); border: 1.5px solid var(--border);
       border-radius: var(--r-md); overflow: hidden;
-      box-shadow: var(--sh-sm); transition: all .18s ease;
+      box-shadow: var(--sh-sm); cursor: default; user-select: none; z-index: 2;
+      transition: box-shadow .15s ease;
     }
-    .ml-card:hover { box-shadow: var(--sh-md); border-color: var(--p-lt); }
-    .ml-card.ext { border-style: dashed; border-color: #c8aa68; }
-    .ml-ch { padding: 12px 18px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 8px; }
+    .mlc:hover { border-color: var(--p-lt); box-shadow: var(--sh-md); }
+    .mlc .ml-ch { cursor: grab; }
+    .mlc.dragging { box-shadow: var(--sh-lg); z-index: 100;
+      border-color: var(--p); transition: none; }
+    .mlc.dragging .ml-ch { cursor: grabbing; }
+    .mlc.ext { border-style: dashed; border-color: #c8aa68; }
+
+    /* Card internals */
+    .ml-ch { padding: 10px 14px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 7px; }
     .ml-ch-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
     .d-concept { background: var(--p-dk); }
-    .d-signal  { background: #7a68b0; }
     .d-tpl     { background: #5a8ab8; }
     .d-pit     { background: #b85858; }
     .d-ex      { background: #6a8c60; }
     .d-ext     { background: #b89040; }
     .ml-ch-type { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
     .t-concept { color: var(--p-dk); }
-    .t-signal  { color: #5a48a0; }
     .t-tpl     { color: #3a6898; }
     .t-pit     { color: #a04040; }
     .t-ex      { color: #4a7040; }
     .t-ext     { color: #a07020; }
-    .ml-ch-ext { font-size: 10.5px; color: var(--t3); margin-left: auto; }
-    .ml-cb { padding: 16px 18px; }
-    .ml-ct { font-family: var(--ff-d); font-size: 15px; font-weight: 600;
-      color: var(--t1); margin-bottom: 9px; letter-spacing: -.01em; }
-    .ml-cx { font-size: 13px; line-height: 1.72; color: var(--t2); }
+    .ml-ch-src { font-size: 10px; color: var(--t3); margin-left: auto; }
+    .ml-cb { padding: 12px 14px; pointer-events: none; }
+    .ml-ct { font-family: var(--ff-d); font-size: 14px; font-weight: 600;
+      color: var(--t1); margin-bottom: 7px; letter-spacing: -.01em; }
+    .ml-cx { font-size: 12.5px; line-height: 1.7; color: var(--t2); }
     .ml-cx mark {
       background: rgba(159,185,151,.32); border-radius: 3px; padding: 0 2px;
-      color: var(--t1); font-weight: 500; cursor: pointer; transition: background .14s ease;
+      color: var(--t1); font-weight: 500; cursor: text; pointer-events: auto;
     }
-    .ml-cx mark:hover { background: rgba(107,140,100,.28); }
-    .ml-cf { padding: 10px 18px; background: var(--bg); border-top: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; }
-    .ml-hint { font-size: 10.5px; color: var(--t3); }
+    .ml-cf {
+      padding: 8px 14px; background: var(--bg); border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      pointer-events: none;
+    }
+    .ml-hint { font-size: 10px; color: var(--t3); }
     .ml-hint-w { color: #a07020; }
 
-    /* conn lines */
-    .conn-overlay {
-      position: absolute; top: 0; left: 50%; width: 0; height: 100%;
-      pointer-events: none; z-index: 10;
+    /* Zoom controls */
+    .ml-zoom {
+      position: absolute; bottom: 20px; right: 20px; z-index: 20;
+      display: flex; flex-direction: column; gap: 4px;
     }
-    .conn-line {
-      position: absolute; left: -60px; width: 120px; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--p-lt), transparent);
+    .ml-zoom-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--white); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px; font-weight: 700; color: var(--t2);
+      box-shadow: var(--sh-sm); transition: all .12s;
     }
-    .conn-line-w {
-      background: linear-gradient(90deg, transparent, #c8aa68, transparent);
-    }
-    .conn-tag {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      top: -10px; background: var(--white); border: 1px solid;
-      border-radius: 20px; padding: 1px 8px; font-size: 9.5px;
-      font-weight: 700; white-space: nowrap;
-    }
-    .conn-tag-g { border-color: var(--p-lt); color: var(--p-dk); }
-    .conn-tag-w { border-color: #c8aa68; color: #8a6020; }
+    .ml-zoom-btn:hover { background: var(--bg2); color: var(--t1); }
+    .ml-zoom-lbl { text-align: center; font-size: 10.5px; color: var(--t3);
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 6px; padding: 2px 4px; }
 
-    .ml-fullcard { margin-top: 16px; }
-    .ml-fullcard .ml-cb { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .ml-ex-ans { background: var(--bg); border-radius: var(--r-sm); padding: 14px; }
-    .ml-ex-ans-tt { font-size: 11.5px; font-weight: 700; color: var(--t2); margin-bottom: 8px; }
-    .ml-ex-ans-tx { font-size: 13px; color: var(--t2); line-height: 2; }
-    .ml-done { text-align: center; margin-top: 24px; padding-top: 22px;
-      border-top: 1px solid var(--border); }
-    .ml-done-st { font-size: 12.5px; color: var(--t3); margin-bottom: 14px; }
+    /* Selection popup (text → ask) */
+    #sel-pop {
+      position: fixed; background: var(--t1); color: white;
+      border-radius: 9px; padding: 7px 13px; font-size: 12px; font-weight: 500;
+      cursor: pointer; box-shadow: var(--sh-lg); z-index: 10000;
+      display: none; align-items: center; gap: 5px; white-space: nowrap;
+    }
+    #sel-pop.vis { display: flex; }
+    #sel-pop::after {
+      content: ''; position: absolute; bottom: -5px; left: 50%;
+      transform: translateX(-50%); width: 10px; height: 6px;
+      background: var(--t1); clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
 
     /* Selection popup */
     #sel-pop {
@@ -904,20 +992,20 @@
         <div class="graph-wrap">
           <div class="graph-lbl">知识图谱 — AI 自动构建的知识点依赖关系</div>
           <svg class="graph-svg" id="graph-svg"></svg>
-          <div class="graph-node root" id="n0" style="left:50%;top:20%">高等数学</div>
-          <div class="graph-node" id="n1" style="left:18%;top:40%">极限</div>
-          <div class="graph-node" id="n2" style="left:50%;top:40%">导数</div>
-          <div class="graph-node" id="n3" style="left:82%;top:40%">积分</div>
-          <div class="graph-node" id="n4" style="left:10%;top:63%">连续性</div>
-          <div class="graph-node" id="n5" style="left:35%;top:63%">求导法则</div>
-          <div class="graph-node" id="n6" style="left:60%;top:63%">极值</div>
-          <div class="graph-node" id="n7" style="left:84%;top:63%">定积分</div>
-          <div class="graph-node" id="n8" style="left:32%;top:84%">单调性</div>
-          <div class="graph-node" id="n9" style="left:57%;top:84%">曲线积分</div>
-          <div class="graph-node" id="n10" style="left:80%;top:84%">级数</div>
+          <div class="graph-node root" id="n0" style="left:50%;top:20%" onclick="openNodePopup('n0')">高等数学</div>
+          <div class="graph-node" id="n1" style="left:18%;top:40%" onclick="openNodePopup('n1')">极限</div>
+          <div class="graph-node" id="n2" style="left:50%;top:40%" onclick="openNodePopup('n2')">导数</div>
+          <div class="graph-node" id="n3" style="left:82%;top:40%" onclick="openNodePopup('n3')">积分</div>
+          <div class="graph-node" id="n4" style="left:10%;top:63%" onclick="openNodePopup('n4')">连续性</div>
+          <div class="graph-node" id="n5" style="left:35%;top:63%" onclick="openNodePopup('n5')">求导法则</div>
+          <div class="graph-node" id="n6" style="left:60%;top:63%" onclick="openNodePopup('n6')">极值</div>
+          <div class="graph-node" id="n7" style="left:84%;top:63%" onclick="openNodePopup('n7')">定积分</div>
+          <div class="graph-node" id="n8" style="left:32%;top:84%" onclick="openNodePopup('n8')">单调性</div>
+          <div class="graph-node" id="n9" style="left:57%;top:84%" onclick="openNodePopup('n9')">曲线积分</div>
+          <div class="graph-node" id="n10" style="left:80%;top:84%" onclick="openNodePopup('n10')">级数</div>
         </div>
         <div style="margin-top:10px;font-size:11.5px;color:var(--t3)">
-          箭头方向 = 学习依赖关系（需先掌握前置节点）· 点击节点可查看该知识点下的题目
+          → 点击任意节点可查看知识点详情及例题 · 箭头方向 = 学习依赖关系
         </div>
       </div>
     </div>
@@ -1101,160 +1189,149 @@
       </div>
     </div>
 
-    <!-- ===== PAGE 5: MICRO LEARNING ===== -->
+    <!-- ===== PAGE 5: MICRO LEARNING (canvas board) ===== -->
     <div class="page" id="page-micro">
-      <div class="ph">
-        <div class="ph-ey">微学习 · 导数</div>
-        <div class="ph-tt">快速掌握这个知识点</div>
-        <div class="ph-st">阅读以下卡片，掌握核心概念。<mark style="background:rgba(159,185,151,.28);border-radius:3px;padding:0 3px">选中文字</mark>可向 AI 提问，自动生成延伸卡片。</div>
+
+      <!-- Toolbar -->
+      <div class="ml-toolbar">
+        <div class="ml-tb-left">
+          <div class="ml-tb-kp">
+            <div class="ml-tb-dot"></div>
+            <span class="ml-tb-nm">导数</span>
+          </div>
+          <span class="ml-tb-hint">拖动卡片自由排列 · 选中文字可提问生成延伸卡片</span>
+        </div>
+        <div class="ml-tb-right">
+          <span class="ml-tb-prog">4 / 4 基础卡片</span>
+          <button class="btn btn-s" style="padding:6px 12px;font-size:12px" id="ml-reset-btn">重置布局</button>
+          <button class="btn btn-p" style="padding:6px 14px;font-size:12.5px" onclick="go('quiz')">✅ 完成学习</button>
+        </div>
       </div>
 
-      <div class="pc">
-        <div class="ml-cols">
-          <!-- Left col -->
-          <div class="ml-col">
-            <!-- Card: concept -->
-            <div class="ml-card">
-              <div class="ml-ch">
-                <div class="ml-ch-dot d-concept"></div>
-                <span class="ml-ch-type t-concept">核心概念</span>
-              </div>
-              <div class="ml-cb">
-                <div class="ml-ct">导数与极值的关系</div>
-                <div class="ml-cx">
-                  <mark>导数为 0 的点</mark>称为<mark>驻点</mark>，驻点是极值点的必要不充分条件。<br><br>
-                  判断极值的方法：<br>
-                  ① f'(x) 在 x₀ 两侧<mark>变号</mark>，则 x₀ 为极值点<br>
-                  ② f''(x₀) &gt; 0 → 极小值点<br>
-                  ③ f''(x₀) &lt; 0 → 极大值点
-                </div>
-              </div>
-              <div class="ml-cf">
-                <span class="ml-hint">💬 选中文字可提问</span>
-                <span class="chip chip-g" style="font-size:10px">必读</span>
-              </div>
-            </div>
+      <!-- Canvas viewport -->
+      <div class="ml-viewport" id="ml-viewport">
 
-            <!-- Card: template -->
-            <div class="ml-card">
-              <div class="ml-ch">
-                <div class="ml-ch-dot d-tpl"></div>
-                <span class="ml-ch-type t-tpl">解题模板</span>
-              </div>
-              <div class="ml-cb">
-                <div class="ml-ct">求极值的标准步骤</div>
-                <div class="ml-cx">
-                  <strong>① 求 f'(x)</strong><br>
-                  <strong>② 令 f'(x) = 0</strong>，解出所有驻点<br>
-                  <strong>③ 判断极值类型</strong>：用二阶导数法或符号变化法<br>
-                  <strong>④ 代入求极值</strong>：计算 f(x₀)
-                </div>
-              </div>
-              <div class="ml-cf">
-                <span class="ml-hint">💬 选中文字可提问</span>
-                <span class="chip chip-g" style="font-size:10px">必读</span>
-              </div>
-            </div>
-          </div>
+        <!-- World (panned/zoomed) -->
+        <div class="ml-world" id="ml-world">
 
-          <!-- Conn lines overlay -->
-          <div class="conn-overlay">
-            <div class="conn-line conn-line" style="top:38%">
-              <div class="conn-tag conn-tag-g">延伸说明</div>
-            </div>
-            <div class="conn-line conn-line-w" style="top:74%">
-              <div class="conn-tag conn-tag-w">反例</div>
-            </div>
-          </div>
+          <!-- SVG connection lines -->
+          <svg class="ml-svg-layer" id="ml-svg"></svg>
 
-          <!-- Right col -->
-          <div class="ml-col">
-            <!-- Card: pitfall -->
-            <div class="ml-card">
-              <div class="ml-ch">
-                <div class="ml-ch-dot d-pit"></div>
-                <span class="ml-ch-type t-pit">⚠️ 易错点</span>
-              </div>
-              <div class="ml-cb">
-                <div class="ml-ct">驻点 ≠ 极值点</div>
-                <div class="ml-cx">
-                  f'(x₀) = 0 <strong>不能</strong>直接断定 x₀ 是极值点！<br><br>
-                  <strong>反例：</strong>f(x) = x³<br>
-                  f'(0) = 0，但 f'(x) 在 x=0 两侧均 ≥ 0，<mark>不变号</mark>。<br>
-                  ∴ x = 0 不是极值点，而是<mark>拐点</mark>。
-                </div>
-              </div>
-              <div class="ml-cf">
-                <span class="ml-hint">💬 选中文字可提问</span>
-                <span class="chip chip-r" style="font-size:10px">重点</span>
-              </div>
+          <!-- Card: Core Concept -->
+          <div class="mlc" id="mlc-concept">
+            <div class="ml-ch">
+              <div class="ml-ch-dot d-concept"></div>
+              <span class="ml-ch-type t-concept">核心概念</span>
+              <span class="chip chip-g" style="font-size:9.5px;margin-left:auto">必读</span>
             </div>
-
-            <!-- Card: extended (AI generated) -->
-            <div class="ml-card ext">
-              <div class="ml-ch" style="background:rgba(200,170,104,.06)">
-                <div class="ml-ch-dot d-ext"></div>
-                <span class="ml-ch-type t-ext">延伸卡片</span>
-                <span class="ml-ch-ext">由你提问生成 · 「拐点」</span>
-              </div>
-              <div class="ml-cb">
-                <div class="ml-ct">什么是拐点？</div>
-                <div class="ml-cx">
-                  <mark>拐点</mark>是函数凹凸性发生改变的点，即 f''(x) 改变符号的位置。<br><br>
-                  与极值点的区别：<br>
-                  · 极值点：关注 <strong>f' 变号</strong><br>
-                  · 拐点：关注 <strong>f'' 变号</strong><br><br>
-                  注意：f''(x₀) = 0 也不一定是拐点（同理驻点逻辑）。
-                </div>
-              </div>
-              <div class="ml-cf">
-                <span class="ml-hint ml-hint-w">↳ 由「驻点」卡片延伸而来</span>
-                <span class="chip" style="background:rgba(200,170,104,.15);color:#8a6020;font-size:10px">延伸</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Example Card (full width) -->
-        <div class="ml-card ml-fullcard">
-          <div class="ml-ch">
-            <div class="ml-ch-dot d-ex"></div>
-            <span class="ml-ch-type t-ex">典型例题</span>
-          </div>
-          <div class="ml-cb">
-            <div>
-              <div class="ml-ct" style="font-size:14px">求 f(x) = 2x³ − 9x² + 12x − 3 的极值</div>
+            <div class="ml-cb">
+              <div class="ml-ct">导数与极值的关系</div>
               <div class="ml-cx">
-                <strong>解：</strong><br>
-                f'(x) = 6x² − 18x + 12 = 6(x−1)(x−2)<br>
-                令 f'(x) = 0，得 x₁ = 1，x₂ = 2<br><br>
-                f''(x) = 12x − 18<br>
-                f''(1) = −6 &lt; 0 → <strong style="color:var(--p-dk)">x=1 极大值点</strong><br>
-                f''(2) = 6 &gt; 0 → <strong style="color:var(--p-dk)">x=2 极小值点</strong>
+                <mark>导数为 0 的点</mark>称为<mark>驻点</mark>，是极值点的必要不充分条件。<br><br>
+                判断极值的方法：<br>
+                ① f'(x) 在 x₀ 两侧<mark>变号</mark> → 极值点<br>
+                ② f''(x₀) &gt; 0 → 极小值点<br>
+                ③ f''(x₀) &lt; 0 → 极大值点
               </div>
             </div>
-            <div class="ml-ex-ans">
-              <div class="ml-ex-ans-tt">计算结果</div>
-              <div class="ml-ex-ans-tx">
-                极大值：f(1) = 2 − 9 + 12 − 3 = <strong style="color:var(--p-dk)">2</strong><br>
-                极小值：f(2) = 16 − 36 + 24 − 3 = <strong style="color:var(--p-dk)">1</strong>
-              </div>
+            <div class="ml-cf">
+              <span class="ml-hint">💬 选中文字提问</span>
             </div>
           </div>
-          <div class="ml-cf">
-            <span class="ml-hint">💬 选中文字可提问</span>
-            <span class="chip chip-g" style="font-size:10px">例题</span>
+
+          <!-- Card: Template -->
+          <div class="mlc" id="mlc-template">
+            <div class="ml-ch">
+              <div class="ml-ch-dot d-tpl"></div>
+              <span class="ml-ch-type t-tpl">解题模板</span>
+              <span class="chip chip-g" style="font-size:9.5px;margin-left:auto">必读</span>
+            </div>
+            <div class="ml-cb">
+              <div class="ml-ct">求极值的标准步骤</div>
+              <div class="ml-cx">
+                <strong>① 求 f'(x)</strong><br>
+                <strong>② 令 f'(x) = 0</strong>，解出所有驻点<br>
+                <strong>③ 判断极值类型</strong>：二阶导数法或符号变化法<br>
+                <strong>④ 代入求极值</strong>：计算 f(x₀)
+              </div>
+            </div>
+            <div class="ml-cf">
+              <span class="ml-hint">💬 选中文字提问</span>
+            </div>
           </div>
+
+          <!-- Card: Pitfall -->
+          <div class="mlc" id="mlc-pitfall">
+            <div class="ml-ch">
+              <div class="ml-ch-dot d-pit"></div>
+              <span class="ml-ch-type t-pit">⚠️ 易错点</span>
+              <span class="chip chip-r" style="font-size:9.5px;margin-left:auto">重点</span>
+            </div>
+            <div class="ml-cb">
+              <div class="ml-ct">驻点 ≠ 极值点</div>
+              <div class="ml-cx">
+                f'(x₀) = 0 <strong>不能</strong>直接断定是极值点！<br><br>
+                <strong>反例：</strong>f(x) = x³<br>
+                f'(0) = 0，但两侧均 ≥ 0，<mark>不变号</mark>。<br>
+                ∴ x=0 不是极值点，而是<mark>拐点</mark>。
+              </div>
+            </div>
+            <div class="ml-cf">
+              <span class="ml-hint">💬 选中文字提问</span>
+            </div>
+          </div>
+
+          <!-- Card: Example -->
+          <div class="mlc" id="mlc-example" style="width:320px">
+            <div class="ml-ch">
+              <div class="ml-ch-dot d-ex"></div>
+              <span class="ml-ch-type t-ex">典型例题</span>
+            </div>
+            <div class="ml-cb">
+              <div class="ml-ct">f(x) = 2x³ − 9x² + 12x − 3 的极值</div>
+              <div class="ml-cx">
+                f'(x) = 6(x−1)(x−2)，令 f'=0 得 x=1, x=2<br>
+                f''(1)=−6&lt;0 → <strong style="color:var(--p-dk)">x=1 极大值 = 2</strong><br>
+                f''(2)=6&gt;0 → <strong style="color:var(--p-dk)">x=2 极小值 = 1</strong>
+              </div>
+            </div>
+            <div class="ml-cf">
+              <span class="ml-hint">💬 选中文字提问</span>
+            </div>
+          </div>
+
+          <!-- Card: Extended (AI generated from "拐点") -->
+          <div class="mlc ext" id="mlc-extended">
+            <div class="ml-ch" style="background:rgba(200,170,104,.06)">
+              <div class="ml-ch-dot d-ext"></div>
+              <span class="ml-ch-type t-ext">延伸卡片</span>
+              <span class="ml-ch-src">提问生成 · 「拐点」</span>
+            </div>
+            <div class="ml-cb">
+              <div class="ml-ct">什么是拐点？</div>
+              <div class="ml-cx">
+                <mark>拐点</mark>是函数凹凸性改变的点，即 f''(x) 变号处。<br><br>
+                · 极值点：f' 变号<br>
+                · 拐点：f'' 变号<br><br>
+                f''(x₀)=0 也不一定是拐点。
+              </div>
+            </div>
+            <div class="ml-cf">
+              <span class="ml-hint ml-hint-w">↳ 由「驻点」延伸而来</span>
+              <span class="chip" style="background:rgba(200,170,104,.15);color:#8a6020;font-size:9.5px">延伸</span>
+            </div>
+          </div>
+
+        </div><!-- /ml-world -->
+
+        <!-- Zoom controls -->
+        <div class="ml-zoom">
+          <button class="ml-zoom-btn" id="ml-zoom-in">+</button>
+          <div class="ml-zoom-lbl" id="ml-zoom-lbl">100%</div>
+          <button class="ml-zoom-btn" id="ml-zoom-out">−</button>
         </div>
 
-        <!-- Done -->
-        <div class="ml-done">
-          <div class="ml-done-st">已阅读 4 / 4 个基础卡片 ✓</div>
-          <button class="btn btn-p" style="padding:11px 28px;font-size:13.5px" onclick="go('quiz')">
-            ✅ 完成学习，继续刷题
-          </button>
-        </div>
-      </div>
+      </div><!-- /ml-viewport -->
     </div>
 
     <!-- ===== PAGE 6: REPORT ===== -->
@@ -1394,100 +1471,436 @@
   </main>
 </div>
 
-<!-- Selection popup -->
+<!-- Selection popup (text → ask AI) -->
 <div id="sel-pop">
   💬 对「<span id="sel-word"></span>」提问
 </div>
 
+<!-- Node popup (knowledge graph) -->
+<div class="node-popup-backdrop" id="np-backdrop" onclick="closeNodePopup(event)">
+  <div class="node-popup" id="np-panel">
+    <div class="np-head">
+      <div>
+        <div class="np-title" id="np-title"></div>
+        <div class="np-desc" id="np-desc"></div>
+      </div>
+      <button class="np-close" onclick="closeNodePopup()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="np-body" id="np-body"></div>
+    <div class="np-footer">
+      <button class="btn btn-s" style="font-size:12.5px" onclick="closeNodePopup()">关闭</button>
+      <button class="btn btn-p" style="font-size:12.5px" onclick="closeNodePopup();go('micro')">进入微学习 →</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  /* ---- NAV ---- */
-  function go(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const pg = document.getElementById('page-' + id);
-    const ni = document.querySelector('[data-page="' + id + '"]');
-    if (pg) pg.classList.add('active');
-    if (ni) ni.classList.add('active');
-    if (id === 'bankdetail') setTimeout(drawGraph, 60);
-  }
+/* ================================================================
+   NAVIGATION
+================================================================ */
+function go(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  const ni = document.querySelector('[data-page="' + id + '"]');
+  if (pg) pg.classList.add('active');
+  if (ni) ni.classList.add('active');
+  if (id === 'bankdetail') setTimeout(drawGraph, 60);
+  if (id === 'micro') setTimeout(mlInit, 60);
+}
+function pickOpt(el) {
+  el.closest('.q-opts').querySelectorAll('.q-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function pickMode(el) {
+  document.querySelectorAll('.mode-card').forEach(m => m.classList.remove('sel'));
+  el.classList.add('sel');
+}
 
-  /* ---- OPTION PICK ---- */
-  function pickOpt(el) {
-    el.closest('.q-opts').querySelectorAll('.q-opt').forEach(o => o.classList.remove('sel'));
-    el.classList.add('sel');
-  }
+/* ================================================================
+   KNOWLEDGE GRAPH (bank detail page)
+================================================================ */
+function drawGraph() {
+  const wrap = document.querySelector('.graph-wrap');
+  const svg  = document.getElementById('graph-svg');
+  if (!wrap || !svg) return;
+  const edges = [
+    ['n0','n1'],['n0','n2'],['n0','n3'],
+    ['n1','n4'],['n2','n5'],['n2','n6'],
+    ['n3','n7'],['n5','n8'],['n6','n8'],
+    ['n7','n9'],['n7','n10']
+  ];
+  const cr = wrap.getBoundingClientRect();
+  const defs = `<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4"
+    markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+    <path d="M0,0 L8,4 L0,8 z" fill="#9fb997" opacity=".7"/>
+  </marker></defs>`;
+  let html = defs;
+  edges.forEach(([a, b]) => {
+    const na = document.getElementById(a), nb = document.getElementById(b);
+    if (!na || !nb) return;
+    const ra = na.getBoundingClientRect(), rb = nb.getBoundingClientRect();
+    const x1 = ra.left + ra.width/2  - cr.left, y1 = ra.top  + ra.height/2 - cr.top;
+    const x2 = rb.left + rb.width/2  - cr.left, y2 = rb.top  + rb.height/2 - cr.top;
+    const cy = (y1 + y2) / 2;
+    html += `<path d="M${x1},${y1} C${x1},${cy} ${x2},${cy} ${x2},${y2}"
+      stroke="#9fb997" stroke-width="1.5" stroke-opacity=".55" fill="none"
+      marker-end="url(#arr)"/>`;
+  });
+  svg.innerHTML = html;
+}
 
-  /* ---- MODE PICK ---- */
-  function pickMode(el) {
-    document.querySelectorAll('.mode-card').forEach(m => m.classList.remove('sel'));
-    el.classList.add('sel');
+/* ================================================================
+   NODE POPUP DATA & LOGIC
+================================================================ */
+const NODE_DATA = {
+  n0: {
+    name: '高等数学',
+    desc: '本题库的根知识域，涵盖极限、导数、积分等核心模块。',
+    count: 320, prereqs: [],
+    examples: []
+  },
+  n1: {
+    name: '极限',
+    desc: '描述函数在某点附近的趋近行为，是导数和积分的基础概念。',
+    count: 28, prereqs: [],
+    examples: [
+      { q: '求 lim(x→0) sin(x)/x 的值', a: '答案：1（重要极限）' },
+      { q: '求 lim(x→∞) (1 + 1/x)^x 的值', a: '答案：e（自然常数）' }
+    ]
+  },
+  n2: {
+    name: '导数',
+    desc: '函数在某点处的瞬时变化率，几何意义为切线斜率，依赖极限概念。',
+    count: 46, prereqs: ['极限'],
+    examples: [
+      { q: '设 f(x) = x³ - 3x，求 f\'(x)', a: '答案：f\'(x) = 3x² - 3' },
+      { q: '设 f(x) = e^x·sin(x)，求 f\'(0)', a: '答案：f\'(0) = 1（积的求导法则）' }
+    ]
+  },
+  n3: {
+    name: '积分',
+    desc: '求函数在区间上的累积量，分为不定积分和定积分，是导数的逆运算。',
+    count: 52, prereqs: ['极限', '导数'],
+    examples: [
+      { q: '求 ∫(2x + 3)dx', a: '答案：x² + 3x + C' },
+      { q: '求 ∫₀¹ x² dx', a: '答案：1/3（牛顿-莱布尼茨公式）' }
+    ]
+  },
+  n4: {
+    name: '连续性',
+    desc: '函数在某点处极限值等于函数值，是可导的必要条件。',
+    count: 18, prereqs: ['极限'],
+    examples: [
+      { q: 'f(x) = |x|，在 x=0 处连续但可导吗？', a: '连续，但不可导（左右导数不等）' }
+    ]
+  },
+  n5: {
+    name: '求导法则',
+    desc: '系统化的求导规则，包括四则运算法则、链式法则、隐函数求导等。',
+    count: 38, prereqs: ['导数'],
+    examples: [
+      { q: '求 y = ln(sin(x)) 的导数', a: '答案：y\' = cos(x)/sin(x) = cot(x)（链式法则）' },
+      { q: '设 y = x^x，求 y\'', a: '答案：y\' = x^x(1 + ln x)（对数求导法）' }
+    ]
+  },
+  n6: {
+    name: '极值',
+    desc: '函数的局部最大值或最小值，通过导数分析确定。',
+    count: 34, prereqs: ['求导法则'],
+    examples: [
+      { q: '求 f(x) = x³ - 3x + 2 的极值', a: 'x=-1 极大值 f(-1)=4；x=1 极小值 f(1)=0' },
+      { q: '确认 f(x) = x⁴ 在 x=0 处是否为极值点', a: '是极小值点，f(0)=0（二阶导 f\'\'(0)=0 需用符号法）' }
+    ]
+  },
+  n7: {
+    name: '定积分',
+    desc: '函数在闭区间上的黎曼积分，几何上表示曲线下面积，依赖不定积分。',
+    count: 40, prereqs: ['积分'],
+    examples: [
+      { q: '求 ∫₀^π sin(x) dx', a: '答案：2（−cos(x)|₀^π = 1+1 = 2）' },
+      { q: '求 ∫₁^e (1/x) dx', a: '答案：1（ln(e) - ln(1) = 1）' }
+    ]
+  },
+  n8: {
+    name: '单调性',
+    desc: '通过导数符号判断函数在某区间的递增/递减性。',
+    count: 22, prereqs: ['求导法则', '极值'],
+    examples: [
+      { q: '判断 f(x) = x - ln(x) 在 (0,1) 上的单调性', a: 'f\'(x) = 1 - 1/x < 0，在 (0,1) 上单调递减' }
+    ]
+  },
+  n9: {
+    name: '曲线积分',
+    desc: '沿曲线路径对函数积分，分为第一类（对弧长）和第二类（对坐标）。',
+    count: 30, prereqs: ['定积分'],
+    examples: [
+      { q: '计算 ∮_L (x² + y²) ds，L 为单位圆', a: '答案：2π（利用参数化 x=cos t, y=sin t）' }
+    ]
+  },
+  n10: {
+    name: '级数',
+    desc: '无穷序列的求和，包括数项级数和函数项级数（幂级数、傅里叶级数）。',
+    count: 32, prereqs: ['极限'],
+    examples: [
+      { q: '判断 Σ(1/n²) 的收敛性', a: '收敛（p 级数，p=2>1）' },
+      { q: 'e^x 的麦克劳林展开式写出前 4 项', a: '1 + x + x²/2! + x³/3! + …' }
+    ]
   }
+};
 
-  /* ---- KNOWLEDGE GRAPH ---- */
-  function drawGraph() {
-    const wrap = document.querySelector('.graph-wrap');
-    const svg  = document.getElementById('graph-svg');
-    if (!wrap || !svg) return;
-    const edges = [
-      ['n0','n1'],['n0','n2'],['n0','n3'],
-      ['n1','n4'],['n2','n5'],['n2','n6'],
-      ['n3','n7'],['n5','n8'],['n6','n8'],
-      ['n7','n9'],['n7','n10']
-    ];
-    const cr = wrap.getBoundingClientRect();
-    let html = '';
-    edges.forEach(([a, b]) => {
-      const na = document.getElementById(a);
-      const nb = document.getElementById(b);
-      if (!na || !nb) return;
-      const ra = na.getBoundingClientRect(), rb = nb.getBoundingClientRect();
-      const x1 = ra.left + ra.width/2  - cr.left;
-      const y1 = ra.top  + ra.height/2 - cr.top;
-      const x2 = rb.left + rb.width/2  - cr.left;
-      const y2 = rb.top  + rb.height/2 - cr.top;
-      html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
-        stroke="#9fb997" stroke-width="1.5" stroke-opacity=".55"/>`;
+function openNodePopup(nodeId) {
+  const d = NODE_DATA[nodeId];
+  if (!d) return;
+  document.getElementById('np-title').textContent = d.name;
+  document.getElementById('np-desc').textContent = d.desc;
+
+  let body = `<div class="np-chips">`;
+  body += `<span class="chip chip-g">${d.count} 道题</span>`;
+  if (d.prereqs.length) {
+    d.prereqs.forEach(p => body += `<span class="chip chip-w">前置：${p}</span>`);
+  } else {
+    body += `<span class="chip" style="background:rgba(159,185,151,.1);color:var(--t3)">无前置要求</span>`;
+  }
+  body += `</div>`;
+
+  if (d.examples.length) {
+    body += `<div class="np-sec">典型例题</div>`;
+    d.examples.forEach(ex => {
+      body += `<div class="np-q">${ex.q}<div class="np-q-ans">✓ ${ex.a}</div></div>`;
     });
-    svg.innerHTML = html;
+  } else {
+    body += `<div style="font-size:13px;color:var(--t3);padding:12px 0">此节点为总览节点，包含 ${d.count} 道题目</div>`;
   }
 
-  /* ---- SELECTION POPUP ---- */
-  const pop  = document.getElementById('sel-pop');
-  const sword = document.getElementById('sel-word');
+  document.getElementById('np-body').innerHTML = body;
+  document.getElementById('np-backdrop').classList.add('open');
+}
+function closeNodePopup(e) {
+  if (e && e.target !== document.getElementById('np-backdrop')) return;
+  document.getElementById('np-backdrop').classList.remove('open');
+}
 
-  document.addEventListener('mouseup', e => {
-    const sel = window.getSelection();
-    const txt = sel ? sel.toString().trim() : '';
-    if (txt.length > 0 && txt.length < 18) {
-      const range = sel.getRangeAt(0);
-      const rect  = range.getBoundingClientRect();
-      pop.style.top  = (rect.top - 44 + window.scrollY) + 'px';
-      pop.style.left = (rect.left + rect.width/2 - 90) + 'px';
-      sword.textContent = txt;
-      pop.classList.add('vis');
-    } else {
-      pop.classList.remove('vis');
+/* ================================================================
+   MICRO LEARNING CANVAS
+================================================================ */
+const ML = {
+  panX: 60, panY: 40,
+  scale: 1,
+  isPanning: false, panStart: null,
+  drag: null,      // { el, ox, oy }
+  cards: {
+    'mlc-concept':  { x: 40,  y: 50  },
+    'mlc-template': { x: 40,  y: 360 },
+    'mlc-pitfall':  { x: 400, y: 50  },
+    'mlc-extended': { x: 400, y: 360 },
+    'mlc-example':  { x: 760, y: 200 }
+  },
+  conns: [
+    { from: 'mlc-concept',  to: 'mlc-pitfall',  label: '对比说明', color: '#9fb997' },
+    { from: 'mlc-concept',  to: 'mlc-extended', label: '提问延伸', color: '#c8aa68' },
+    { from: 'mlc-pitfall',  to: 'mlc-example',  label: '反例练习', color: '#9fb997' },
+    { from: 'mlc-template', to: 'mlc-example',  label: '模板应用', color: '#5a8ab8' }
+  ],
+  initialized: false
+};
+
+function mlInit() {
+  if (ML.initialized) { mlDrawConns(); return; }
+  ML.initialized = true;
+
+  // Position cards
+  Object.entries(ML.cards).forEach(([id, pos]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.left = pos.x + 'px';
+    el.style.top  = pos.y + 'px';
+  });
+
+  // Apply initial pan
+  mlApplyTransform();
+
+  const viewport = document.getElementById('ml-viewport');
+  const world    = document.getElementById('ml-world');
+
+  /* --- Card drag (header only) --- */
+  document.querySelectorAll('.mlc .ml-ch').forEach(header => {
+    header.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      const card = header.closest('.mlc');
+      const rect = card.getBoundingClientRect();
+      ML.drag = {
+        el: card,
+        ox: (e.clientX - rect.left),
+        oy: (e.clientY - rect.top)
+      };
+      card.classList.add('dragging');
+    });
+  });
+
+  /* --- Viewport pan --- */
+  viewport.addEventListener('mousedown', e => {
+    if (e.button !== 0 || ML.drag) return;
+    ML.isPanning = true;
+    ML.panStart  = { x: e.clientX - ML.panX, y: e.clientY - ML.panY };
+    viewport.classList.add('panning');
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (ML.drag) {
+      const wr  = world.getBoundingClientRect();
+      const nx  = (e.clientX - wr.left - ML.drag.ox) / ML.scale;
+      const ny  = (e.clientY - wr.top  - ML.drag.oy) / ML.scale;
+      ML.drag.el.style.left = nx + 'px';
+      ML.drag.el.style.top  = ny + 'px';
+      ML.cards[ML.drag.el.id].x = nx;
+      ML.cards[ML.drag.el.id].y = ny;
+      mlDrawConns();
+    } else if (ML.isPanning) {
+      ML.panX = e.clientX - ML.panStart.x;
+      ML.panY = e.clientY - ML.panStart.y;
+      mlApplyTransform();
     }
   });
-  document.addEventListener('mousedown', e => {
-    if (!e.target.closest('#sel-pop')) pop.classList.remove('vis');
+
+  window.addEventListener('mouseup', () => {
+    if (ML.drag) { ML.drag.el.classList.remove('dragging'); ML.drag = null; }
+    if (ML.isPanning) { ML.isPanning = false; viewport.classList.remove('panning'); }
   });
 
-  /* ---- INIT ---- */
-  window.addEventListener('load', () => {
-    // observe page switches to re-draw graph
-    const obs = new MutationObserver(() => {
-      const bp = document.getElementById('page-bankdetail');
-      if (bp && bp.classList.contains('active')) setTimeout(drawGraph, 50);
+  /* --- Zoom --- */
+  viewport.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.08 : 0.08;
+    ML.scale = Math.min(2, Math.max(0.3, ML.scale + delta));
+    mlApplyTransform();
+  }, { passive: false });
+
+  document.getElementById('ml-zoom-in').onclick  = () => { ML.scale = Math.min(2, ML.scale + 0.12); mlApplyTransform(); };
+  document.getElementById('ml-zoom-out').onclick = () => { ML.scale = Math.max(0.3, ML.scale - 0.12); mlApplyTransform(); };
+
+  /* --- Reset --- */
+  document.getElementById('ml-reset-btn').onclick = () => {
+    ML.panX = 60; ML.panY = 40; ML.scale = 1;
+    const defaults = {
+      'mlc-concept':  { x: 40,  y: 50  },
+      'mlc-template': { x: 40,  y: 360 },
+      'mlc-pitfall':  { x: 400, y: 50  },
+      'mlc-extended': { x: 400, y: 360 },
+      'mlc-example':  { x: 760, y: 200 }
+    };
+    Object.entries(defaults).forEach(([id, pos]) => {
+      ML.cards[id] = { ...pos };
+      const el = document.getElementById(id);
+      if (el) { el.style.left = pos.x+'px'; el.style.top = pos.y+'px'; }
     });
-    document.querySelectorAll('.page').forEach(p =>
-      obs.observe(p, { attributes: true, attributeFilter: ['class'] })
-    );
+    mlApplyTransform();
+    mlDrawConns();
+  };
+
+  mlDrawConns();
+}
+
+function mlApplyTransform() {
+  const world = document.getElementById('ml-world');
+  if (!world) return;
+  world.style.transform = `translate(${ML.panX}px, ${ML.panY}px) scale(${ML.scale})`;
+  world.style.transformOrigin = '0 0';
+  const lbl = document.getElementById('ml-zoom-lbl');
+  if (lbl) lbl.textContent = Math.round(ML.scale * 100) + '%';
+}
+
+function mlCardCenter(id) {
+  const pos = ML.cards[id];
+  const el  = document.getElementById(id);
+  if (!pos || !el) return { x: 0, y: 0 };
+  return { x: pos.x + el.offsetWidth / 2, y: pos.y + el.offsetHeight / 2 };
+}
+
+function mlDrawConns() {
+  const svg = document.getElementById('ml-svg');
+  if (!svg) return;
+  const defs = `<defs>
+    <marker id="ml-arr-g" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 z" fill="#9fb997"/>
+    </marker>
+    <marker id="ml-arr-w" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 z" fill="#c8aa68"/>
+    </marker>
+    <marker id="ml-arr-b" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 z" fill="#5a8ab8"/>
+    </marker>
+  </defs>`;
+  let html = defs;
+  ML.conns.forEach(conn => {
+    const f = mlCardCenter(conn.from), t = mlCardCenter(conn.to);
+    const cx = (f.x + t.x) / 2;
+    const cy = (f.y + t.y) / 2;
+    const color   = conn.color;
+    const markerId = color === '#c8aa68' ? 'ml-arr-w' : color === '#5a8ab8' ? 'ml-arr-b' : 'ml-arr-g';
+    const dash  = conn.color === '#c8aa68' ? 'stroke-dasharray="6 3"' : '';
+    // Bezier curve
+    html += `<path d="M${f.x},${f.y} C${f.x},${cy} ${t.x},${cy} ${t.x},${t.y}"
+      stroke="${color}" stroke-width="1.8" stroke-opacity=".7" fill="none"
+      ${dash} marker-end="url(#${markerId})"/>`;
+    // Label
+    html += `<rect x="${cx-28}" y="${cy-11}" width="56" height="18" rx="9"
+      fill="white" stroke="${color}" stroke-width="1" stroke-opacity=".5"/>
+    <text x="${cx}" y="${cy+4}" text-anchor="middle"
+      fill="${color === '#c8aa68' ? '#8a6020' : color === '#5a8ab8' ? '#3a6898' : 'var(--p-dk)'}"
+      font-size="10" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">${conn.label}</text>`;
   });
-  window.addEventListener('resize', () => {
+  svg.innerHTML = html;
+}
+
+/* ================================================================
+   TEXT SELECTION POPUP
+================================================================ */
+const pop   = document.getElementById('sel-pop');
+const sword = document.getElementById('sel-word');
+document.addEventListener('mouseup', e => {
+  // Only show on micro page
+  const microPage = document.getElementById('page-micro');
+  if (!microPage || !microPage.classList.contains('active')) return;
+  const sel = window.getSelection();
+  const txt = sel ? sel.toString().trim() : '';
+  if (txt.length > 0 && txt.length < 18) {
+    const range = sel.getRangeAt(0);
+    const rect  = range.getBoundingClientRect();
+    pop.style.top  = (rect.top - 44 + window.scrollY) + 'px';
+    pop.style.left = (rect.left + rect.width/2 - 90) + 'px';
+    sword.textContent = txt;
+    pop.classList.add('vis');
+  } else {
+    pop.classList.remove('vis');
+  }
+});
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#sel-pop')) pop.classList.remove('vis');
+});
+
+/* ================================================================
+   INIT
+================================================================ */
+window.addEventListener('load', () => {
+  const obs = new MutationObserver(() => {
     const bd = document.getElementById('page-bankdetail');
-    if (bd && bd.classList.contains('active')) drawGraph();
+    if (bd && bd.classList.contains('active')) setTimeout(drawGraph, 50);
+    const mp = document.getElementById('page-micro');
+    if (mp && mp.classList.contains('active')) setTimeout(mlInit, 50);
   });
+  document.querySelectorAll('.page').forEach(p =>
+    obs.observe(p, { attributes: true, attributeFilter: ['class'] })
+  );
+});
+window.addEventListener('resize', () => {
+  const bd = document.getElementById('page-bankdetail');
+  if (bd && bd.classList.contains('active')) drawGraph();
+  if (ML.initialized) mlDrawConns();
+});
 </script>
 </body>
 </html>
