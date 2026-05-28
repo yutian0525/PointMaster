@@ -1,0 +1,19 @@
+lib/ai/ask-question.ts
+  s_0ac36b487ae60a::t_483ac8f4612b4e 7,13,18-24,29,37,43,46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "00892902e8bcc4c89355a379a8944fb9a5f1c3bd",
+  "prompts": {},
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
