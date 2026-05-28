@@ -1,0 +1,23 @@
+app/page.tsx
+  s_3e59716f4b974e::t_efe317493e099b 1-4
+components/layout/sidebar.tsx
+  s_3e59716f4b974e::t_a82960e82a54b0 1-159
+app/layout.tsx
+  s_3e59716f4b974e::t_545e86b3549548 3,32-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "e11a2bc73315c9fd27df21306a78cea98ecd7f70",
+  "prompts": {},
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
