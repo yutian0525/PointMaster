@@ -1,0 +1,34 @@
+lib/db/migrations/0001_naive_guardian.sql
+  s_0ac36b487ae60a::t_c75df1464652e4 1-9
+lib/db/migrations/meta/0001_snapshot.json
+  s_0ac36b487ae60a::t_c75df1464652e4 1-409
+lib/db/migrations/meta/_journal.json
+  s_0ac36b487ae60a::t_c75df1464652e4 11-17
+types/micro-learning.ts
+  s_0ac36b487ae60a::t_9bdc0106327ef7 1-78
+lib/db/schema.ts
+  s_0ac36b487ae60a::t_6ec88b8a472631 47-56
+types/index.ts
+  s_0ac36b487ae60a::t_f9607bec389047 26-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "5a70ff7a8159367905eb550267d804af6261b24b",
+  "prompts": {},
+  "humans": {
+    "h_71c0863b823da1": {
+      "author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
