@@ -1,0 +1,21 @@
+components/banks/bank-card.tsx
+  s_0ac36b487ae60a::t_6b3ebc3e1e044b 42-48
+app/banks/[id]/page.tsx
+  s_0ac36b487ae60a::t_94c1171b8c8e1d 54-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "7dea0fc1ec194a745c5dc0e473e5c68d8d324060",
+  "prompts": {},
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
