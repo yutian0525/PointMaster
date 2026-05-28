@@ -1,0 +1,74 @@
+components/ui/dialog.tsx
+  s_3e59716f4b974e::t_8070222f3abc83 1-122
+tsconfig.json
+  s_3e59716f4b974e::t_472988a3155f30 1-27
+components/ui/badge.tsx
+  s_3e59716f4b974e::t_8070222f3abc83 1-36
+next-env.d.ts
+  s_3e59716f4b974e::t_12319f20b7f802 1-5
+components/ui/card.tsx
+  s_3e59716f4b974e::t_8070222f3abc83 1-79
+.gitignore
+  s_3e59716f4b974e::t_923e7c41b902d8 1-41
+app/layout.tsx
+  s_3e59716f4b974e::t_457f3c35fa59ac 1-35
+components/ui/button.tsx
+  s_3e59716f4b974e::t_8070222f3abc83 1-56
+app/page.tsx
+  s_3e59716f4b974e::t_61e91b4e301984 1-12
+components/ui/progress.tsx
+  s_3e59716f4b974e::t_8070222f3abc83 1-28
+next.config.ts
+  s_3e59716f4b974e::t_e2a87ae73806cb 1-7
+app/globals.css
+  s_3e59716f4b974e::t_4c68f53090bd50 1-21
+CLAUDE.md
+  s_d382c2d33c3f12::t_aab884cec166b0 1-211
+components.json
+  s_3e59716f4b974e::t_0df87a5a3f8f66 1-21
+tailwind.config.ts
+  s_3e59716f4b974e::t_267a2d8cf7d96a 1-40
+docs/design/index.html
+  s_d382c2d33c3f12::t_e7fbf155bdb5cb 553,557-558,560
+  s_d382c2d33c3f12::t_1e2345e0653454 995-1005,1008
+  s_d382c2d33c3f12::t_60e23f0b1d71f9 466,468-550,554,556,559,561-565,578-582,585,587-592,595-598,600-605,607-617,619-623
+  s_d382c2d33c3f12::t_c4657920a54195 1474,1479-1496
+  s_d382c2d33c3f12::t_c77d751f460bc9 1500-1650,1652-1665,1667,1669-1675,1678-1727,1731-1732,1734-1740,1742-1750,1752-1765,1768-1771,1774-1798,1800-1854,1856-1889,1891-1893,1895-1903
+  s_d382c2d33c3f12::t_3442921318a622 1728-1730,1733
+  s_d382c2d33c3f12::t_2bb3d5e50b77e6 1192,1194-1208,1211-1212,1214-1234,1237-1239,1242-1256,1258-1259,1263-1276,1279-1282,1284-1295,1298-1300,1303-1311,1313-1316,1319-1321,1325-1331,1333-1334
+package.json
+  s_3e59716f4b974e::t_552f4588fcdb91 1-11,31-32,34-36,42-43,48-49
+  s_3e59716f4b974e::t_3f285970ec277a 45-46
+  s_3e59716f4b974e::t_cc8ea099cf75e8 47
+  s_3e59716f4b974e::t_2118f82b9a12bc 38
+  s_3e59716f4b974e::t_009fe24bb1b50b 12,18-19,27-28,37,39
+  s_3e59716f4b974e::t_8070222f3abc83 13-17,20-26,29-30,33,40-41,44
+lib/utils.ts
+  s_3e59716f4b974e::t_66d7333c240414 1-6
+postcss.config.mjs
+  s_3e59716f4b974e::t_474f9d885d6bf1 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "9941556ddea7b49ee6d461fa860fc8bfa5784791",
+  "prompts": {},
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    },
+    "s_d382c2d33c3f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5086f776-0fc8-438d-8a08-6af250d5568a",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
