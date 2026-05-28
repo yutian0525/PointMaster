@@ -1,0 +1,28 @@
+types/index.ts
+  s_3e59716f4b974e::t_4261546f643a55 1-25
+lib/parsers/index.ts
+  s_3e59716f4b974e::t_35e83059497f07 1-23
+lib/parsers/json.ts
+  s_3e59716f4b974e::t_d5e94a0b399cfa 1-33
+lib/parsers/txt.ts
+  s_3e59716f4b974e::t_e848bf3696084e 1-38
+lib/parsers/excel.ts
+  s_3e59716f4b974e::t_95abe8ffd9bfc1 14-15
+  s_3e59716f4b974e::t_3f1f883afa6dc8 1-13,16-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "ee67116b2899b7c65912ccf57fa4dec73ce8bd24",
+  "prompts": {},
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
