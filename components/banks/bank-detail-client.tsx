@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { BankStatus, GraphData } from "@/types";
+import { GraphView } from "@/components/knowledge-graph/graph-view";
 
 interface BankDetailClientProps {
   bankId: string;
@@ -149,9 +150,7 @@ export function BankDetailClient({ bankId, initialBank }: BankDetailClientProps)
                 加载知识图谱...
               </div>
             ) : graphData && graphData.nodes.length > 0 ? (
-              <div className="flex items-center justify-center h-full text-text-muted text-[13px]">
-                知识图谱数据已加载（{graphData.nodes.length} 个节点）— 可视化组件将在 Task 10 中实现
-              </div>
+              <GraphView data={graphData} bankName={bank.name} />
             ) : (
               <div className="flex items-center justify-center h-full text-text-muted text-[13px]">
                 暂无知识图谱数据
