@@ -46,7 +46,7 @@ function buildUserPrompt(
     });
   }
 
-  prompt += `\n请按以下格式生成5类卡片：
+  prompt += `\n请严格按以下格式生成5张独立卡片，每张卡片以"## "（两个井号+空格）开头，卡片之间用空行分隔。不要使用###，不要嵌套，每个##都是独立卡片：
 
 ## 核心概念
 （先给出知识点名称和一句话概括，再用精炼的语言解释核心定义、关键结论和适用范围，标记关键术语）
@@ -75,7 +75,8 @@ const CARD_TYPE_MAP: Record<string, { type: MicroCard["type"]; importance: Micro
 };
 
 function parseMarkdownToCards(markdown: string): MicroCard[] {
-  const sections = markdown.split(/^## /m).filter(Boolean);
+  // Split on ## or ### headings
+  const sections = markdown.split(/^#{2,3}\s+/m).filter(Boolean);
   const cards: MicroCard[] = [];
 
   for (const section of sections) {
