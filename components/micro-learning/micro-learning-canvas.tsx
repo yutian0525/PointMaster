@@ -93,13 +93,11 @@ export function MicroLearningCanvas({
   useEffect(() => {
     if (cards.length > 0 && prevCardCountRef.current === 0) {
       if (!savedPositions || savedPositions.length === 0) {
-        const newPos = computeInitialPositions(cards);
-        setPositions(newPos);
-        onPositionsChange?.(newPos);
+        setPositions(computeInitialPositions(cards));
       }
     }
     prevCardCountRef.current = cards.length;
-  }, [cards, savedPositions, onPositionsChange]);
+  }, [cards, savedPositions]);
 
   // Add positions for new cards (extended cards added after ask)
   useEffect(() => {
@@ -118,16 +116,19 @@ export function MicroLearningCanvas({
         height: 220,
       }));
 
-      const updated = [...prev, ...newPositions];
-      onPositionsChange?.(updated);
-      return updated;
+      return [...prev, ...newPositions];
     });
-  }, [cards, onPositionsChange]);
+  }, [cards]);
 
-  // Notify parent when positions change due to drag
-  const notifyPositionChange = useCallback((newPositions: CardPosition[]) => {
-    onPositionsChange?.(newPositions);
-  }, [onPositionsChange]);
+  // Notify parent of position changes (separate effect to avoid setState-during-render)
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    onPositionsChange?.(positions);
+  }, [positions, onPositionsChange]);
 
   // Drag handlers
   const handleDragStart = useCallback((cardId: string, e: React.PointerEvent) => {
@@ -174,12 +175,9 @@ export function MicroLearningCanvas({
   }, [isPanning, scale]);
 
   const handlePointerUp = useCallback(() => {
-    if (dragRef.current) {
-      notifyPositionChange(positions);
-    }
     dragRef.current = null;
     setIsPanning(false);
-  }, [positions, notifyPositionChange]);
+  }, []);
 
   // Zoom
   const handleWheel = useCallback((e: React.WheelEvent) => {
