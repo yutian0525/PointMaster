@@ -40,9 +40,9 @@ export default function MicroLearningPage({
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recordIdRef = useRef<string | null>(null);
 
-  // Generate cards on mount
+  // Load existing record or generate new cards
   useEffect(() => {
-    async function generate() {
+    async function init() {
       setLoading(true);
       setError(null);
 
@@ -57,8 +57,28 @@ export default function MicroLearningPage({
           }
         }
 
-        const body: GenerateRequest = { knowledgePointId, context };
+        // Check for existing saved record first
+        const historyRes = await fetch(`/api/micro-learning/history?knowledgePointId=${knowledgePointId}`);
+        if (historyRes.ok) {
+          const historyData = await historyRes.json();
+          const latestRecord = historyData.records?.[0];
+          if (latestRecord) {
+            const detailRes = await fetch(`/api/micro-learning/history/${latestRecord.id}`);
+            if (detailRes.ok) {
+              const detail = await detailRes.json();
+              setCards([...(detail.cards || []), ...(detail.extendedCards || [])]);
+              setConnections(detail.connections || []);
+              if (detail.positions) setPositions(detail.positions);
+              recordIdRef.current = latestRecord.id;
+              setSaved(true);
+              setLoading(false);
+              return;
+            }
+          }
+        }
 
+        // No existing record — generate via AI
+        const body: GenerateRequest = { knowledgePointId, context };
         const res = await fetch("/api/micro-learning/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -79,7 +99,7 @@ export default function MicroLearningPage({
       }
     }
 
-    generate();
+    init();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [knowledgePointId]);
 
