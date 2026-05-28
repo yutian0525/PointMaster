@@ -1,0 +1,21 @@
+data/test-bank.json
+  s_3e59716f4b974e::t_e090840a4cbf74 1-32
+.gitignore
+  s_3e59716f4b974e::t_d608a3c5d10374 41-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "6359c1e562526177212c448cd2155a6924bec398",
+  "prompts": {},
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
