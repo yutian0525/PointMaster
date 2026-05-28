@@ -1,0 +1,41 @@
+components/banks/bank-detail-client.tsx
+  h_71c0863b823da1 24,96,167
+  s_0ac36b487ae60a::t_3af578be57e725 97-98,101,103-104,107,109,114-116
+  s_0ac36b487ae60a::t_d76bc2854da95c 6
+components/banks/difficulty-chart.tsx
+  s_0ac36b487ae60a::t_441723a13483aa 52,59,63-65,71,75,78,80,85
+  s_0ac36b487ae60a::t_b080405cb59dd4 1-15,17-24,26-51,53-58,60-62,66-70,72-74,76-77,79,81-84,86-94
+  h_71c0863b823da1 16,25
+components/knowledge-graph/knowledge-node.tsx
+  s_0ac36b487ae60a::t_38aea90b510563 8,12-24,26-38,42,44-45,52,54-55
+components/knowledge-graph/graph-view.tsx
+  s_0ac36b487ae60a::t_72a2c4feabf64c 31
+  s_0ac36b487ae60a::t_61c584b34a1223 47,50
+types/index.ts
+  s_0ac36b487ae60a::t_0d3ab23c4a518a 20
+app/api/banks/[id]/difficulty-distribution/route.ts
+  s_0ac36b487ae60a::t_b3e8bebf0c892b 1-49
+app/api/banks/[id]/graph/route.ts
+  s_0ac36b487ae60a::t_d69d9194aab0a0 3-4,15-16,18,27-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "8f480e6196754a77465281cfb7e35223275707e8",
+  "prompts": {},
+  "humans": {
+    "h_71c0863b823da1": {
+      "author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
