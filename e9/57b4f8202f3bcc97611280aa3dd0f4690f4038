@@ -1,0 +1,29 @@
+lib/db/migrations/0000_clean_guardsmen.sql
+  s_3e59716f4b974e::t_6729608e1f6c39 1-48
+lib/db/migrations/meta/0000_snapshot.json
+  s_3e59716f4b974e::t_6729608e1f6c39 1-350
+drizzle.config.ts
+  s_3e59716f4b974e::t_bab6c5444b5dfa 1-10
+lib/db/schema.ts
+  s_3e59716f4b974e::t_bebe6fe31f5eed 1-46
+lib/db/index.ts
+  s_3e59716f4b974e::t_daff62027ab095 1-16
+lib/db/migrations/meta/_journal.json
+  s_3e59716f4b974e::t_6729608e1f6c39 1-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "e957b4f8202f3bcc97611280aa3dd0f4690f4038",
+  "prompts": {},
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
