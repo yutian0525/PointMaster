@@ -39,7 +39,13 @@ export function BankCard({ bank }: BankCardProps) {
       className="block bg-white border border-border rounded-md p-[18px] transition-all relative overflow-hidden hover:-translate-y-0.5 hover:shadow-md group"
     >
       <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-primary to-primary-dark rounded-t-[3px]" />
-      <div className="text-[28px] mb-3">📐</div>
+      <div className="mb-3">
+        <svg className="w-7 h-7 text-primary-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 20h20" />
+          <path d="M5 20V8l7-5 7 5v12" />
+          <path d="M9 20v-6h6v6" />
+        </svg>
+      </div>
       <div className="font-display text-[15.5px] font-semibold text-foreground mb-1">
         {bank.name}
       </div>

@@ -51,8 +51,13 @@ export default async function BankDetailPage({
         {/* Header */}
         <div className="flex items-start justify-between gap-5 mt-2">
           <div>
-            <div className="font-display text-[26px] font-semibold text-foreground tracking-tight leading-tight">
-              📐 {bank.name}
+            <div className="font-display text-[26px] font-semibold text-foreground tracking-tight leading-tight flex items-center gap-2">
+              <svg className="w-6 h-6 text-primary-dark flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 20h20" />
+                <path d="M5 20V8l7-5 7 5v12" />
+                <path d="M9 20v-6h6v6" />
+              </svg>
+              {bank.name}
             </div>
             <div className="flex gap-1.5 flex-wrap mt-2.5">
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[rgba(159,185,151,0.2)] text-primary-dark">
