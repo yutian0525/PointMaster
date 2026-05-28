@@ -1,0 +1,26 @@
+lib/ai/ask-question.ts
+  s_0ac36b487ae60a::t_d2b37dd7da086e 1-51
+lib/ai/generate-micro.ts
+  s_0ac36b487ae60a::t_ba9c867724fb8e 1-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "5503d90ba8070464f00db75be27fb5e9dcf86b39",
+  "prompts": {},
+  "humans": {
+    "h_71c0863b823da1": {
+      "author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
