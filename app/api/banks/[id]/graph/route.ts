@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { knowledgePoints, questionKnowledge } from "@/lib/db/schema";
-import { eq, count } from "drizzle-orm";
+import { knowledgePoints, questionKnowledge, questions } from "@/lib/db/schema";
+import { eq, count, avg } from "drizzle-orm";
 
 export async function GET(
   _request: NextRequest,
@@ -12,9 +12,10 @@ export async function GET(
   const kps = db.select().from(knowledgePoints).where(eq(knowledgePoints.bankId, id)).all();
 
   const nodes = kps.map((kp) => {
-    const qCount = db
-      .select({ count: count() })
+    const stats = db
+      .select({ count: count(), avgDifficulty: avg(questions.difficulty) })
       .from(questionKnowledge)
+      .innerJoin(questions, eq(questionKnowledge.questionId, questions.id))
       .where(eq(questionKnowledge.knowledgePointId, kp.id))
       .get();
 
@@ -23,7 +24,8 @@ export async function GET(
       name: kp.name,
       description: kp.description,
       prerequisiteIds: JSON.parse(kp.prerequisiteIds) as string[],
-      questionCount: qCount?.count || 0,
+      questionCount: stats?.count || 0,
+      avgDifficulty: stats?.avgDifficulty ? parseFloat(String(stats.avgDifficulty)) : null,
     };
   });
 

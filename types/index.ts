@@ -17,6 +17,7 @@ export interface KnowledgePointNode {
   description: string | null;
   prerequisiteIds: string[];
   questionCount: number;
+  avgDifficulty: number | null;
 }
 
 export interface GraphData {

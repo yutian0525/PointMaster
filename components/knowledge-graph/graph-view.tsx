@@ -28,7 +28,7 @@ function getLayoutedElements(data: GraphData) {
   g.setGraph({ rankdir: "TB", ranksep: 80, nodesep: 60 });
 
   for (const node of data.nodes) {
-    g.setNode(node.id, { width: 150, height: 40 });
+    g.setNode(node.id, { width: 160, height: 56 });
   }
   for (const edge of data.edges) {
     g.setEdge(edge.source, edge.target);
@@ -44,9 +44,10 @@ function getLayoutedElements(data: GraphData) {
       data: {
         name: node.name,
         questionCount: node.questionCount,
+        avgDifficulty: node.avgDifficulty,
         isRoot: node.prerequisiteIds.length === 0,
       },
-      position: { x: pos.x - 75, y: pos.y - 20 },
+      position: { x: pos.x - 80, y: pos.y - 28 },
     };
   });
 

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import type { BankStatus, GraphData } from "@/types";
 import { GraphView } from "@/components/knowledge-graph/graph-view";
+import { DifficultyChart } from "./difficulty-chart";
 
 interface BankDetailClientProps {
   bankId: string;
@@ -18,7 +19,10 @@ interface BankDetailClientProps {
   };
 }
 
-export function BankDetailClient({ bankId, initialBank }: BankDetailClientProps) {
+export function BankDetailClient({
+  bankId,
+  initialBank,
+}: BankDetailClientProps) {
   const [bank, setBank] = useState(initialBank);
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [loadingGraph, setLoadingGraph] = useState(false);
@@ -78,7 +82,8 @@ export function BankDetailClient({ bankId, initialBank }: BankDetailClientProps)
     return () => clearInterval(interval);
   }, [bank.status, bankId, fetchStatus, fetchGraph]);
 
-  const isProcessing = bank.status === "extracting" || bank.status === "building_graph";
+  const isProcessing =
+    bank.status === "extracting" || bank.status === "building_graph";
 
   async function handleRetry() {
     await fetch(`/api/banks/${bankId}/process`, { method: "POST" });
@@ -88,23 +93,26 @@ export function BankDetailClient({ bankId, initialBank }: BankDetailClientProps)
   return (
     <div className="flex-1 px-[38px] py-6 overflow-y-auto">
       {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-4 mt-5">
-        <div className="bg-white border border-border rounded-md p-[18px]">
-          <div className="font-display text-[34px] font-bold text-foreground leading-none">
+      <div className="grid grid-cols-3 gap-4 mt-0">
+        <div className="bg-white border border-border rounded-md px-[18px] py-[14px]">
+          <div className="font-display text-[28px] font-bold text-foreground leading-none">
             {bank.totalQuestions}
           </div>
-          <div className="text-[12.5px] text-text-muted mt-0.5">题目总数</div>
+          <div className="text-[12px] text-text-muted mt-1">题目总数</div>
         </div>
-        <div className="bg-white border border-border rounded-md p-[18px]">
-          <div className="font-display text-[34px] font-bold text-foreground leading-none">
+        <div className="bg-white border border-border rounded-md px-[18px] py-[14px]">
+          <div className="font-display text-[28px] font-bold text-foreground leading-none">
             {bank.knowledgePointCount}
           </div>
-          <div className="text-[12.5px] text-text-muted mt-0.5">知识点总数</div>
+          <div className="text-[12px] text-text-muted mt-1">知识点总数</div>
           {bank.status !== "completed" && (
-            <div className="text-[11.5px] text-primary-dark mt-2">
+            <div className="text-[11px] text-primary-dark mt-1">
               {isProcessing ? "提取中..." : "待处理"}
             </div>
           )}
+        </div>
+        <div className="bg-white border border-border rounded-md px-[18px] py-[14px]">
+          <DifficultyChart bankId={bankId} />
         </div>
       </div>
 
@@ -112,8 +120,12 @@ export function BankDetailClient({ bankId, initialBank }: BankDetailClientProps)
       {isProcessing && (
         <div className="bg-white border border-border rounded-md p-[18px] mt-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[13px] font-semibold text-foreground">AI 解析进度</div>
-            <span className="text-[12.5px] font-bold text-primary-dark">{bank.progress}%</span>
+            <div className="text-[13px] font-semibold text-foreground">
+              AI 解析进度
+            </div>
+            <span className="text-[12.5px] font-bold text-primary-dark">
+              {bank.progress}%
+            </span>
           </div>
           <div className="w-full h-[6px] bg-background-alt rounded-full overflow-hidden">
             <div
@@ -122,7 +134,9 @@ export function BankDetailClient({ bankId, initialBank }: BankDetailClientProps)
             />
           </div>
           {bank.progressMessage && (
-            <div className="text-[11.5px] text-text-muted mt-2">{bank.progressMessage}</div>
+            <div className="text-[11.5px] text-text-muted mt-2">
+              {bank.progressMessage}
+            </div>
           )}
         </div>
       )}
@@ -130,8 +144,12 @@ export function BankDetailClient({ bankId, initialBank }: BankDetailClientProps)
       {/* Failed state */}
       {bank.status === "failed" && (
         <div className="bg-white border border-[rgba(200,90,90,0.3)] rounded-md p-[18px] mt-4">
-          <div className="text-[13px] font-semibold text-[#9a3830] mb-1">处理失败</div>
-          <div className="text-[12px] text-text-muted mb-3">{bank.progressMessage}</div>
+          <div className="text-[13px] font-semibold text-[#9a3830] mb-1">
+            处理失败
+          </div>
+          <div className="text-[12px] text-text-muted mb-3">
+            {bank.progressMessage}
+          </div>
           <button
             onClick={handleRetry}
             className="px-3 py-1.5 rounded-[9px] bg-gradient-to-br from-primary to-primary-dark text-white text-[12.5px] font-semibold"
@@ -144,13 +162,20 @@ export function BankDetailClient({ bankId, initialBank }: BankDetailClientProps)
       {/* Knowledge Graph placeholder - will be replaced by Task 10 */}
       {bank.status === "completed" && (
         <div className="mt-5">
-          <div className="bg-white border border-border rounded-lg overflow-hidden" style={{ height: "400px" }}>
+          <div
+            className="bg-white border border-border rounded-lg overflow-hidden"
+            style={{ height: "500px" }}
+          >
             {loadingGraph ? (
               <div className="flex items-center justify-center h-full text-text-muted text-[13px]">
                 加载知识图谱...
               </div>
             ) : graphData && graphData.nodes.length > 0 ? (
-              <GraphView data={graphData} bankName={bank.name} bankId={bankId} />
+              <GraphView
+                data={graphData}
+                bankName={bank.name}
+                bankId={bankId}
+              />
             ) : (
               <div className="flex items-center justify-center h-full text-text-muted text-[13px]">
                 暂无知识图谱数据
