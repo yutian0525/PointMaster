@@ -1,12 +1,21 @@
 "use client";
 
-import { useEffect, useState, useCallback, use } from "react";
+import { useEffect, useState, useCallback, useRef, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Toolbar } from "@/components/micro-learning/toolbar";
 import { MicroLearningCanvas } from "@/components/micro-learning/micro-learning-canvas";
 import { LoadingSkeleton } from "@/components/micro-learning/loading-skeleton";
 import { HistoryDrawer } from "@/components/micro-learning/history-drawer";
-import type { MicroCard, CardConnection, GenerateRequest } from "@/types";
+import type { MicroCard, CardConnection, GenerateRequest, CardType } from "@/types";
+
+interface CardPosition {
+  id: string;
+  type: CardType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 export default function MicroLearningPage({
   params,
@@ -19,12 +28,17 @@ export default function MicroLearningPage({
 
   const [cards, setCards] = useState<MicroCard[]>([]);
   const [connections, setConnections] = useState<CardConnection[]>([]);
+  const [positions, setPositions] = useState<CardPosition[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [knowledgePointName, setKnowledgePointName] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [saved, setSaved] = useState<boolean | undefined>(undefined);
   const [context, setContext] = useState<GenerateRequest["context"] | undefined>(undefined);
+
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recordIdRef = useRef<string | null>(null);
 
   // Generate cards on mount
   useEffect(() => {
@@ -69,11 +83,13 @@ export default function MicroLearningPage({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [knowledgePointId]);
 
-  const handleComplete = useCallback(async () => {
-    setCompleting(true);
+  // Auto-save: debounced save when cards/connections/positions change
+  const doAutoSave = useCallback(async () => {
+    if (cards.length === 0) return;
+    setSaved(false);
     try {
       const extendedCards = cards.filter((c) => c.type === "extended");
-      await fetch("/api/micro-learning/complete", {
+      const res = await fetch("/api/micro-learning/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -81,15 +97,43 @@ export default function MicroLearningPage({
           cards: cards.filter((c) => c.type !== "extended"),
           connections,
           extendedCards,
+          positions,
           context: context || null,
+          recordId: recordIdRef.current,
         }),
       });
+      const data = await res.json();
+      if (data.id) {
+        recordIdRef.current = data.id;
+      }
+      setSaved(true);
+    } catch {
+      setSaved(undefined);
+    }
+  }, [cards, connections, positions, context, knowledgePointId]);
+
+  // Trigger auto-save on card/connection/position changes (debounced 3s)
+  useEffect(() => {
+    if (loading || cards.length === 0) return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => {
+      doAutoSave();
+    }, 3000);
+    return () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [cards, connections, positions, loading, doAutoSave]);
+
+  const handleComplete = useCallback(async () => {
+    setCompleting(true);
+    try {
+      await doAutoSave();
       const bankId = searchParams.get("bankId");
       router.push(bankId ? `/banks/${bankId}` : "/banks");
     } finally {
       setCompleting(false);
     }
-  }, [cards, connections, context, knowledgePointId, router, searchParams]);
+  }, [doAutoSave, router, searchParams]);
 
   const handleLoadRecord = useCallback(async (recordId: string) => {
     setHistoryOpen(false);
@@ -99,9 +143,17 @@ export default function MicroLearningPage({
       const data = await res.json();
       setCards([...(data.cards || []), ...(data.extendedCards || [])]);
       setConnections(data.connections || []);
+      if (data.positions) {
+        setPositions(data.positions);
+      }
+      recordIdRef.current = recordId;
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const handlePositionsChange = useCallback((newPositions: CardPosition[]) => {
+    setPositions(newPositions);
   }, []);
 
   if (loading) {
@@ -158,6 +210,7 @@ export default function MicroLearningPage({
         onOpenHistory={() => setHistoryOpen(true)}
         onComplete={handleComplete}
         completing={completing}
+        saved={saved}
       />
       <MicroLearningCanvas
         cards={cards}
@@ -165,6 +218,8 @@ export default function MicroLearningPage({
         knowledgePointId={knowledgePointId}
         onCardsChange={setCards}
         onConnectionsChange={setConnections}
+        onPositionsChange={handlePositionsChange}
+        savedPositions={positions}
       />
       <HistoryDrawer
         open={historyOpen}

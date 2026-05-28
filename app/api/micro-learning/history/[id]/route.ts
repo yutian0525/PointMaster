@@ -34,6 +34,7 @@ export async function GET(
     knowledgePointName: kp?.name || "",
     cards: generated.cards || [],
     connections: generated.connections || [],
+    positions: generated.positions || null,
     extendedCards: Array.isArray(extended) ? extended : [],
     context: record.context ? JSON.parse(record.context) : null,
     createdAt: record.createdAt,

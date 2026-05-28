@@ -21,6 +21,8 @@ interface MicroLearningCanvasProps {
   knowledgePointId: string;
   onCardsChange: (cards: MicroCard[]) => void;
   onConnectionsChange: (connections: CardConnection[]) => void;
+  onPositionsChange?: (positions: CardPosition[]) => void;
+  savedPositions?: CardPosition[] | null;
 }
 
 function computeInitialPositions(cards: MicroCard[]): CardPosition[] {
@@ -31,13 +33,11 @@ function computeInitialPositions(cards: MicroCard[]): CardPosition[] {
   const START_X = 60;
   const START_Y = 40;
 
-  const baseTypes: CardType[] = ["concept", "signal", "template", "pitfall", "example"];
-  const extCards = cards.filter((c) => c.type === "extended");
-
   const positions: CardPosition[] = [];
 
   const col1Types: CardType[] = ["concept", "signal", "template"];
   const col2Types: CardType[] = ["pitfall", "example"];
+  const extCards = cards.filter((c) => c.type === "extended");
 
   let col1Y = START_Y;
   let col2Y = START_Y;
@@ -52,7 +52,6 @@ function computeInitialPositions(cards: MicroCard[]): CardPosition[] {
     }
   }
 
-  // Extended cards to the right
   const extX = START_X + (CARD_W + GAP_X) * 2;
   let extY = START_Y;
   for (const card of extCards) {
@@ -69,8 +68,13 @@ export function MicroLearningCanvas({
   knowledgePointId,
   onCardsChange,
   onConnectionsChange,
+  onPositionsChange,
+  savedPositions,
 }: MicroLearningCanvasProps) {
-  const [positions, setPositions] = useState<CardPosition[]>(() => computeInitialPositions(cards));
+  const [positions, setPositions] = useState<CardPosition[]>(() => {
+    if (savedPositions && savedPositions.length > 0) return savedPositions;
+    return computeInitialPositions(cards);
+  });
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [isPanning, setIsPanning] = useState(false);
@@ -79,10 +83,25 @@ export function MicroLearningCanvas({
   const viewportRef = useRef<HTMLDivElement>(null);
 
   // Selection popup state
-  const [selPopup, setSelPopup] = useState({ visible: false, x: 0, y: 0, text: "", cardId: "", cardContent: "" });
+  const [selPopup, setSelPopup] = useState({
+    visible: false, x: 0, y: 0, text: "", cardId: "", cardContent: "",
+  });
   const [askLoading, setAskLoading] = useState(false);
 
-  // Recompute positions when cards change (new extended cards added)
+  // Re-layout when cards array fully resets (generation complete)
+  const prevCardCountRef = useRef(cards.length);
+  useEffect(() => {
+    if (cards.length > 0 && prevCardCountRef.current === 0) {
+      if (!savedPositions || savedPositions.length === 0) {
+        const newPos = computeInitialPositions(cards);
+        setPositions(newPos);
+        onPositionsChange?.(newPos);
+      }
+    }
+    prevCardCountRef.current = cards.length;
+  }, [cards, savedPositions, onPositionsChange]);
+
+  // Add positions for new cards (extended cards added after ask)
   useEffect(() => {
     setPositions((prev) => {
       const existingIds = new Set(prev.map((p) => p.id));
@@ -99,9 +118,16 @@ export function MicroLearningCanvas({
         height: 220,
       }));
 
-      return [...prev, ...newPositions];
+      const updated = [...prev, ...newPositions];
+      onPositionsChange?.(updated);
+      return updated;
     });
-  }, [cards]);
+  }, [cards, onPositionsChange]);
+
+  // Notify parent when positions change due to drag
+  const notifyPositionChange = useCallback((newPositions: CardPosition[]) => {
+    onPositionsChange?.(newPositions);
+  }, [onPositionsChange]);
 
   // Drag handlers
   const handleDragStart = useCallback((cardId: string, e: React.PointerEvent) => {
@@ -120,7 +146,6 @@ export function MicroLearningCanvas({
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, [positions, scale]);
 
-  // Pan handler
   const handleViewportPointerDown = useCallback((e: React.PointerEvent) => {
     if (dragRef.current) return;
     if ((e.target as HTMLElement).closest("[data-card-id]")) return;
@@ -134,11 +159,12 @@ export function MicroLearningCanvas({
       if (!worldEl) return;
       const worldRect = worldEl.getBoundingClientRect();
 
-      const newX = (e.clientX - worldRect.left) / scale - dragRef.current.offsetX;
-      const newY = (e.clientY - worldRect.top) / scale - dragRef.current.offsetY;
+      const { cardId, offsetX, offsetY } = dragRef.current;
+      const newX = (e.clientX - worldRect.left) / scale - offsetX;
+      const newY = (e.clientY - worldRect.top) / scale - offsetY;
 
       setPositions((prev) =>
-        prev.map((p) => (p.id === dragRef.current!.cardId ? { ...p, x: newX, y: newY } : p))
+        prev.map((p) => (p.id === cardId ? { ...p, x: newX, y: newY } : p))
       );
     } else if (isPanning) {
       const dx = e.clientX - panStartRef.current.x;
@@ -148,9 +174,12 @@ export function MicroLearningCanvas({
   }, [isPanning, scale]);
 
   const handlePointerUp = useCallback(() => {
+    if (dragRef.current) {
+      notifyPositionChange(positions);
+    }
     dragRef.current = null;
     setIsPanning(false);
-  }, []);
+  }, [positions, notifyPositionChange]);
 
   // Zoom
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -162,19 +191,36 @@ export function MicroLearningCanvas({
   const zoomIn = () => setScale((s) => Math.min(2, s + 0.12));
   const zoomOut = () => setScale((s) => Math.max(0.3, s - 0.12));
 
-  // Text selection
+  // Text selection — improved to handle multi-line selections
   const handleTextSelect = useCallback((cardId: string, text: string, rect: DOMRect, cardContent: string) => {
+    if (rect.width === 0 && rect.height === 0) return;
     setSelPopup({
       visible: true,
-      x: rect.left + rect.width / 2 - 80,
-      y: rect.top - 40,
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 8,
       text,
       cardId,
       cardContent,
     });
   }, []);
 
-  const handleAsk = useCallback(async () => {
+  // Card-level ask button
+  const handleAskCard = useCallback((cardId: string, cardContent: string) => {
+    const card = cards.find((c) => c.id === cardId);
+    const cardEl = viewportRef.current?.querySelector(`[data-card-id="${cardId}"]`);
+    if (!cardEl) return;
+    const rect = cardEl.getBoundingClientRect();
+    setSelPopup({
+      visible: true,
+      x: rect.right + 8,
+      y: rect.top,
+      text: card?.title || "",
+      cardId,
+      cardContent,
+    });
+  }, [cards]);
+
+  const handleAsk = useCallback(async (question: string) => {
     if (askLoading) return;
     setAskLoading(true);
 
@@ -184,7 +230,7 @@ export function MicroLearningCanvas({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           knowledgePointId,
-          selectedText: selPopup.text,
+          selectedText: question,
           sourceCardId: selPopup.cardId,
           sourceCardContent: selPopup.cardContent,
         }),
@@ -201,10 +247,19 @@ export function MicroLearningCanvas({
     }
   }, [askLoading, knowledgePointId, selPopup, cards, connections, onCardsChange, onConnectionsChange]);
 
-  // Dismiss selection popup on click elsewhere
-  const handleViewportClick = useCallback(() => {
-    if (selPopup.visible && !askLoading) {
+  const handleClosePopup = useCallback(() => {
+    if (!askLoading) {
       setSelPopup((s) => ({ ...s, visible: false }));
+    }
+  }, [askLoading]);
+
+  // Dismiss popup on viewport click (but not on card or popup click)
+  const handleViewportClick = useCallback((e: React.MouseEvent) => {
+    if (selPopup.visible && !askLoading) {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-card-id]")) {
+        setSelPopup((s) => ({ ...s, visible: false }));
+      }
     }
   }, [selPopup.visible, askLoading]);
 
@@ -224,7 +279,6 @@ export function MicroLearningCanvas({
         onWheel={handleWheel}
         onClick={handleViewportClick}
       >
-        {/* World */}
         <div
           className="absolute w-[2400px] h-[1600px]"
           style={{
@@ -232,10 +286,8 @@ export function MicroLearningCanvas({
             transformOrigin: "0 0",
           }}
         >
-          {/* Connections */}
           <CardConnections connections={connections} cardPositions={positions} />
 
-          {/* Cards */}
           {cards.map((card) => {
             const pos = positions.find((p) => p.id === card.id);
             if (!pos) return null;
@@ -252,6 +304,7 @@ export function MicroLearningCanvas({
                 y={pos.y}
                 onDragStart={handleDragStart}
                 onTextSelect={handleTextSelect}
+                onAskCard={handleAskCard}
               />
             );
           })}
@@ -271,14 +324,14 @@ export function MicroLearningCanvas({
         </div>
       </div>
 
-      {/* Selection popup (rendered outside viewport for fixed positioning) */}
       <SelectionPopup
         visible={selPopup.visible}
         x={selPopup.x}
         y={selPopup.y}
-        text={selPopup.text}
+        selectedText={selPopup.text}
         loading={askLoading}
         onAsk={handleAsk}
+        onClose={handleClosePopup}
       />
     </>
   );

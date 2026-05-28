@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { X, ExternalLink, Clock, Layers } from "lucide-react";
 import type { HistoryListItem } from "@/types";
 
 interface HistoryDrawerProps {
@@ -32,21 +34,25 @@ export function HistoryDrawer({ open, knowledgePointId, onClose, onLoadRecord }:
         className="absolute right-0 top-0 bottom-0 w-[360px] bg-white shadow-xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="px-5 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
           <div className="font-display text-[16px] font-semibold text-foreground">学习历史</div>
-          <button
-            onClick={onClose}
-            className="w-[28px] h-[28px] rounded-full bg-background flex items-center justify-center text-text-muted hover:text-foreground transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/micro-learning/history"
+              className="flex items-center gap-1 text-[11px] text-text-secondary hover:text-primary-dark transition-colors"
+            >
+              <ExternalLink size={11} />
+              查看全部
+            </Link>
+            <button
+              onClick={onClose}
+              className="w-[28px] h-[28px] rounded-full bg-background flex items-center justify-center text-text-muted hover:text-foreground transition-colors"
+            >
+              <X size={14} />
+            </button>
+          </div>
         </div>
 
-        {/* Body */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {loading ? (
             <div className="text-[13px] text-text-muted text-center py-8">加载中…</div>
@@ -63,11 +69,17 @@ export function HistoryDrawer({ open, knowledgePointId, onClose, onLoadRecord }:
                   <div className="text-[13px] font-semibold text-foreground mb-1">
                     {record.knowledgePointName}
                   </div>
-                  <div className="text-[11.5px] text-text-muted">
-                    {record.cardCount} 张基础卡片
-                    {record.extendedCardCount > 0 && ` · ${record.extendedCardCount} 张延伸卡片`}
+                  <div className="flex items-center gap-2 text-[11.5px] text-text-muted">
+                    <span className="flex items-center gap-1">
+                      <Layers size={10} />
+                      {record.cardCount} 张卡片
+                    </span>
+                    {record.extendedCardCount > 0 && (
+                      <span>+ {record.extendedCardCount} 延伸</span>
+                    )}
                   </div>
-                  <div className="text-[11px] text-text-muted mt-1">
+                  <div className="flex items-center gap-1 text-[11px] text-text-muted mt-1">
+                    <Clock size={10} />
                     {new Date(record.createdAt).toLocaleString("zh-CN")}
                   </div>
                 </button>

@@ -7,22 +7,30 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const knowledgePointId = searchParams.get("knowledgePointId");
 
-  if (!knowledgePointId) {
-    return NextResponse.json({ error: "knowledgePointId required" }, { status: 400 });
+  let records;
+  if (knowledgePointId) {
+    records = db
+      .select()
+      .from(microLearningRecords)
+      .where(eq(microLearningRecords.knowledgePointId, knowledgePointId))
+      .orderBy(desc(microLearningRecords.createdAt))
+      .all();
+  } else {
+    records = db
+      .select()
+      .from(microLearningRecords)
+      .orderBy(desc(microLearningRecords.createdAt))
+      .all();
   }
 
-  const records = db
-    .select()
-    .from(microLearningRecords)
-    .where(eq(microLearningRecords.knowledgePointId, knowledgePointId))
-    .orderBy(desc(microLearningRecords.createdAt))
-    .all();
-
-  const kp = db
-    .select()
-    .from(knowledgePoints)
-    .where(eq(knowledgePoints.id, knowledgePointId))
-    .get();
+  const kpCache = new Map<string, string>();
+  const getKpName = (kpId: string): string => {
+    if (kpCache.has(kpId)) return kpCache.get(kpId)!;
+    const kp = db.select().from(knowledgePoints).where(eq(knowledgePoints.id, kpId)).get();
+    const name = kp?.name || "";
+    kpCache.set(kpId, name);
+    return name;
+  };
 
   const items = records.map((r) => {
     const cards = JSON.parse(r.generatedCards);
@@ -30,7 +38,8 @@ export async function GET(request: NextRequest) {
     return {
       id: r.id,
       knowledgePointId: r.knowledgePointId,
-      knowledgePointName: kp?.name || "",
+      knowledgePointName: getKpName(r.knowledgePointId),
+      bankId: r.bankId,
       cardCount: cards.cards?.length || 0,
       extendedCardCount: Array.isArray(extended) ? extended.length : 0,
       createdAt: r.createdAt,

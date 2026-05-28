@@ -16,7 +16,7 @@ const navItems = [
     section: "进行中",
     items: [
       { label: "自适应刷题", href: "#", icon: "check", enabled: false },
-      { label: "微学习", href: "#", icon: "monitor", enabled: false },
+      { label: "微学习", href: "/micro-learning/history", icon: "monitor", enabled: true },
       { label: "掌握报告", href: "#", icon: "chart", enabled: false },
     ],
   },
@@ -150,7 +150,7 @@ export function Sidebar() {
           </div>
           <div>
             <div className="text-[12.5px] font-semibold text-foreground">倪镭</div>
-            <div className="text-[11px] text-text-muted">🔥 连续 7 天</div>
+            <div className="text-[11px] text-text-muted">连续 7 天</div>
           </div>
         </div>
       </div>
