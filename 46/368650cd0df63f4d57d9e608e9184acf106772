@@ -1,0 +1,30 @@
+lib/ai/extract-points.ts
+  s_3e59716f4b974e::t_e2e87e8698d17b 4-5,11,13,15,22,29-30,37,43-45,52-54,63-66,77
+lib/ai/build-graph.ts
+  s_3e59716f4b974e::t_291c369964470c 18,22-27,35,40,42-48,65-67
+lib/process/bank-processor.ts
+  s_3e59716f4b974e::t_cb686a62cf052a 4,10-11,25,27,34-116,129,136-138,145,149-163,166,173-174,181,185-197,199,204,208,216,221
+components/banks/bank-detail-client.tsx
+  s_3e59716f4b974e::t_755d0fbca47e4f 85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "46368650cd0df63f4d57d9e608e9184acf106772",
+  "prompts": {},
+  "humans": {
+    "h_71c0863b823da1": {
+      "author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
