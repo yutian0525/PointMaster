@@ -1,0 +1,21 @@
+app/banks/[id]/page.tsx
+  s_3e59716f4b974e::t_0753aac1137b2e 1-75
+components/banks/bank-detail-client.tsx
+  s_3e59716f4b974e::t_2773e653970001 1-168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "d36145f514a4eef1556e519a10574a0d35f270c5",
+  "prompts": {},
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
