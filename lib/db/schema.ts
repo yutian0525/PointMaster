@@ -44,3 +44,13 @@ export const questionKnowledge = sqliteTable("question_knowledge", {
   knowledgePointId: text("knowledge_point_id").notNull().references(() => knowledgePoints.id),
   isPrimary: integer("is_primary").notNull().default(0),
 });
+
+export const microLearningRecords = sqliteTable("micro_learning_records", {
+  id: text("id").primaryKey(),
+  knowledgePointId: text("knowledge_point_id").notNull(),
+  bankId: text("bank_id").notNull(),
+  generatedCards: text("generated_cards").notNull(),
+  extendedCards: text("extended_cards"),
+  context: text("context"),
+  createdAt: integer("created_at").notNull(),
+});
