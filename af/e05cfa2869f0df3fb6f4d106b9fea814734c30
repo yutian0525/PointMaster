@@ -1,0 +1,42 @@
+components/micro-learning/learning-card.tsx
+  s_0ac36b487ae60a::t_cdef0b6464c43c 4,7,11,27,41,56,59-61,75-79,109-120
+app/api/micro-learning/complete/route.ts
+  s_0ac36b487ae60a::t_4800ea7ef2b9d3 12,14,19,31-41,43-56,61-63
+components/micro-learning/toolbar.tsx
+  s_0ac36b487ae60a::t_236c750cfc071f 3-4,11,20,32-46,51,53,59,61-65
+app/micro-learning/history/page.tsx
+  s_0ac36b487ae60a::t_16fe70e774ee2f 1-97
+components/layout/sidebar.tsx
+  s_0ac36b487ae60a::t_a8212fe99e4bdf 19
+  s_0ac36b487ae60a::t_b6974c4d275efc 153
+components/micro-learning/micro-learning-canvas.tsx
+  s_0ac36b487ae60a::t_8507dbe25f40aa 24-25,40,71-72,74-77,86-88,91-104,121-123,125-130,177-179,182,194,196,199-200,207-223,233,250-251,254-263,307,331,334
+  s_0ac36b487ae60a::t_dea16d27a47837 162-164,167
+app/micro-learning/[knowledgePointId]/page.tsx
+  s_0ac36b487ae60a::t_298d249b85aca6 9,13
+  s_0ac36b487ae60a::t_39cca56610ce13 3,11-12,14-18,31,37,40-42,86-89,92,100,102,105-130,136,146-149,155-158,213,221-222
+components/micro-learning/selection-popup.tsx
+  s_0ac36b487ae60a::t_650734a18b2342 3-5,10,12-13,16-26,29-43,46-48,50-76
+app/api/micro-learning/history/route.ts
+  s_0ac36b487ae60a::t_97f4dffc6d6171 10-23,26-33,41-42
+components/micro-learning/history-drawer.tsx
+  s_0ac36b487ae60a::t_ac9d31c996e3ce 4-5,39-53,72-79,81-82
+app/api/micro-learning/history/[id]/route.ts
+  s_0ac36b487ae60a::t_ac19e1e07e8cb7 37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "afe05cfa2869f0df3fb6f4d106b9fea814734c30",
+  "prompts": {},
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
