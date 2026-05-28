@@ -1,0 +1,27 @@
+app/api/banks/[id]/route.ts
+  s_3e59716f4b974e::t_0e1d0b4bb00036 1-44
+app/api/banks/[id]/status/route.ts
+  s_3e59716f4b974e::t_4b2ea6aad10b6c 1-26
+app/api/banks/[id]/graph/route.ts
+  s_3e59716f4b974e::t_0bab24c81fdc13 1-38
+app/api/banks/[id]/process/route.ts
+  s_3e59716f4b974e::t_e0280d33b12f37 1-26
+app/api/banks/route.ts
+  s_3e59716f4b974e::t_8536999c7f5223 1-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "b3ac940e9f04f2475745a133cc2307f85df8524d",
+  "prompts": {},
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
