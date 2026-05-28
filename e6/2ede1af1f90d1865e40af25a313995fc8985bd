@@ -1,0 +1,25 @@
+components/knowledge-graph/graph-view.tsx
+  s_0ac36b487ae60a::t_2aa343eb3ed652 68,71
+components/banks/bank-detail-client.tsx
+  s_0ac36b487ae60a::t_5941c429f270ae 153
+components/knowledge-graph/node-popup.tsx
+  s_0ac36b487ae60a::t_6635b836f8be59 13
+  s_0ac36b487ae60a::t_47f1bde0dfa987 79-81,84
+  s_0ac36b487ae60a::t_394469eefe1898 3,9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "e62ede1af1f90d1865e40af25a313995fc8985bd",
+  "prompts": {},
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
