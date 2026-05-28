@@ -1,0 +1,19 @@
+app/micro-learning/[knowledgePointId]/page.tsx
+  s_0ac36b487ae60a::t_f8415583d04772 1-177
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "e66280c171bceacfc652c4eeb5ec6e3d9d778fff",
+  "prompts": {},
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
