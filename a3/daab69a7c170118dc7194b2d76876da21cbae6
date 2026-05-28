@@ -1,0 +1,32 @@
+app/api/micro-learning/history/route.ts
+  s_0ac36b487ae60a::t_a0cbfc05e9f0aa 1-41
+app/api/micro-learning/ask/route.ts
+  s_0ac36b487ae60a::t_9f6c436c455aa6 1-30
+app/api/micro-learning/generate/route.ts
+  s_0ac36b487ae60a::t_1ba79c6c3eee58 1-58
+app/api/micro-learning/history/[id]/route.ts
+  s_0ac36b487ae60a::t_ceaf6a9ba8cdcc 1-41
+app/api/micro-learning/complete/route.ts
+  s_0ac36b487ae60a::t_55200880b25cf8 1-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "a3daab69a7c170118dc7194b2d76876da21cbae6",
+  "prompts": {},
+  "humans": {
+    "h_71c0863b823da1": {
+      "author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
