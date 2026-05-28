@@ -1,0 +1,23 @@
+lib/ai/build-graph.ts
+  s_3e59716f4b974e::t_b9fdff1de5de01 1-71
+lib/ai/client.ts
+  s_3e59716f4b974e::t_dcc72cd23213bf 1-12
+lib/ai/extract-points.ts
+  s_3e59716f4b974e::t_b88f665746882b 1-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "5e34f95dfa0247fae6a6bac050badf5de8be2565",
+  "prompts": {},
+  "sessions": {
+    "s_3e59716f4b974e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6f5d1af8-a307-4171-b7ab-50b08a7bb32c",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
