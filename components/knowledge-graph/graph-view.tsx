@@ -54,7 +54,7 @@ function getLayoutedElements(data: GraphData) {
     id: `${edge.source}-${edge.target}`,
     source: edge.source,
     target: edge.target,
-    type: "smoothstep",
+    type: "default",
     style: { stroke: "#9fb997", strokeWidth: 1.5, strokeOpacity: 0.7 },
     markerEnd: { type: MarkerType.ArrowClosed, color: "#9fb997" },
   }));
@@ -65,9 +65,10 @@ function getLayoutedElements(data: GraphData) {
 interface GraphViewProps {
   data: GraphData;
   bankName: string;
+  bankId: string;
 }
 
-export function GraphView({ data, bankName }: GraphViewProps) {
+export function GraphView({ data, bankName, bankId }: GraphViewProps) {
   const { nodes: initialNodes, edges: initialEdges } = useMemo(
     () => getLayoutedElements(data),
     [data]
@@ -109,6 +110,7 @@ export function GraphView({ data, bankName }: GraphViewProps) {
         <NodePopup
           node={selectedNode}
           allNodes={data.nodes}
+          bankId={bankId}
           onClose={() => setSelectedNode(null)}
         />
       )}

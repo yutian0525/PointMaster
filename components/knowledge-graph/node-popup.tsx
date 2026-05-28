@@ -1,14 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import type { KnowledgePointNode } from "@/types";
 
 interface NodePopupProps {
   node: KnowledgePointNode;
   allNodes: KnowledgePointNode[];
+  bankId: string;
   onClose: () => void;
 }
 
-export function NodePopup({ node, allNodes, onClose }: NodePopupProps) {
+export function NodePopup({ node, allNodes, bankId, onClose }: NodePopupProps) {
   const prerequisites = node.prerequisiteIds
     .map((id) => allNodes.find((n) => n.id === id))
     .filter(Boolean);
@@ -74,12 +76,12 @@ export function NodePopup({ node, allNodes, onClose }: NodePopupProps) {
           >
             关闭
           </button>
-          <button
-            className="px-4 py-2 rounded-[9px] bg-gradient-to-br from-primary to-primary-dark text-white text-[12.5px] font-semibold opacity-50 cursor-not-allowed"
-            disabled
+          <Link
+            href={`/micro-learning/${node.id}?bankId=${bankId}`}
+            className="px-4 py-2 rounded-[9px] bg-gradient-to-br from-primary to-primary-dark text-white text-[12.5px] font-semibold shadow-[0_2px_10px_rgba(107,140,100,0.28)] hover:translate-y-[-1px] hover:shadow-[0_4px_18px_rgba(107,140,100,0.38)] transition-all"
           >
             进入微学习 →
-          </button>
+          </Link>
         </div>
       </div>
     </div>
