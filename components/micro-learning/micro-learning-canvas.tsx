@@ -4,11 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { LearningCard } from "./learning-card";
 import { CardConnections, type SimpleConnection } from "./card-connections";
 import { SelectionPopup } from "./selection-popup";
-import type {
-  CardType,
-  ExampleAnalysis,
-  ExtendedCard,
-} from "@/types/micro-learning";
+import type { CardType, ExampleAnalysis, ExtendedCard, SavedCardPosition } from "@/types/micro-learning";
 
 interface CardPosition {
   id: string;
@@ -25,6 +21,7 @@ interface MicroLearningCanvasProps {
   knowledgePointName: string;
   exampleAnalyses: ExampleAnalysis[];
   extendedCards: ExtendedCard[];
+  savedPositions?: SavedCardPosition[] | null;
   onAddExtendedCard: (card: ExtendedCard) => void;
   onRetryExample: (questionId: string, newAnalysis: string) => void;
 }
@@ -117,12 +114,18 @@ export function MicroLearningCanvas({
   knowledgePointName,
   exampleAnalyses,
   extendedCards,
+  savedPositions,
   onAddExtendedCard,
   onRetryExample,
 }: MicroLearningCanvasProps) {
-  const [positions, setPositions] = useState<CardPosition[]>(() =>
-    computePositions(recordId, exampleAnalyses, extendedCards)
-  );
+  const [positions, setPositions] = useState<CardPosition[]>(() => {
+    const computed = computePositions(recordId, exampleAnalyses, extendedCards);
+    if (!savedPositions || savedPositions.length === 0) return computed;
+    return computed.map((c) => {
+      const saved = savedPositions.find((s) => s.id === c.id);
+      return saved ? { ...c, x: saved.x, y: saved.y } : c;
+    });
+  });
 
   const exampleSig = useMemo(
     () => exampleAnalyses.map((e) => e.questionId).join(","),
@@ -143,6 +146,29 @@ export function MicroLearningCanvas({
       return merged;
     });
   }, [recordId, exampleSig, extendedSig, exampleAnalyses, extendedCards]);
+
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const initialMountRef = useRef(true);
+
+  useEffect(() => {
+    if (initialMountRef.current) {
+      initialMountRef.current = false;
+      return;
+    }
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      const payload: SavedCardPosition[] = positions.map((p) => ({ id: p.id, x: p.x, y: p.y }));
+      fetch(`/api/micro-learning/${recordId}/layout`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ positions: payload }),
+      }).catch((err) => console.error("[micro-learning] save layout failed", err));
+    }, 600);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [positions, recordId]);
 
   const connections = useMemo(
     () => buildConnections(recordId, exampleAnalyses, extendedCards),

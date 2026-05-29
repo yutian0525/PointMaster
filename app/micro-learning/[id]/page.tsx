@@ -108,6 +108,7 @@ export default function MicroLearningDetailPage({
         knowledgePointName={record.knowledgePointName}
         exampleAnalyses={record.exampleAnalyses}
         extendedCards={record.extendedCards}
+        savedPositions={record.cardPositions}
         onAddExtendedCard={handleAddExtendedCard}
         onRetryExample={handleRetryExample}
       />
