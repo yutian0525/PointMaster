@@ -1,0 +1,24 @@
+app/api/micro-learning/[id]/route.ts
+  s_b24c08d70d590f::t_528eea4e07cfa8 9
+  s_b24c08d70d590f::t_a8436b81994ce8 48-60,78
+app/api/micro-learning/route.ts
+  s_b24c08d70d590f::t_9636d1a30f2ac3 133
+app/api/micro-learning/[id]/layout/route.ts
+  s_b24c08d70d590f::t_f375b0c8de3d3e 1-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "2050e48c70d1f78b4eed1903ed77ff9bec382941",
+  "prompts": {},
+  "sessions": {
+    "s_b24c08d70d590f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27f12a78-c653-401d-a7c3-9b689e005740",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
