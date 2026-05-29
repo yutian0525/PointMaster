@@ -1,0 +1,21 @@
+docs/superpowers/specs/2026-05-29-design-prototype-v2-design.md
+  s_7bab8057ff16c2::t_dc2ff5453def7f 1-284
+"docs/PRD/PointMaster 慧刷题 PRD V2.0.md"
+  s_7bab8057ff16c2::t_5c42514bf259f6 1-886
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "3b9f7e4e1bbcfc958fe1185e8b3ac134e2d3456d",
+  "prompts": {},
+  "sessions": {
+    "s_7bab8057ff16c2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6169d2d2-613f-4a6b-a54c-60b39a5e45ae",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
