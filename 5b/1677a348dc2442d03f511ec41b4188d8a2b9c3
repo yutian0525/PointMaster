@@ -1,0 +1,19 @@
+components/micro-learning/micro-learning-canvas.tsx
+  s_b24c08d70d590f::t_6a32a99dde5e12 3,5,7-11,23-29,32-45,47-49,51-56,58-65,67-78,80-90,95-113,115-121,123-151,160-165,168,170-173,177-185,187-221,237-250,252,256,260,265-268,271,277,280,283-289,291-320,347-394,398-403,432
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "5b1677a348dc2442d03f511ec41b4188d8a2b9c3",
+  "prompts": {},
+  "sessions": {
+    "s_b24c08d70d590f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27f12a78-c653-401d-a7c3-9b689e005740",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
