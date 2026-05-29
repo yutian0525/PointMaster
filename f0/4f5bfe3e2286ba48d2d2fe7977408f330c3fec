@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-05-29-practice-flow-design.md
+  s_0ac36b487ae60a::t_148e870a0ed588 1-532
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "f04f5bfe3e2286ba48d2d2fe7977408f330c3fec",
+  "prompts": {},
+  "sessions": {
+    "s_0ac36b487ae60a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1f564e6-cf4b-4957-b980-627a9f42176d",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
