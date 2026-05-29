@@ -30,6 +30,7 @@ export type {
   MicroCard,
   ExampleAnalysis,
   ExtendedCard,
+  SavedCardPosition,
   MicroLearningRecord,
   MicroLearningListItem,
   CreateMicroLearningRequest,

@@ -54,6 +54,7 @@ export const microLearnings = sqliteTable("micro_learnings", {
   detailedExplanation: text("detailed_explanation").notNull(),
   exampleAnalyses: text("example_analyses").notNull(),
   extendedCards: text("extended_cards"),
+  cardPositions: text("card_positions"),
   sourceQuestionIds: text("source_question_ids"),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),

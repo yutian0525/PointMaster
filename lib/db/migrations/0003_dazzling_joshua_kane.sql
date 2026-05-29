@@ -1,0 +1,1 @@
+ALTER TABLE `micro_learnings` ADD `card_positions` text;

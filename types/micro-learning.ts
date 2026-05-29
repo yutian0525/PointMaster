@@ -20,6 +20,12 @@ export interface ExtendedCard {
   createdAt: number;
 }
 
+export interface SavedCardPosition {
+  id: string;
+  x: number;
+  y: number;
+}
+
 export interface MicroLearningRecord {
   id: string;
   knowledgePointId: string;
@@ -30,6 +36,7 @@ export interface MicroLearningRecord {
   detailedExplanation: string;
   exampleAnalyses: ExampleAnalysis[];
   extendedCards: ExtendedCard[];
+  cardPositions: SavedCardPosition[] | null;
   sourceQuestionIds: string[];
   createdAt: number;
   updatedAt: number;
