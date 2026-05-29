@@ -189,6 +189,7 @@ export function MicroLearningCanvas({
     text: "",
     cardId: "",
     cardContent: "",
+    isCardLevel: false,
   });
   const [askLoading, setAskLoading] = useState(false);
   const [retryingMap, setRetryingMap] = useState<Record<string, boolean>>({});
@@ -270,37 +271,62 @@ export function MicroLearningCanvas({
         text,
         cardId,
         cardContent,
+        isCardLevel: false,
       });
     },
     []
   );
 
-  const handleAsk = useCallback(async () => {
-    if (askLoading) return;
-    setAskLoading(true);
-    try {
-      const res = await fetch(`/api/micro-learning/${recordId}/ask`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          selectedText: selPopup.text,
-          sourceCardId: selPopup.cardId,
-          sourceCardContent: selPopup.cardContent,
-        }),
+  const handleAskCard = useCallback(
+    (cardId: string, cardContent: string) => {
+      const cardEl = viewportRef.current?.querySelector(`[data-card-id="${cardId}"]`);
+      if (!cardEl) return;
+      const rect = cardEl.getBoundingClientRect();
+      const titleEl = cardEl.querySelector(".font-display");
+      const titleText = titleEl?.textContent?.trim() ?? "";
+      setSelPopup({
+        visible: true,
+        x: rect.right - 12,
+        y: rect.top + 8,
+        text: titleText,
+        cardId,
+        cardContent,
+        isCardLevel: true,
       });
-      if (!res.ok) {
-        console.error("[micro-learning] ask failed", await res.text());
-        return;
+    },
+    []
+  );
+
+  const handleAsk = useCallback(
+    async (question: string) => {
+      if (askLoading) return;
+      setAskLoading(true);
+      try {
+        const res = await fetch(`/api/micro-learning/${recordId}/ask`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question,
+            selectedText: selPopup.isCardLevel ? undefined : selPopup.text,
+            sourceCardId: selPopup.cardId,
+            sourceCardContent: selPopup.cardContent,
+          }),
+        });
+        if (!res.ok) {
+          console.error("[micro-learning] ask failed", await res.text());
+          return;
+        }
+        const data = await res.json();
+        if (data.card) {
+          onAddExtendedCard(data.card as ExtendedCard);
+        }
+      } finally {
+        setAskLoading(false);
+        setSelPopup((s) => ({ ...s, visible: false }));
       }
-      const data = await res.json();
-      if (data.card) {
-        onAddExtendedCard(data.card as ExtendedCard);
-      }
-    } finally {
-      setAskLoading(false);
-      setSelPopup((s) => ({ ...s, visible: false }));
-    }
-  }, [askLoading, recordId, selPopup, onAddExtendedCard]);
+    },
+    [askLoading, recordId, selPopup, onAddExtendedCard]
+  );
 
   const handleClosePopup = useCallback(() => {
     if (!askLoading) setSelPopup((s) => ({ ...s, visible: false }));
@@ -384,6 +410,7 @@ export function MicroLearningCanvas({
                 y={pos.y}
                 onDragStart={handleDragStart}
                 onTextSelect={handleTextSelect}
+                onAskCard={handleAskCard}
               />
             );
           })()}
@@ -412,6 +439,7 @@ export function MicroLearningCanvas({
                 onTextSelect={handleTextSelect}
                 onRetryExample={handleRetry}
                 retrying={!!retryingMap[ex.questionId]}
+                onAskCard={handleAskCard}
               />
             );
           })}
@@ -431,6 +459,7 @@ export function MicroLearningCanvas({
                 y={pos.y}
                 onDragStart={handleDragStart}
                 onTextSelect={handleTextSelect}
+                onAskCard={handleAskCard}
               />
             );
           })}
@@ -454,8 +483,9 @@ export function MicroLearningCanvas({
         x={selPopup.x}
         y={selPopup.y}
         selectedText={selPopup.text}
+        isCardLevel={selPopup.isCardLevel}
         loading={askLoading}
-        onConfirm={handleAsk}
+        onAsk={handleAsk}
         onClose={handleClosePopup}
       />
     </>

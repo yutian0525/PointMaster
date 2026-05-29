@@ -37,6 +37,7 @@ interface LearningCardProps {
   onTextSelect: (cardId: string, text: string, rect: DOMRect, cardContent: string) => void;
   onRetryExample?: (questionId: string) => void;
   retrying?: boolean;
+  onAskCard?: (cardId: string, cardContent: string) => void;
 }
 
 export function LearningCard({
@@ -53,6 +54,7 @@ export function LearningCard({
   onTextSelect,
   onRetryExample,
   retrying,
+  onAskCard,
 }: LearningCardProps) {
   const style = CARD_STYLES[type];
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -158,8 +160,17 @@ export function LearningCard({
       <div className="px-3.5 py-2 bg-background border-t border-border flex items-center justify-between">
         <span className="text-[10px] text-text-muted flex items-center gap-1">
           <MessageCircle size={10} />
-          选中文字提问
+          选中文字或点击右侧
         </span>
+        {onAskCard && (
+          <button
+            onClick={() => onAskCard(id, content)}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] text-text-secondary hover:text-primary-dark hover:bg-[rgba(159,185,151,0.12)] transition-all"
+          >
+            <MessageCircle size={10} />
+            提问
+          </button>
+        )}
       </div>
     </div>
   );
