@@ -1,0 +1,22 @@
+lib/ai/generate-micro.ts
+  s_b24c08d70d590f::t_0d37d21b4e150c 127
+  s_b24c08d70d590f::t_244a1181c3ddab 42
+  s_b24c08d70d590f::t_5338a9e6a99aa8 46
+  s_b24c08d70d590f::t_4994ae5136d02c 25-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "d5750614ed9716827d385f74e0560a223fa85d83",
+  "prompts": {},
+  "sessions": {
+    "s_b24c08d70d590f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27f12a78-c653-401d-a7c3-9b689e005740",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
