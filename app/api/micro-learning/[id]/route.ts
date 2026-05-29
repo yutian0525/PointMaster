@@ -6,6 +6,7 @@ import type {
   ExampleAnalysis,
   ExtendedCard,
   MicroLearningRecord,
+  SavedCardPosition,
 } from "@/types/micro-learning";
 
 export async function GET(
@@ -44,6 +45,19 @@ export async function GET(
     }
   } catch {}
 
+  let cardPositions: SavedCardPosition[] | null = null;
+  try {
+    if (row.ml.cardPositions) {
+      const parsed = JSON.parse(row.ml.cardPositions);
+      if (Array.isArray(parsed)) {
+        cardPositions = parsed
+          .filter((p): p is SavedCardPosition =>
+            p && typeof p.id === "string" && typeof p.x === "number" && typeof p.y === "number"
+          );
+      }
+    }
+  } catch {}
+
   try {
     if (row.ml.sourceQuestionIds) {
       const parsed = JSON.parse(row.ml.sourceQuestionIds);
@@ -61,6 +75,7 @@ export async function GET(
     detailedExplanation: row.ml.detailedExplanation,
     exampleAnalyses,
     extendedCards,
+    cardPositions,
     sourceQuestionIds,
     createdAt: row.ml.createdAt,
     updatedAt: row.ml.updatedAt,

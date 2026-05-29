@@ -130,6 +130,7 @@ export async function POST(req: NextRequest) {
     detailedExplanation: aiOutput.detailedExplanation,
     exampleAnalyses: aiOutput.exampleAnalyses,
     extendedCards: [],
+    cardPositions: null,
     sourceQuestionIds: examples.map((e) => e.questionId),
     createdAt: now,
     updatedAt: now,
