@@ -1,0 +1,25 @@
+lib/ai/ask-question.ts
+  s_b24c08d70d590f::t_07a824768c6999 5-7,11-15,20-28,33
+types/micro-learning.ts
+  s_b24c08d70d590f::t_d2ad40fa084dca 78-79
+app/api/micro-learning/[id]/ask/route.ts
+  s_b24c08d70d590f::t_e76bf83e7847df 11-12
+  s_b24c08d70d590f::t_6d609ab16b6efc 73-78,82,85
+  s_b24c08d70d590f::t_144afc7c3d5fa1 48-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "ca37843df955ace0ce120daaf57d31fa3bc017d2",
+  "prompts": {},
+  "sessions": {
+    "s_b24c08d70d590f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27f12a78-c653-401d-a7c3-9b689e005740",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
