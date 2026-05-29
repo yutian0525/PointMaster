@@ -1,0 +1,22 @@
+docs/design/v3/practice-flow.html
+  s_1e3f12f5131802::t_d6ca201e804642 1-45,47-204,206,208,210-215,219,222,224,227-229,231-860
+  s_1e3f12f5131802::t_796e28c36025f1 46
+  s_1e3f12f5131802::t_d449553102676d 207,209,216-218,220-221,223,225-226,230
+  s_1e3f12f5131802::t_46539ffba2bff5 205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "c5ca1ca2bd74d058d9abeb24cd2649a756d9eff7",
+  "prompts": {},
+  "sessions": {
+    "s_1e3f12f5131802": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "51d708f9-95b8-4d84-9c85-a4c7f5765bd6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
