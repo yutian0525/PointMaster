@@ -1,152 +1,138 @@
 import { getAIClient, getModel } from "./client";
-import { v4 as uuid } from "uuid";
-import type { MicroCard, CardConnection, GenerateRequest } from "@/types/micro-learning";
+import type { ExampleAnalysis } from "@/types/micro-learning";
 
-const SYSTEM_PROMPT = `你是一位教学设计专家，擅长将知识点拆解为易于理解的微学习卡片。
+interface ExampleInput {
+  questionId: string;
+  content: string;
+  options: string[];
+  answer: string;
+  userAnswer?: string;
+  isWrong?: boolean;
+}
 
-要求：
-- 语言精炼，避免冗余
-- 使用 **加粗** 标记关键术语
-- 数学公式使用行内文本表达
-- 每张卡片内容控制在 100-200 字`;
+interface GenerateInput {
+  knowledgePointName: string;
+  knowledgePointDescription: string | null;
+  focusHint: string | null;
+  examples: ExampleInput[];
+}
 
-function buildUserPrompt(
-  knowledgePoint: { name: string; description: string | null },
-  context?: GenerateRequest["context"]
-): string {
-  let prompt = `请为以下知识点生成微学习卡片：
+interface AIRawResult {
+  detailed_explanation: string;
+  example_analyses: Array<{ questionId: string; analysis: string }>;
+}
 
-### 知识点
-名称：${knowledgePoint.name}
-描述：${knowledgePoint.description || "无"}
-`;
+const SYSTEM_PROMPT = `你是一位教学设计专家，针对指定知识点给学生做一对一辅导。
+输出严格遵循 JSON 格式，不要包裹 markdown 代码块。`;
 
-  if (context?.questions?.length) {
-    prompt += `\n### 该知识点的例题\n`;
-    context.questions.forEach((q, i) => {
-      const opts = q.options.map((o, j) => `${String.fromCharCode(65 + j)}. ${o}`).join("\n");
-      prompt += `\n题目${i + 1}：${q.content}\n${opts}\n答案：${q.answer}\n`;
-      if (q.analysis) prompt += `解析：${q.analysis}\n`;
-    });
-  }
+function buildUserPrompt(input: GenerateInput): string {
+  let prompt = `请为知识点「${input.knowledgePointName}」生成微学习内容。\n\n### 知识点描述\n${input.knowledgePointDescription || "无"}\n\n### 用户薄弱表现\n${input.focusHint || "用户希望系统学习此知识点"}\n\n### 例题与用户作答情况\n`;
 
-  if (context?.answerRecords?.length) {
-    const correct = context.answerRecords.filter((r) => r.isCorrect).length;
-    const total = context.answerRecords.length;
-    const avgTime = Math.round(
-      context.answerRecords.reduce((s, r) => s + r.answerTime, 0) / total
-    );
-    prompt += `\n### 用户答题情况\n正确率：${correct}/${total}，平均用时：${avgTime}秒\n`;
-  }
+  input.examples.forEach((ex, i) => {
+    const opts = ex.options.map((o, j) => `${String.fromCharCode(65 + j)}. ${o}`).join("  ");
+    prompt += `\n题目${i + 1}（id: ${ex.questionId}）：${ex.content}\n选项：${opts}\n标准答案：${ex.answer}\n`;
+    if (ex.userAnswer !== undefined) {
+      prompt += `用户作答：${ex.userAnswer}（${ex.isWrong ? "答错" : "答对"}）\n`;
+    }
+  });
 
-  if (context?.errorPatterns?.length) {
-    prompt += `\n### 用户错误模式\n`;
-    context.errorPatterns.forEach((e) => {
-      prompt += `- 题目「${e.questionContent}」：选了 ${e.wrongOption}，正确答案是 ${e.correctOption}\n`;
-    });
-  }
-
-  prompt += `\n请严格按以下格式生成5张独立卡片，每张卡片以"## "（两个井号+空格）开头，卡片之间用空行分隔。不要使用###，不要嵌套，每个##都是独立卡片：
-
-## 核心概念
-（先给出知识点名称和一句话概括，再用精炼的语言解释核心定义、关键结论和适用范围，标记关键术语）
-
-## 识别信号
-（列出3-5个"看到__就想到__"的触发信号）
-
-## 解题模板
-（给出标准化的解题步骤框架，用编号标注每一步）
-
-## 易错点
-（基于用户错误模式指出高频错误，提供反例。若无用户数据则给出通用易错点）
-
-## 例题
-（选取1-2道代表性题目，给出完整解题过程）`;
+  prompt += `\n### 输出格式（严格 JSON，不要 markdown 包裹）
+{
+  "detailed_explanation": "Markdown 文本：按子标题组织（## 定义 / ## 原理 / ## 适用场景 / ## 常见误区 / ## 学习建议），500-1000 字",
+  "example_analyses": [
+    {
+      "questionId": "必须与上面例题 id 严格对应",
+      "analysis": "Markdown 文本：审题 → 解题思路 → 关键步骤 → 若答错则指出错误根源；200-400 字"
+    }
+  ]
+}`;
 
   return prompt;
 }
 
-const CARD_TYPE_MAP: Record<string, { type: MicroCard["type"]; importance: MicroCard["importance"] }> = {
-  "核心概念": { type: "concept", importance: "required" },
-  "识别信号": { type: "signal", importance: "recommended" },
-  "解题模板": { type: "template", importance: "required" },
-  "易错点": { type: "pitfall", importance: "required" },
-  "例题": { type: "example", importance: "recommended" },
-};
-
-function parseMarkdownToCards(markdown: string): MicroCard[] {
-  // Split on ## or ### headings
-  const sections = markdown.split(/^#{2,3}\s+/m).filter(Boolean);
-  const cards: MicroCard[] = [];
-
-  for (const section of sections) {
-    const lines = section.split("\n");
-    const titleLine = lines[0].trim();
-    const content = lines.slice(1).join("\n").trim();
-
-    if (!content) continue;
-
-    const matched = Object.entries(CARD_TYPE_MAP).find(([key]) => titleLine.includes(key));
-    if (!matched) continue;
-
-    const [, { type, importance }] = matched;
-    cards.push({
-      id: uuid(),
-      type,
-      title: titleLine,
-      content,
-      importance,
-    });
-  }
-
-  return cards;
-}
-
-function buildConnections(cards: MicroCard[]): CardConnection[] {
-  const connections: CardConnection[] = [];
-  const byType = (t: MicroCard["type"]) => cards.find((c) => c.type === t);
-
-  const concept = byType("concept");
-  const template = byType("template");
-  const pitfall = byType("pitfall");
-  const example = byType("example");
-  const signal = byType("signal");
-
-  if (concept && pitfall) {
-    connections.push({ from: concept.id, to: pitfall.id, label: "对比说明" });
-  }
-  if (concept && signal) {
-    connections.push({ from: concept.id, to: signal.id, label: "识别依据" });
-  }
-  if (template && example) {
-    connections.push({ from: template.id, to: example.id, label: "模板应用" });
-  }
-  if (pitfall && example) {
-    connections.push({ from: pitfall.id, to: example.id, label: "反例练习" });
-  }
-
-  return connections;
-}
-
-export async function generateMicroLearning(
-  knowledgePoint: { name: string; description: string | null },
-  context?: GenerateRequest["context"]
-): Promise<{ cards: MicroCard[]; connections: CardConnection[] }> {
+async function callLLMOnce(input: GenerateInput): Promise<AIRawResult> {
   const client = getAIClient();
-  const userPrompt = buildUserPrompt(knowledgePoint, context);
-
   const response = await client.chat.completions.create({
     model: getModel(),
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: userPrompt },
+      { role: "user", content: buildUserPrompt(input) },
+    ],
+    temperature: 0.7,
+    response_format: { type: "json_object" },
+  });
+
+  const raw = response.choices[0]?.message?.content || "";
+  const parsed = JSON.parse(raw);
+  if (typeof parsed.detailed_explanation !== "string") {
+    throw new Error("missing detailed_explanation");
+  }
+  if (!Array.isArray(parsed.example_analyses)) {
+    throw new Error("missing example_analyses");
+  }
+  return parsed as AIRawResult;
+}
+
+export async function generateMicroLearning(
+  input: GenerateInput
+): Promise<{ detailedExplanation: string; exampleAnalyses: ExampleAnalysis[] }> {
+  let raw: AIRawResult;
+  try {
+    raw = await callLLMOnce(input);
+  } catch (err) {
+    console.warn("[micro-learning] first attempt failed, retrying once", err);
+    raw = await callLLMOnce(input);
+  }
+
+  const analysisMap = new Map<string, string>();
+  for (const item of raw.example_analyses) {
+    if (item && typeof item.questionId === "string") {
+      analysisMap.set(item.questionId, typeof item.analysis === "string" ? item.analysis : "");
+    }
+  }
+
+  const exampleAnalyses: ExampleAnalysis[] = input.examples.map((ex) => ({
+    questionId: ex.questionId,
+    content: ex.content,
+    options: ex.options,
+    answer: ex.answer,
+    userAnswer: ex.userAnswer,
+    isWrong: ex.isWrong,
+    analysis: analysisMap.get(ex.questionId) ?? "",
+  }));
+
+  return {
+    detailedExplanation: raw.detailed_explanation,
+    exampleAnalyses,
+  };
+}
+
+export async function regenerateExampleAnalysis(
+  knowledgePointName: string,
+  example: ExampleInput
+): Promise<string> {
+  const client = getAIClient();
+  const opts = example.options.map((o, j) => `${String.fromCharCode(65 + j)}. ${o}`).join("  ");
+  const userPart = example.userAnswer !== undefined
+    ? `用户作答：${example.userAnswer}（${example.isWrong ? "答错" : "答对"}）\n`
+    : "";
+
+  const prompt = `知识点：${knowledgePointName}
+
+题目：${example.content}
+选项：${opts}
+标准答案：${example.answer}
+${userPart}
+请输出该题的解题分析（Markdown 格式，200-400 字）：审题 → 解题思路 → 关键步骤 → 若答错则指出错误根源。直接输出分析正文，不要任何前缀或代码块。`;
+
+  const response = await client.chat.completions.create({
+    model: getModel(),
+    messages: [
+      { role: "system", content: "你是一位教学设计专家，按要求生成简洁清晰的解题分析。" },
+      { role: "user", content: prompt },
     ],
     temperature: 0.7,
   });
 
-  const markdown = response.choices[0]?.message?.content || "";
-  const cards = parseMarkdownToCards(markdown);
-  const connections = buildConnections(cards);
-
-  return { cards, connections };
+  return response.choices[0]?.message?.content?.trim() || "";
 }
