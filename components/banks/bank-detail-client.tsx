@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import type { BankStatus, GraphData } from "@/types";
 import { GraphView } from "@/components/knowledge-graph/graph-view";
 import { DifficultyChart } from "./difficulty-chart";
+import { MicroLearningListPanel } from "./micro-learning-list-panel";
 
 interface BankDetailClientProps {
   bankId: string;
@@ -186,6 +187,10 @@ export function BankDetailClient({
             → 点击任意节点可查看知识点详情及例题 · 箭头方向 = 学习依赖关系
           </div>
         </div>
+      )}
+
+      {bank.status === "completed" && (
+        <MicroLearningListPanel bankId={bankId} />
       )}
     </div>
   );
