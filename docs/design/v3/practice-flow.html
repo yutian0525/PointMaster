@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PointMaster V3.0 · 刷题链路设计稿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   PointMaster 慧刷题 — V3.0 刷题链路设计稿
+   延续 V2 设计语言：有机主绿 / Fraunces / 噪点 / 柔光
+============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+ul { list-style: none; }
+
+:root {
+  --p:#9fb997; --p-lt:#c8d4c0; --p-dk:#6b8c64; --p-deep:#4f6b49;
+  --bg:#f4f2f0; --bg2:#eceae7; --bg3:#e4e1dc; --white:#fff;
+  --t1:#1e2822; --t2:#4a5248; --t3:#7a8578; --t4:#9aa396;
+  --border:rgba(159,185,151,.22); --bord2:rgba(159,185,151,.44);
+  --gold:#c89a3f; --gold-dk:#8a6510; --gold-lt:rgba(200,154,63,.14);
+  --rose:#c97878; --rose-dk:#a83c3c; --rose-lt:rgba(201,120,120,.13);
+  --sky:#6f8db5; --sky-lt:rgba(111,141,181,.12);
+  --sh-sm:0 1px 6px rgba(30,40,34,.06);
+  --sh-md:0 6px 28px rgba(30,40,34,.10);
+  --sh-lg:0 14px 54px rgba(30,40,34,.16);
+  --sh-glow:0 4px 22px rgba(107,140,100,.30);
+  --r-sm:9px; --r-md:15px; --r-lg:24px; --r-xl:30px;
+  --ff-d:'Fraunces',Georgia,serif;
+  --ff-b:'Plus Jakarta Sans',sans-serif;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+}
+
+html,body { height:100%; }
+body {
+  font-family:var(--ff-b); font-size:14px; line-height:1.6; color:var(--t1);
+  background:
+    radial-gradient(1100px 720px at 88% -8%, rgba(159,185,151,.16), transparent 60%),
+    radial-gradient(900px 640px at -6% 108%, rgba(200,212,192,.30), transparent 55%),
+    var(--bg);
+  -webkit-font-smoothing:antialiased; overflow:hidden;
+  display:flex; flex-direction:column;
+}
+/* 噪点叠层 */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999; opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:170px;
+}
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--p-lt); border-radius:10px; }
+::-webkit-scrollbar-thumb:hover { background:var(--p); }
+::selection { background:var(--p-lt); color:var(--t1); }
+
+/* ===== 链路步骤导航（顶栏） ===== */
+.flowbar {
+  height:58px; flex-shrink:0; display:flex; align-items:center; gap:22px;
+  padding:0 30px; background:rgba(255,255,255,.72); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border); position:relative; z-index:50;
+}
+.fb-brand { display:flex; align-items:center; gap:10px; }
+.fb-mark {
+  width:32px; height:32px; border-radius:10px;
+  background:linear-gradient(135deg,var(--p),var(--p-deep)); display:grid; place-items:center;
+  box-shadow:var(--sh-glow);
+}
+.fb-mark svg { width:17px; height:17px; stroke:#fff; fill:none; stroke-width:2.2; }
+.fb-name { font-family:var(--ff-d); font-weight:600; font-size:15px; letter-spacing:-.02em; }
+.fb-name span { color:var(--p-dk); font-style:italic; }
+.fb-ver { font-size:9.5px; font-weight:800; letter-spacing:.14em; color:var(--p-dk);
+  background:rgba(159,185,151,.18); padding:2px 7px; border-radius:6px; }
+
+.steps { display:flex; align-items:center; gap:4px; margin-left:8px; }
+.step {
+  display:flex; align-items:center; gap:8px; padding:7px 14px; border-radius:30px;
+  font-size:12.5px; font-weight:600; color:var(--t3); transition:all .2s var(--ease);
+  position:relative;
+}
+.step .dot {
+  width:21px; height:21px; border-radius:50%; display:grid; place-items:center;
+  font-size:11px; font-weight:700; background:var(--bg2); color:var(--t3);
+  border:1.5px solid transparent; transition:all .25s var(--spring);
+}
+.step.active { color:var(--t1); background:var(--white); box-shadow:var(--sh-sm); }
+.step.active .dot { background:linear-gradient(135deg,var(--p),var(--p-dk)); color:#fff; box-shadow:var(--sh-glow); }
+.step.done { color:var(--p-dk); }
+.step.done .dot { background:rgba(159,185,151,.2); color:var(--p-dk); border-color:var(--bord2); }
+.step:not(.active):hover { color:var(--t2); }
+.step-sep { width:18px; height:1.5px; background:var(--border); }
+.fb-spacer { margin-left:auto; font-size:11.5px; color:var(--t3); display:flex; align-items:center; gap:6px; }
+.fb-spacer b { color:var(--t2); font-weight:600; }
+
+/* ===== 屏幕容器 ===== */
+.stage { flex:1; overflow:hidden; position:relative; }
+.screen { position:absolute; inset:0; overflow-y:auto; opacity:0; pointer-events:none;
+  transform:translateY(14px); transition:opacity .4s var(--ease), transform .4s var(--ease); }
+.screen.show { opacity:1; pointer-events:auto; transform:none; }
+
+/* ============================================================
+   SCREEN 1 — 知识点排序规划
+============================================================ */
+.plan-wrap { max-width:1080px; margin:0 auto; padding:42px 40px 60px; display:grid;
+  grid-template-columns:1.15fr .85fr; gap:40px; }
+.plan-head { grid-column:1/-1; margin-bottom:6px; }
+.eyebrow { font-size:10.5px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--p-dk); display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.eyebrow::before { content:''; width:22px; height:2px; background:var(--p-dk); }
+.plan-title { font-family:var(--ff-d); font-size:38px; font-weight:500; line-height:1.12;
+  letter-spacing:-.03em; color:var(--t1); }
+.plan-title em { font-style:italic; color:var(--p-dk); }
+.plan-sub { margin-top:14px; font-size:14.5px; color:var(--t2); max-width:560px; }
+.plan-sub b { color:var(--t1); font-weight:600; }
+
+/* 左：知识点顺序列表（可拖拽感） */
+.order-card { background:var(--white); border:1px solid var(--border); border-radius:var(--r-lg);
+  box-shadow:var(--sh-md); overflow:hidden; }
+.oc-head { padding:18px 22px; border-bottom:1px solid var(--border); display:flex;
+  align-items:center; justify-content:space-between; background:linear-gradient(180deg,rgba(159,185,151,.06),transparent); }
+.oc-head h3 { font-family:var(--ff-d); font-size:16px; font-weight:600; }
+.oc-head .hint { font-size:11.5px; color:var(--t3); display:flex; align-items:center; gap:5px; }
+.order-list { padding:12px; display:flex; flex-direction:column; gap:8px; }
+.kp-row {
+  display:flex; align-items:center; gap:14px; padding:13px 14px; border-radius:var(--r-md);
+  background:var(--bg); border:1px solid transparent; cursor:grab; transition:all .18s var(--ease);
+  position:relative;
+}
+.kp-row:hover { background:var(--white); border-color:var(--bord2); box-shadow:var(--sh-sm); transform:translateX(3px); }
+.kp-row .grip { color:var(--t4); display:flex; flex-direction:column; gap:2.5px; flex-shrink:0; }
+.kp-row .grip i { width:13px; height:1.6px; background:currentColor; border-radius:2px; display:block; }
+.kp-ord { width:28px; height:28px; border-radius:9px; flex-shrink:0; display:grid; place-items:center;
+  font-family:var(--ff-d); font-weight:600; font-size:14px; background:rgba(159,185,151,.18); color:var(--p-dk); }
+.kp-row.locked .kp-ord { background:var(--bg3); color:var(--t3); }
+.kp-main { flex:1; min-width:0; }
+.kp-nm { font-size:14px; font-weight:600; color:var(--t1); display:flex; align-items:center; gap:8px; }
+.kp-reason { font-size:11.5px; color:var(--t3); margin-top:2px; }
+.kp-meta { display:flex; align-items:center; gap:7px; flex-shrink:0; }
+.tag { font-size:10px; font-weight:700; letter-spacing:.03em; padding:2px 8px; border-radius:20px; }
+.tag-base { background:var(--bg3); color:var(--t2); }
+.tag-prio { background:var(--gold-lt); color:var(--gold-dk); }
+.tag-dep { background:var(--sky-lt); color:var(--sky); }
+.kp-qn { font-size:11px; color:var(--t3); white-space:nowrap; }
+
+/* 右：自定义提示词 + 规划说明 */
+.side-stack { display:flex; flex-direction:column; gap:22px; }
+.prompt-card { background:linear-gradient(150deg,var(--p-deep),var(--p-dk)); border-radius:var(--r-lg);
+  padding:24px; color:#fff; position:relative; overflow:hidden; box-shadow:var(--sh-md); }
+.prompt-card::before { content:''; position:absolute; top:-60px; right:-50px; width:180px; height:180px;
+  background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%); }
+.prompt-card h4 { font-family:var(--ff-d); font-size:17px; font-weight:600; display:flex; align-items:center; gap:9px; }
+.prompt-card p { font-size:12.5px; opacity:.82; margin-top:7px; line-height:1.55; }
+.prompt-box { margin-top:16px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22);
+  border-radius:var(--r-md); padding:13px 15px; display:flex; flex-direction:column; gap:10px; backdrop-filter:blur(6px); }
+.prompt-box textarea { width:100%; background:transparent; border:none; resize:none; color:#fff;
+  font-family:inherit; font-size:13px; line-height:1.5; outline:none; min-height:52px; }
+.prompt-box textarea::placeholder { color:rgba(255,255,255,.55); }
+.prompt-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.pchip { font-size:11px; font-weight:500; padding:4px 11px; border-radius:20px; cursor:pointer;
+  background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.2); transition:all .15s; }
+.pchip:hover { background:rgba(255,255,255,.26); }
+.btn-replan { margin-top:14px; width:100%; padding:11px; border-radius:var(--r-md); font-weight:700; font-size:13px;
+  background:#fff; color:var(--p-deep); display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:all .18s var(--ease); }
+.btn-replan:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,.22); }
+
+.note-card { background:var(--white); border:1px solid var(--border); border-radius:var(--r-lg);
+  padding:20px 22px; box-shadow:var(--sh-sm); }
+.note-card .nh { display:flex; align-items:center; gap:9px; margin-bottom:11px; }
+.note-card .nh .ai-orb { width:26px; height:26px; border-radius:8px; flex-shrink:0;
+  background:linear-gradient(135deg,var(--sky),#4d6fa0); display:grid; place-items:center; }
+.note-card .nh .ai-orb svg { width:14px; height:14px; stroke:#fff; fill:none; stroke-width:2; }
+.note-card .nh b { font-family:var(--ff-d); font-size:14.5px; font-weight:600; }
+.note-card p { font-size:13px; color:var(--t2); line-height:1.62; }
+.note-card p mark { background:var(--gold-lt); color:var(--gold-dk); padding:0 4px; border-radius:4px; font-weight:600; }
+
+.plan-cta { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between;
+  margin-top:8px; padding:20px 26px; background:var(--white); border:1px solid var(--border);
+  border-radius:var(--r-lg); box-shadow:var(--sh-sm); }
+.plan-cta .summary { font-size:13px; color:var(--t2); }
+.plan-cta .summary b { font-family:var(--ff-d); font-size:18px; color:var(--t1); font-weight:600; margin:0 3px; }
+
+/* ===== 通用按钮 ===== */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:11px 22px; border-radius:var(--r-md); font-size:13.5px; font-weight:700;
+  transition:all .18s var(--ease); white-space:nowrap; }
+.btn svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.1; }
+.btn-p { background:linear-gradient(135deg,var(--p),var(--p-dk)); color:#fff; box-shadow:var(--sh-glow); }
+.btn-p:hover { transform:translateY(-2px); box-shadow:0 8px 26px rgba(107,140,100,.42); }
+.btn-lg { padding:13px 30px; font-size:14.5px; border-radius:var(--r-md); }
+.btn-s { background:var(--bg); color:var(--t2); border:1px solid var(--bord2); }
+.btn-s:hover { background:var(--white); color:var(--t1); border-color:var(--p); }
+.btn-ghost { background:transparent; color:var(--t2); }
+.btn-ghost:hover { background:var(--bg2); color:var(--t1); }
+
+/* ============================================================
+   SCREEN 2 — 三区刷题页
+============================================================ */
+.quiz-grid { display:grid; grid-template-rows:auto 1fr; height:100%; }
+
+/* 区域①：知识点进度条 */
+.kp-strip { padding:8px 30px 7px; border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.5); backdrop-filter:blur(8px); }
+.kp-track { display:flex; gap:9px; overflow-x:auto; padding-bottom:2px; }
+.kp-pill {
+  flex-shrink:0; min-width:150px; padding:8px 13px; border-radius:11px;
+  background:var(--white); border:1px solid var(--border); cursor:pointer;
+  transition:all .2s var(--ease); position:relative;
+}
+.kp-pill:hover { border-color:var(--bord2); box-shadow:var(--sh-sm); transform:translateY(-2px); }
+.kp-pill.done { background:rgba(159,185,151,.1); border-color:var(--bord2); }
+.kp-pill.todo { opacity:.62; }
+.kp-pill.cur { min-width:172px; background:linear-gradient(160deg,#fff,rgba(159,185,151,.1));
+  border-color:var(--p); box-shadow:var(--sh-sm); }
+.kp-pill.cur::before { content:''; position:absolute; left:0; top:9px; bottom:9px; width:3px;
+  background:linear-gradient(var(--p),var(--p-dk)); border-radius:0 3px 3px 0; }
+.pill-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.pill-nm { font-size:12.5px; font-weight:700; color:var(--t1); }
+.kp-pill.todo .pill-nm { color:var(--t2); }
+.pill-ic { width:15px; height:15px; flex-shrink:0; }
+.pill-ic.check { color:var(--p-dk); }
+.pill-stat { display:flex; align-items:baseline; gap:5px; font-size:10.5px; color:var(--t3); margin-top:3px; }
+.pill-stat .frac { font-family:var(--ff-d); font-size:13px; font-weight:600; color:var(--t1); }
+.kp-pill.todo .pill-stat .frac { color:var(--t3); }
+.pill-stat .acc { margin-left:auto; font-weight:700; }
+.pill-stat .acc.hi { color:var(--p-dk); } .pill-stat .acc.mid { color:var(--gold-dk); } .pill-stat .acc.lo { color:var(--rose-dk); }
+.pill-bar { margin-top:6px; height:3px; background:var(--bg2); border-radius:10px; overflow:hidden; }
+.pill-bar i { display:block; height:100%; border-radius:10px; background:linear-gradient(90deg,var(--p),var(--p-dk)); }
+
+/* 区域②③：做题 + 掌握度 */
+.quiz-body { display:grid; grid-template-columns:1fr 320px; overflow:hidden; }
+.quiz-main { overflow-y:auto; padding:34px 46px 60px; }
+.qm-inner { max-width:680px; margin:0 auto; }
+
+.q-meta { display:flex; align-items:center; gap:10px; margin-bottom:22px; }
+.q-idx { font-family:var(--ff-d); font-size:13px; font-weight:600; color:var(--p-dk);
+  background:rgba(159,185,151,.16); padding:4px 12px; border-radius:30px; }
+.q-type { font-size:11px; font-weight:700; letter-spacing:.04em; color:var(--t3);
+  border:1px solid var(--border); padding:3px 10px; border-radius:30px; }
+.q-diff { display:flex; align-items:center; gap:3px; margin-left:auto; }
+.q-diff i { width:7px; height:7px; border-radius:50%; background:var(--bg3); }
+.q-diff i.on { background:var(--gold); }
+.q-diff span { font-size:11px; color:var(--t3); margin-left:5px; }
+
+.q-stem { font-size:20px; font-weight:500; line-height:1.55; color:var(--t1);
+  letter-spacing:-.01em; margin-bottom:26px; }
+.q-stem code { font-family:'SF Mono',Consolas,monospace; font-size:.88em; background:var(--bg2);
+  padding:2px 7px; border-radius:6px; color:var(--p-deep); }
+
+.opts { display:flex; flex-direction:column; gap:11px; }
+.opt {
+  display:flex; align-items:center; gap:15px; padding:16px 18px; border-radius:var(--r-md);
+  background:var(--white); border:1.5px solid var(--border); cursor:pointer;
+  transition:all .16s var(--ease); position:relative; text-align:left; width:100%;
+}
+.opt:hover { border-color:var(--bord2); background:rgba(159,185,151,.05); transform:translateX(3px); }
+.opt .key { width:30px; height:30px; flex-shrink:0; border-radius:9px; display:grid; place-items:center;
+  font-weight:700; font-size:14px; background:var(--bg2); color:var(--t2); transition:all .16s var(--ease); }
+.opt .otext { font-size:14.5px; color:var(--t1); font-weight:500; }
+.opt.sel { border-color:var(--p); background:rgba(159,185,151,.1); }
+.opt.sel .key { background:linear-gradient(135deg,var(--p),var(--p-dk)); color:#fff; }
+/* 判分态 */
+.opt.correct { border-color:var(--p-dk); background:rgba(159,185,151,.14); }
+.opt.correct .key { background:var(--p-dk); color:#fff; }
+.opt.wrong { border-color:var(--rose); background:var(--rose-lt); }
+.opt.wrong .key { background:var(--rose-dk); color:#fff; }
+.opt .verdict { margin-left:auto; font-size:12px; font-weight:700; display:none; align-items:center; gap:4px; }
+.opt.correct .verdict { display:flex; color:var(--p-dk); }
+.opt.wrong .verdict { display:flex; color:var(--rose-dk); }
+.opt .verdict svg { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.4; }
+.graded .opt { cursor:default; pointer-events:none; }
+.graded .opt:not(.correct):not(.wrong) { opacity:.5; }
+
+/* 提交栏 */
+.q-actions { margin-top:28px; display:flex; align-items:center; gap:12px; }
+.q-actions .spacer { flex:1; }
+.timer { font-size:12px; color:var(--t4); display:flex; align-items:center; gap:6px; }
+.timer svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; }
+
+/* 答案揭晓区 */
+.reveal { margin-top:24px; opacity:0; max-height:0; overflow:hidden;
+  transition:opacity .4s var(--ease), max-height .5s var(--ease); }
+.reveal.show { opacity:1; max-height:800px; }
+.reveal-banner { display:flex; align-items:center; gap:11px; padding:13px 18px; border-radius:var(--r-md);
+  font-weight:700; font-size:14px; margin-bottom:16px; }
+.reveal-banner.ok { background:rgba(159,185,151,.16); color:var(--p-deep); }
+.reveal-banner.no { background:var(--rose-lt); color:var(--rose-dk); }
+.reveal-banner svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2.2; }
+.reveal-banner .mc { margin-left:auto; font-size:11.5px; font-weight:600; opacity:.8; }
+.analysis { background:var(--white); border:1px solid var(--border); border-radius:var(--r-md);
+  padding:18px 20px; box-shadow:var(--sh-sm); }
+.analysis .atitle { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--t3); margin-bottom:9px; display:flex; align-items:center; gap:7px; }
+.analysis p { font-size:13.5px; color:var(--t2); line-height:1.68; }
+.analysis p .hl { color:var(--p-deep); font-weight:600; }
+
+/* 问 AI 行 */
+.ask-row { margin-top:14px; display:flex; align-items:center; gap:10px; }
+.btn-ask { display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:var(--r-md);
+  background:var(--sky-lt); color:var(--sky); font-weight:700; font-size:13px; border:1px solid rgba(111,141,181,.25);
+  transition:all .16s var(--ease); }
+.btn-ask:hover { background:rgba(111,141,181,.2); transform:translateY(-1px); }
+.btn-ask svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; }
+
+/* 问 AI 对话块 */
+.ask-thread { margin-top:14px; display:none; flex-direction:column; gap:12px; }
+.ask-thread.show { display:flex; animation:fadeUp .4s var(--ease); }
+.ask-q { align-self:flex-end; max-width:78%; background:linear-gradient(135deg,var(--p),var(--p-dk));
+  color:#fff; padding:11px 16px; border-radius:16px 16px 4px 16px; font-size:13.5px; box-shadow:var(--sh-sm); }
+.ask-a { align-self:flex-start; max-width:88%; background:var(--white); border:1px solid var(--border);
+  padding:14px 17px; border-radius:16px 16px 16px 4px; box-shadow:var(--sh-sm); }
+.ask-a .ai-tag { display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; color:var(--sky); margin-bottom:7px; }
+.ask-a .ai-tag .ai-orb { width:20px; height:20px; border-radius:6px; background:linear-gradient(135deg,var(--sky),#4d6fa0);
+  display:grid; place-items:center; }
+.ask-a .ai-tag .ai-orb svg { width:11px; height:11px; stroke:#fff; fill:none; stroke-width:2; }
+.ask-a p { font-size:13.5px; color:var(--t2); line-height:1.66; }
+.ask-input { margin-top:4px; display:flex; gap:9px; }
+.ask-input input { flex:1; padding:11px 15px; border-radius:var(--r-md); border:1.5px solid var(--border);
+  font-family:inherit; font-size:13px; outline:none; background:var(--white); transition:border .15s; }
+.ask-input input:focus { border-color:var(--p); }
+.ask-input .send { padding:0 16px; border-radius:var(--r-md); background:var(--p-dk); color:#fff; display:grid; place-items:center; }
+.ask-input .send svg { width:16px; height:16px; stroke:#fff; fill:none; stroke-width:2; }
+
+/* 区域③：掌握度面板 */
+.mastery-panel { border-left:1px solid var(--border); background:rgba(255,255,255,.55);
+  backdrop-filter:blur(8px); overflow-y:auto; padding:26px 22px; }
+.mp-section + .mp-section { margin-top:26px; }
+.mp-label { font-size:10px; font-weight:800; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--t3); margin-bottom:14px; display:flex; align-items:center; gap:7px; }
+.mp-label .algo { margin-left:auto; font-size:9px; font-weight:700; color:var(--p-dk);
+  background:rgba(159,185,151,.16); padding:2px 7px; border-radius:20px; letter-spacing:.04em; }
+
+.cur-kp { font-family:var(--ff-d); font-size:19px; font-weight:600; color:var(--t1); margin-bottom:4px; }
+.cur-kp-sub { font-size:11.5px; color:var(--t3); margin-bottom:18px; }
+
+.gauge { margin-bottom:16px; }
+.gauge-top { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:7px; }
+.gauge-top .gn { font-size:12.5px; font-weight:600; color:var(--t2); }
+.gauge-top .gv { font-family:var(--ff-d); font-size:17px; font-weight:600; }
+.gauge-top .gv.m { color:var(--p-dk); } .gauge-top .gv.c { color:var(--sky); }
+.gauge-bar { height:8px; background:var(--bg2); border-radius:10px; overflow:hidden; position:relative; }
+.gauge-bar i { position:absolute; left:0; top:0; bottom:0; border-radius:10px; transition:width 1s var(--spring); }
+.gauge-bar i.m { background:linear-gradient(90deg,var(--p),var(--p-dk)); }
+.gauge-bar i.c { background:linear-gradient(90deg,#9bb3d4,var(--sky)); }
+.gauge-bar .thresh { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--gold); opacity:.7; }
+.gauge-bar .thresh::after { content:'目标'; position:absolute; top:-15px; left:50%; transform:translateX(-50%);
+  font-size:8.5px; color:var(--gold-dk); font-weight:700; white-space:nowrap; }
+
+.streak { display:flex; align-items:center; gap:11px; padding:13px 15px; border-radius:var(--r-md);
+  background:linear-gradient(135deg,rgba(200,154,63,.1),rgba(159,185,151,.08)); border:1px solid var(--border); }
+.streak .flame { font-size:22px; line-height:1; }
+.streak .sk-txt { font-size:12px; color:var(--t2); }
+.streak .sk-txt b { font-family:var(--ff-d); font-size:18px; color:var(--gold-dk); font-weight:600; }
+
+/* 全题库概览 */
+.overview-list { display:flex; flex-direction:column; gap:13px; }
+.ov-row { }
+.ov-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+.ov-nm { font-size:12.5px; font-weight:600; color:var(--t2); display:flex; align-items:center; gap:6px; }
+.ov-nm .cur-dot { width:6px; height:6px; border-radius:50%; background:var(--p-dk); box-shadow:0 0 0 3px rgba(159,185,151,.25); }
+.ov-nm.active { color:var(--t1); }
+.ov-pct { font-size:11.5px; font-weight:700; color:var(--t3); }
+.ov-bar { height:5px; background:var(--bg2); border-radius:10px; overflow:hidden; }
+.ov-bar i { display:block; height:100%; border-radius:10px; background:linear-gradient(90deg,var(--p-lt),var(--p)); }
+.ov-bar i.strong { background:linear-gradient(90deg,var(--p),var(--p-dk)); }
+
+/* ============================================================
+   完成弹窗
+============================================================ */
+.overlay { position:fixed; inset:0; z-index:200; background:rgba(30,40,34,.42);
+  backdrop-filter:blur(7px); display:none; align-items:center; justify-content:center; padding:24px; }
+.overlay.show { display:flex; animation:fadeIn .3s var(--ease); }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.complete-modal { width:min(560px,100%); background:var(--white); border-radius:var(--r-xl);
+  box-shadow:var(--sh-lg); overflow:hidden; animation:popIn .5s var(--spring); }
+@keyframes popIn { from { opacity:0; transform:scale(.92) translateY(20px); } to { opacity:1; transform:none; } }
+.cm-hero { padding:34px 34px 26px; text-align:center; position:relative; overflow:hidden;
+  background:linear-gradient(165deg,rgba(159,185,151,.16),rgba(200,212,192,.08)); }
+.cm-hero::before { content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%);
+  width:260px; height:160px; background:radial-gradient(circle,rgba(159,185,151,.3),transparent 70%); }
+.cm-badge { width:64px; height:64px; margin:0 auto 16px; border-radius:20px; position:relative; z-index:1;
+  background:linear-gradient(135deg,var(--p),var(--p-deep)); display:grid; place-items:center; box-shadow:var(--sh-glow); }
+.cm-badge svg { width:32px; height:32px; stroke:#fff; fill:none; stroke-width:2.4; }
+.cm-hero h2 { font-family:var(--ff-d); font-size:25px; font-weight:600; letter-spacing:-.02em; position:relative; z-index:1; }
+.cm-hero h2 em { font-style:italic; color:var(--p-dk); }
+.cm-hero .stats { margin-top:16px; display:flex; justify-content:center; gap:30px; position:relative; z-index:1; }
+.cm-stat { text-align:center; }
+.cm-stat b { display:block; font-family:var(--ff-d); font-size:24px; font-weight:600; color:var(--t1); }
+.cm-stat span { font-size:11px; color:var(--t3); font-weight:600; letter-spacing:.03em; }
+.cm-stat b.up { color:var(--p-dk); }
+.cm-body { padding:24px 30px 30px; }
+.cm-q { text-align:center; font-size:13.5px; color:var(--t2); margin-bottom:18px; }
+.choices { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.choice { padding:18px 16px; border-radius:var(--r-md); border:1.5px solid var(--border); background:var(--bg);
+  text-align:left; transition:all .18s var(--ease); cursor:pointer; }
+.choice:hover { border-color:var(--p); background:var(--white); box-shadow:var(--sh-md); transform:translateY(-3px); }
+.choice .ci { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; margin-bottom:10px; }
+.choice .ci svg { width:18px; height:18px; fill:none; stroke-width:2; }
+.choice.next { grid-column:1/-1; background:linear-gradient(135deg,var(--p),var(--p-dk)); border-color:transparent;
+  display:flex; align-items:center; gap:14px; }
+.choice.next:hover { box-shadow:0 10px 30px rgba(107,140,100,.42); }
+.choice.next .ci { background:rgba(255,255,255,.2); margin:0; flex-shrink:0; }
+.choice.next .ci svg { stroke:#fff; }
+.choice.next .ctxt b { color:#fff; } .choice.next .ctxt span { color:rgba(255,255,255,.82); }
+.choice .ci.redo { background:rgba(159,185,151,.18); } .choice .ci.redo svg { stroke:var(--p-dk); }
+.choice .ci.wrong { background:var(--rose-lt); } .choice .ci.wrong svg { stroke:var(--rose-dk); }
+.choice .ctxt b { display:block; font-size:14px; font-weight:700; color:var(--t1); }
+.choice .ctxt span { font-size:11.5px; color:var(--t3); }
+
+/* ============================================================
+   SCREEN 3 — 掌握度报告
+============================================================ */
+.report-wrap { max-width:920px; margin:0 auto; padding:42px 40px 70px; }
+.rep-head { text-align:center; margin-bottom:38px; }
+.rep-head .eyebrow { justify-content:center; }
+.rep-head .eyebrow::before { display:none; }
+.rep-title { font-family:var(--ff-d); font-size:36px; font-weight:500; letter-spacing:-.03em; }
+.rep-title em { font-style:italic; color:var(--p-dk); }
+.rep-sub { margin-top:10px; font-size:13.5px; color:var(--t3); }
+
+.rep-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:34px; }
+.rstat { background:var(--white); border:1px solid var(--border); border-radius:var(--r-lg);
+  padding:20px; text-align:center; box-shadow:var(--sh-sm); }
+.rstat b { display:block; font-family:var(--ff-d); font-size:30px; font-weight:600; color:var(--t1); letter-spacing:-.02em; }
+.rstat span { font-size:11.5px; color:var(--t3); font-weight:600; }
+
+.rep-card { background:var(--white); border:1px solid var(--border); border-radius:var(--r-lg);
+  padding:26px 28px; box-shadow:var(--sh-sm); margin-bottom:22px; }
+.rep-card h3 { font-family:var(--ff-d); font-size:18px; font-weight:600; margin-bottom:20px;
+  display:flex; align-items:center; gap:9px; }
+.mastery-bars { display:flex; flex-direction:column; gap:18px; }
+.mb-row { }
+.mb-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; }
+.mb-nm { font-size:14px; font-weight:600; color:var(--t1); }
+.mb-vals { display:flex; align-items:center; gap:10px; font-size:12px; }
+.mb-delta { font-weight:700; padding:2px 8px; border-radius:20px; font-size:11px; }
+.mb-delta.up { background:rgba(159,185,151,.18); color:var(--p-dk); }
+.mb-delta.flat { background:var(--bg2); color:var(--t3); }
+.mb-pct { font-family:var(--ff-d); font-size:15px; font-weight:600; color:var(--t1); min-width:38px; text-align:right; }
+.mb-track { height:10px; background:var(--bg2); border-radius:10px; overflow:hidden; position:relative; }
+.mb-fill { position:absolute; left:0; top:0; bottom:0; border-radius:10px;
+  background:linear-gradient(90deg,var(--p),var(--p-dk)); transition:width 1.1s var(--spring); }
+.mb-fill.weak { background:linear-gradient(90deg,#d8b97a,var(--gold)); }
+.mb-ghost { position:absolute; top:0; bottom:0; border-radius:10px; background:rgba(159,185,151,.25); }
+
+.weak-list { display:flex; flex-direction:column; gap:11px; }
+.weak-item { display:flex; align-items:center; gap:13px; padding:13px 16px; border-radius:var(--r-md);
+  background:var(--gold-lt); border:1px solid rgba(200,154,63,.22); }
+.weak-item .wi { width:30px; height:30px; border-radius:9px; background:rgba(200,154,63,.2); display:grid; place-items:center; flex-shrink:0; }
+.weak-item .wi svg { width:15px; height:15px; stroke:var(--gold-dk); fill:none; stroke-width:2; }
+.weak-item .wt b { font-size:13.5px; font-weight:600; color:var(--t1); }
+.weak-item .wt span { font-size:11.5px; color:var(--gold-dk); }
+.weak-item .wlink { margin-left:auto; font-size:12px; font-weight:700; color:var(--p-dk); }
+
+.rep-cta { display:flex; gap:13px; justify-content:center; margin-top:32px; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+/* 响应式收窄 */
+@media (max-width:1180px){ .quiz-body { grid-template-columns:1fr 280px; } }
+@media (max-width:980px){ .plan-wrap { grid-template-columns:1fr; } .mastery-panel { display:none; } .quiz-body { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<!-- ===== 链路顶栏 ===== -->
+<div class="flowbar">
+  <div class="fb-brand">
+    <div class="fb-mark"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 8v8M8 10v4M16 10v4"/></svg></div>
+    <div>
+      <div class="fb-name">Point<span>Master</span> 慧刷题</div>
+    </div>
+    <span class="fb-ver">V3.0</span>
+  </div>
+  <div class="steps" id="steps">
+    <div class="step active" data-go="0"><span class="dot">1</span>排序规划</div>
+    <span class="step-sep"></span>
+    <div class="step" data-go="1"><span class="dot">2</span>刷题</div>
+    <span class="step-sep"></span>
+    <div class="step" data-go="2"><span class="dot">3</span>掌握度报告</div>
+  </div>
+  <div class="fb-spacer">题库：<b>数据结构与算法</b> · 共 <b>248</b> 题 / <b>9</b> 知识点</div>
+</div>
+
+<div class="stage">
+
+  <!-- ============ SCREEN 1：排序规划 ============ -->
+  <section class="screen show" id="screen-plan">
+    <div class="plan-wrap">
+      <div class="plan-head">
+        <div class="eyebrow">Step 01 — 学习路径规划</div>
+        <h1 class="plan-title">AI 为你编排了一条<br><em>由浅入深</em>的刷题顺序</h1>
+        <p class="plan-sub">基于知识图谱的<b>依赖关系</b>自动排序，前置知识点优先。你可以拖动调整顺序，或用一句话告诉 AI 你的偏好。</p>
+      </div>
+
+      <!-- 左：知识点顺序 -->
+      <div class="order-card">
+        <div class="oc-head">
+          <h3>知识点刷题顺序</h3>
+          <span class="hint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>拖动调整</span>
+        </div>
+        <ul class="order-list" id="orderList">
+          <li class="kp-row locked"><div class="grip"><i></i><i></i><i></i></div><div class="kp-ord">1</div><div class="kp-main"><div class="kp-nm">数组与链表</div><div class="kp-reason">基础前置 · 无依赖</div></div><div class="kp-meta"><span class="tag tag-base">基础</span><span class="kp-qn">32 题</span></div></li>
+          <li class="kp-row"><div class="grip"><i></i><i></i><i></i></div><div class="kp-ord">2</div><div class="kp-main"><div class="kp-nm">栈与队列</div><div class="kp-reason">依赖「数组与链表」</div></div><div class="kp-meta"><span class="tag tag-dep">承接</span><span class="kp-qn">28 题</span></div></li>
+          <li class="kp-row"><div class="grip"><i></i><i></i><i></i></div><div class="kp-ord">3</div><div class="kp-main"><div class="kp-nm">哈希表</div><div class="kp-reason">你要求优先 · 已前移</div></div><div class="kp-meta"><span class="tag tag-prio">优先</span><span class="kp-qn">24 题</span></div></li>
+          <li class="kp-row"><div class="grip"><i></i><i></i><i></i></div><div class="kp-ord">4</div><div class="kp-main"><div class="kp-nm">树与二叉树</div><div class="kp-reason">依赖「栈与队列」</div></div><div class="kp-meta"><span class="tag tag-dep">承接</span><span class="kp-qn">36 题</span></div></li>
+          <li class="kp-row"><div class="grip"><i></i><i></i><i></i></div><div class="kp-ord">5</div><div class="kp-main"><div class="kp-nm">排序算法</div><div class="kp-reason">综合应用</div></div><div class="kp-meta"><span class="tag tag-base">进阶</span><span class="kp-qn">30 题</span></div></li>
+          <li class="kp-row"><div class="grip"><i></i><i></i><i></i></div><div class="kp-ord">6</div><div class="kp-main"><div class="kp-nm">动态规划</div><div class="kp-reason">高阶 · 多知识点综合题归属于此</div></div><div class="kp-meta"><span class="tag tag-base">高阶</span><span class="kp-qn">38 题</span></div></li>
+        </ul>
+      </div>
+
+      <!-- 右：提示词 + 说明 -->
+      <div class="side-stack">
+        <div class="prompt-card">
+          <h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 14.6 7 18.2l1.9-5.8L4 8.8h6.1L12 3z"/></svg>调整学习偏好</h4>
+          <p>用一句话告诉 AI 你想怎么学，它会在保证依赖关系的前提下重排顺序。</p>
+          <div class="prompt-box">
+            <textarea placeholder="例如：我想优先刷哈希表和动态规划，基础部分可以快速过">我想优先刷哈希表，它考得最多</textarea>
+            <div class="prompt-chips">
+              <span class="pchip">优先刷高频考点</span>
+              <span class="pchip">从最薄弱的开始</span>
+              <span class="pchip">先易后难</span>
+            </div>
+          </div>
+          <button class="btn-replan"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-3-6.7M21 4v4h-4"/></svg>重新规划顺序</button>
+        </div>
+
+        <div class="note-card">
+          <div class="nh"><div class="ai-orb"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/></svg></div><b>AI 规划说明</b></div>
+          <p>已按你的要求把 <mark>哈希表</mark> 提前到第 3 位，但保留了「数组与链表 → 栈与队列」这条必要的基础链路。<mark>动态规划</mark> 排在最后，因为多个综合题关联了它，放在末尾可确保你做综合题时前置知识都已掌握。</p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="plan-cta">
+        <div class="summary">本次将按 <b>6</b> 个知识点顺序刷题，预计 <b>188</b> 道题</div>
+        <button class="btn btn-p btn-lg" data-go="1">开始刷题<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2：三区刷题 ============ -->
+  <section class="screen" id="screen-quiz">
+    <div class="quiz-grid">
+
+      <!-- ① 知识点进度条 -->
+      <div class="kp-strip">
+        <div class="kp-track">
+          <div class="kp-pill done">
+            <div class="pill-top"><span class="pill-nm">数组与链表</span><svg class="pill-ic check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg></div>
+            <div class="pill-stat"><span class="frac">32/32</span>题<span class="acc hi">94%</span></div>
+            <div class="pill-bar"><i style="width:100%"></i></div>
+          </div>
+          <div class="kp-pill done">
+            <div class="pill-top"><span class="pill-nm">栈与队列</span><svg class="pill-ic check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg></div>
+            <div class="pill-stat"><span class="frac">28/28</span>题<span class="acc hi">89%</span></div>
+            <div class="pill-bar"><i style="width:100%"></i></div>
+          </div>
+          <div class="kp-pill cur">
+            <div class="pill-top"><span class="pill-nm">哈希表</span><span style="font-size:10px;font-weight:700;color:var(--p-dk)">进行中</span></div>
+            <div class="pill-stat"><span class="frac">11/24</span>题<span class="acc mid">73%</span></div>
+            <div class="pill-bar"><i style="width:46%"></i></div>
+          </div>
+          <div class="kp-pill todo">
+            <div class="pill-top"><span class="pill-nm">树与二叉树</span></div>
+            <div class="pill-stat"><span class="frac">0/36</span>题<span class="acc">—</span></div>
+            <div class="pill-bar"><i style="width:0"></i></div>
+          </div>
+          <div class="kp-pill todo">
+            <div class="pill-top"><span class="pill-nm">排序算法</span></div>
+            <div class="pill-stat"><span class="frac">0/30</span>题<span class="acc">—</span></div>
+            <div class="pill-bar"><i style="width:0"></i></div>
+          </div>
+          <div class="kp-pill todo">
+            <div class="pill-top"><span class="pill-nm">动态规划</span></div>
+            <div class="pill-stat"><span class="frac">0/38</span>题<span class="acc">—</span></div>
+            <div class="pill-bar"><i style="width:0"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ②③ 做题 + 掌握度 -->
+      <div class="quiz-body">
+
+        <!-- ② 做题区 -->
+        <div class="quiz-main">
+          <div class="qm-inner" id="qmInner">
+            <div class="q-meta">
+              <span class="q-idx">第 12 题</span>
+              <span class="q-type">单选题</span>
+              <span class="q-diff"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><span>难度 中</span></span>
+            </div>
+
+            <div class="q-stem">关于哈希表解决冲突的方法，下列说法<strong>正确</strong>的是？给定装载因子 <code>α = n/m</code>，当采用开放定址法时——</div>
+
+            <div class="opts" id="opts">
+              <button class="opt" data-key="A" data-correct="0"><span class="key">A</span><span class="otext">链地址法要求装载因子 α 必须小于 1</span><span class="verdict"></span></button>
+              <button class="opt" data-key="B" data-correct="1"><span class="key">B</span><span class="otext">开放定址法中，α 越接近 1，查找效率越低</span><span class="verdict"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>正确答案</span></button>
+              <button class="opt" data-key="C" data-correct="0"><span class="key">C</span><span class="otext">哈希冲突可以通过选择完美哈希函数完全避免</span><span class="verdict"></span></button>
+              <button class="opt" data-key="D" data-correct="0"><span class="key">D</span><span class="otext">再哈希法只需要一个哈希函数即可</span><span class="verdict"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>你的选择</span></button>
+            </div>
+
+            <div class="q-actions">
+              <div class="timer"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>本题用时 00:24</div>
+              <div class="spacer"></div>
+              <button class="btn btn-s" id="btnSkip">跳过</button>
+              <button class="btn btn-p" id="btnSubmit">提交答案</button>
+            </div>
+
+            <!-- 答案揭晓 -->
+            <div class="reveal" id="reveal">
+              <div class="reveal-banner no">
+                <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                答错了 — 正确答案是 B
+                <span class="mc">该题关联：哈希表 · 冲突处理</span>
+              </div>
+              <div class="analysis">
+                <div class="atitle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2zM9 21h6"/></svg>解析</div>
+                <p>开放定址法中，装载因子 <span class="hl">α 越接近 1</span>，表越满，发生聚集（clustering）的概率越高，平均查找长度增大，查找效率显著下降，故 <span class="hl">B 正确</span>。链地址法的 α 可以大于 1（D 选项再哈希法需要一组哈希函数，故错误）。</p>
+              </div>
+
+              <!-- 问 AI -->
+              <div class="ask-row">
+                <button class="btn-ask" id="btnAsk"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 01-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1121 11.5z"/></svg>对这道题有不懂的点？问问 AI</button>
+              </div>
+
+              <div class="ask-thread" id="askThread">
+                <div class="ask-q">为什么 α 越接近 1 查找效率就越低？是因为冲突变多吗？</div>
+                <div class="ask-a">
+                  <div class="ai-tag"><div class="ai-orb"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/></svg></div>AI 解答</div>
+                  <p>是的，核心就在这里。装载因子 α = 元素数 / 表长，它衡量表有多「满」。在开放定址法里，一旦发生冲突就要沿着探测序列找下一个空槽。<span style="color:var(--p-deep);font-weight:600">α 越大，空槽越少，每次冲突后要探测的次数就越多</span>，还会引发「一次聚集」——连续被占用的槽越长，新元素越容易撞进去。所以查找的平均探测次数随 α 上升而急剧增加，当 α → 1 时趋于发散。</p>
+                </div>
+                <div class="ask-input">
+                  <input type="text" placeholder="继续追问…" />
+                  <button class="send"><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+                </div>
+              </div>
+
+              <div class="q-actions" style="margin-top:22px">
+                <div class="spacer"></div>
+                <button class="btn btn-p" id="btnNext">下一题<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ③ 掌握度面板 -->
+        <aside class="mastery-panel">
+          <div class="mp-section">
+            <div class="mp-label">当前知识点<span class="algo">算法实时</span></div>
+            <div class="cur-kp">哈希表</div>
+            <div class="cur-kp-sub">已做 11 题 · 本轮正确率 73%</div>
+
+            <div class="gauge">
+              <div class="gauge-top"><span class="gn">掌握度 mastery</span><span class="gv m">0.68</span></div>
+              <div class="gauge-bar"><i class="m" style="width:68%"></i><span class="thresh" style="left:80%"></span></div>
+            </div>
+            <div class="gauge">
+              <div class="gauge-top"><span class="gn">置信度 confidence</span><span class="gv c">0.61</span></div>
+              <div class="gauge-bar"><i class="c" style="width:61%"></i></div>
+            </div>
+
+            <div class="streak">
+              <span class="flame">🔥</span>
+              <div class="sk-txt">连续答对 <b>3</b> 题<br><span style="font-size:11px;color:var(--t3)">达 0.80 即可完成本知识点</span></div>
+            </div>
+          </div>
+
+          <div class="mp-section">
+            <div class="mp-label">全题库掌握概览</div>
+            <div class="overview-list">
+              <div class="ov-row"><div class="ov-top"><span class="ov-nm">数组与链表</span><span class="ov-pct">91%</span></div><div class="ov-bar"><i class="strong" style="width:91%"></i></div></div>
+              <div class="ov-row"><div class="ov-top"><span class="ov-nm">栈与队列</span><span class="ov-pct">85%</span></div><div class="ov-bar"><i class="strong" style="width:85%"></i></div></div>
+              <div class="ov-row"><div class="ov-top"><span class="ov-nm active"><span class="cur-dot"></span>哈希表</span><span class="ov-pct">68%</span></div><div class="ov-bar"><i style="width:68%"></i></div></div>
+              <div class="ov-row"><div class="ov-top"><span class="ov-nm">树与二叉树</span><span class="ov-pct">12%</span></div><div class="ov-bar"><i style="width:12%"></i></div></div>
+              <div class="ov-row"><div class="ov-top"><span class="ov-nm">排序算法</span><span class="ov-pct">0%</span></div><div class="ov-bar"><i style="width:2%"></i></div></div>
+              <div class="ov-row"><div class="ov-top"><span class="ov-nm">动态规划</span><span class="ov-pct">0%</span></div><div class="ov-bar"><i style="width:2%"></i></div></div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3：报告 ============ -->
+  <section class="screen" id="screen-report">
+    <div class="report-wrap">
+      <div class="rep-head">
+        <div class="eyebrow">Step 03 — 本次练习总结</div>
+        <h1 class="rep-title">你的<em>掌握度报告</em></h1>
+        <p class="rep-sub">数据结构与算法 · 2026-05-29 · 用时 42 分钟</p>
+      </div>
+
+      <div class="rep-stats">
+        <div class="rstat"><b>68</b><span>本次答题</span></div>
+        <div class="rstat"><b>79%</b><span>整体正确率</span></div>
+        <div class="rstat"><b>3</b><span>完成知识点</span></div>
+        <div class="rstat"><b>9</b><span>错题重刷</span></div>
+      </div>
+
+      <div class="rep-card">
+        <h3><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--p-dk)" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>知识点掌握度变化</h3>
+        <div class="mastery-bars">
+          <div class="mb-row">
+            <div class="mb-top"><span class="mb-nm">数组与链表</span><div class="mb-vals"><span class="mb-delta up">↑ +18%</span><span class="mb-pct">91%</span></div></div>
+            <div class="mb-track"><div class="mb-ghost" style="width:73%"></div><div class="mb-fill" style="width:91%"></div></div>
+          </div>
+          <div class="mb-row">
+            <div class="mb-top"><span class="mb-nm">栈与队列</span><div class="mb-vals"><span class="mb-delta up">↑ +24%</span><span class="mb-pct">85%</span></div></div>
+            <div class="mb-track"><div class="mb-ghost" style="width:61%"></div><div class="mb-fill" style="width:85%"></div></div>
+          </div>
+          <div class="mb-row">
+            <div class="mb-top"><span class="mb-nm">哈希表</span><div class="mb-vals"><span class="mb-delta up">↑ +41%</span><span class="mb-pct">82%</span></div></div>
+            <div class="mb-track"><div class="mb-ghost" style="width:41%"></div><div class="mb-fill" style="width:82%"></div></div>
+          </div>
+          <div class="mb-row">
+            <div class="mb-top"><span class="mb-nm">树与二叉树</span><div class="mb-vals"><span class="mb-delta flat">— 未练</span><span class="mb-pct">12%</span></div></div>
+            <div class="mb-track"><div class="mb-fill weak" style="width:12%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rep-card">
+        <h3><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dk)" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>仍需加强的知识点</h3>
+        <div class="weak-list">
+          <div class="weak-item">
+            <div class="wi"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+            <div class="wt"><b>树与二叉树</b><span>掌握度 12% · 尚未开始，建议下次优先</span></div>
+            <span class="wlink">去刷题 →</span>
+          </div>
+          <div class="weak-item">
+            <div class="wi"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+            <div class="wt"><b>哈希表 · 再哈希法</b><span>该子概念错题率 50%，建议结合微学习巩固</span></div>
+            <span class="wlink">微学习 →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rep-cta">
+        <button class="btn btn-s btn-lg" data-go="1"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>继续刷题</button>
+        <button class="btn btn-p btn-lg">完成并保存记录</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== 完成弹窗 ===== -->
+<div class="overlay" id="overlay">
+  <div class="complete-modal">
+    <div class="cm-hero">
+      <div class="cm-badge"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h2>「哈希表」<em>本轮完成</em></h2>
+      <div class="stats">
+        <div class="cm-stat"><b>24</b><span>本轮题数</span></div>
+        <div class="cm-stat"><b>83%</b><span>正确率</span></div>
+        <div class="cm-stat"><b class="up">0.82</b><span>掌握度 ↑</span></div>
+      </div>
+    </div>
+    <div class="cm-body">
+      <p class="cm-q">这个知识点接下来想怎么处理？</p>
+      <div class="choices">
+        <button class="choice" id="cRedo">
+          <div class="ci redo"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M21 12a9 9 0 11-3-6.7M21 4v4h-4"/></svg></div>
+          <div class="ctxt"><b>重新刷题</b><span>全部 24 题再过一遍</span></div>
+        </button>
+        <button class="choice" id="cWrong">
+          <div class="ci wrong"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div class="ctxt"><b>错题重刷</b><span>仅重刷本轮 4 道错题</span></div>
+        </button>
+        <button class="choice next" id="cNext">
+          <div class="ci"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="ctxt"><b>进入下一知识点：树与二叉树</b><span>按学习路径继续 · 36 题</span></div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 链路切换 =====
+const screens = [document.getElementById('screen-plan'), document.getElementById('screen-quiz'), document.getElementById('screen-report')];
+const stepEls = [...document.querySelectorAll('.step')];
+function goTo(i){
+  screens.forEach((s,idx)=>s.classList.toggle('show', idx===i));
+  stepEls.forEach((s,idx)=>{ s.classList.toggle('active', idx===i); s.classList.toggle('done', idx<i); });
+  document.querySelector('.stage').scrollTop = 0;
+}
+document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>goTo(+el.dataset.go)));
+
+// ===== 提示词快捷 chip =====
+document.querySelectorAll('.pchip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelector('.prompt-box textarea').value = c.textContent;
+}));
+
+// ===== 做题：选项选择 =====
+const opts = document.getElementById('opts');
+let selected = null;
+opts.querySelectorAll('.opt').forEach(o=>o.addEventListener('click',()=>{
+  if(opts.classList.contains('graded')) return;
+  opts.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+  o.classList.add('sel'); selected = o;
+}));
+// 预选 D（演示答错态）
+opts.querySelector('[data-key="D"]').classList.add('sel');
+selected = opts.querySelector('[data-key="D"]');
+
+// ===== 提交 → 揭晓 =====
+const btnSubmit = document.getElementById('btnSubmit');
+const reveal = document.getElementById('reveal');
+btnSubmit.addEventListener('click',()=>{
+  if(!selected) return;
+  opts.classList.add('graded');
+  opts.querySelectorAll('.opt').forEach(o=>{
+    if(o.dataset.correct==='1') o.classList.add('correct');
+    else if(o.classList.contains('sel')) o.classList.add('wrong');
+  });
+  btnSubmit.parentElement.style.display='none';
+  reveal.classList.add('show');
+  reveal.scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+
+// ===== 问 AI 展开 =====
+document.getElementById('btnAsk').addEventListener('click', ()=>{
+  document.getElementById('askThread').classList.add('show');
+  document.getElementById('btnAsk').style.display='none';
+});
+
+// ===== 下一题 → 触发完成弹窗（演示） =====
+document.getElementById('btnNext').addEventListener('click', ()=>{
+  document.getElementById('overlay').classList.add('show');
+});
+document.getElementById('btnSkip').addEventListener('click', ()=>{
+  document.getElementById('overlay').classList.add('show');
+});
+
+// ===== 完成弹窗动作 =====
+const overlay = document.getElementById('overlay');
+document.getElementById('cNext').addEventListener('click', ()=>{ overlay.classList.remove('show'); goTo(2); });
+document.getElementById('cRedo').addEventListener('click', ()=>{ overlay.classList.remove('show'); resetQuiz(); });
+document.getElementById('cWrong').addEventListener('click', ()=>{ overlay.classList.remove('show'); resetQuiz(); });
+overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.classList.remove('show'); });
+
+function resetQuiz(){
+  opts.classList.remove('graded');
+  opts.querySelectorAll('.opt').forEach(o=>o.classList.remove('correct','wrong','sel'));
+  reveal.classList.remove('show');
+  document.getElementById('askThread').classList.remove('show');
+  document.getElementById('btnAsk').style.display='';
+  btnSubmit.parentElement.style.display='';
+  selected=null;
+  document.querySelector('.stage').scrollTop=0;
+}
+</script>
+</body>
+</html>
