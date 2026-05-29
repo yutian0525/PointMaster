@@ -1,0 +1,42 @@
+docs/design/v2/banks.html
+  s_7bab8057ff16c2::t_72eec0ab66582b 1-188
+docs/design/v2/practice.html
+  s_7bab8057ff16c2::t_ae3342ed415142 1056-1080
+  s_7bab8057ff16c2::t_e278407bd87291 573-587,637-843,845-848
+  s_7bab8057ff16c2::t_3e82874ecd7a2e 1213
+  s_7bab8057ff16c2::t_752883732c28fd 1-394,470-572,588-636,844,849-1055,1081-1129,1144-1197,1199-1212,1214-1308
+  s_7bab8057ff16c2::t_9f2fc7a217affd 1198
+  s_7bab8057ff16c2::t_64b6e6dae9060b 1130-1143
+  s_7bab8057ff16c2::t_6d465db5ef11d4 395-469
+docs/design/v2/shared.css
+  s_7bab8057ff16c2::t_b0b0428a6f38a9 1-206
+docs/design/v2/session-detail.html
+  s_7bab8057ff16c2::t_e030b9b57cbb6e 609,611-614,616,618-648,651
+  s_7bab8057ff16c2::t_9847f40a46dc5a 204-245
+  s_7bab8057ff16c2::t_a9dc58cfb6f3dc 1-203,246-608,610,615,617,649-650,652-803
+docs/design/v2/report.html
+  s_7bab8057ff16c2::t_6315e8c69cd7ac 1-268
+docs/design/v2/bank-detail.html
+  s_7bab8057ff16c2::t_07f0aab785346c 210-211,215
+  s_7bab8057ff16c2::t_6d7898983fe7f6 1-161,163-177,186-209,212-214,216-372
+  s_7bab8057ff16c2::t_cc803e8222740a 162
+  s_7bab8057ff16c2::t_35f7e8dbb044b4 178-185
+docs/design/v2/index.html
+  s_7bab8057ff16c2::t_bc7440bfb1b4d7 1-278
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "100bd02e72742c69c41dbe326f61e88d59166d79",
+  "prompts": {},
+  "sessions": {
+    "s_7bab8057ff16c2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6169d2d2-613f-4a6b-a54c-60b39a5e45ae",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
