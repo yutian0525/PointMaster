@@ -1,0 +1,19 @@
+"docs/PRD/PointMaster 慧刷题 PRD V3.0.md"
+  s_1e3f12f5131802::t_dd68293e6a659a 1-474
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "16b4e3bbbb6eb0a513853120d681078a7429f47a",
+  "prompts": {},
+  "sessions": {
+    "s_1e3f12f5131802": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "51d708f9-95b8-4d84-9c85-a4c7f5765bd6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
