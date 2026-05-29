@@ -1,0 +1,30 @@
+components/micro-learning/selection-popup.tsx
+  s_b24c08d70d590f::t_26bfef5a7b63c3 3-4,11,13,22,24,27-36,39-58,62-63,66,69,71-85,87,89,91
+components/micro-learning/micro-learning-canvas.tsx
+  s_b24c08d70d590f::t_cf4f2ce9354552 462
+  s_b24c08d70d590f::t_755cedba31778f 192
+  s_b24c08d70d590f::t_540c22680aeb18 413
+  s_b24c08d70d590f::t_cd186a86486a92 442
+  s_b24c08d70d590f::t_9b59102aea009a 486,488
+  s_b24c08d70d590f::t_0f5b9c32ea1da1 274,280-294,296-325,327-329
+components/micro-learning/learning-card.tsx
+  s_b24c08d70d590f::t_9ecbd3104a304e 163,165-173
+  s_b24c08d70d590f::t_e693f7f018d19e 57
+  s_b24c08d70d590f::t_1056bfc5ad4912 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "c05c8eee24b0e2408f73ee4c3fd1a78eca517c7d",
+  "prompts": {},
+  "sessions": {
+    "s_b24c08d70d590f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27f12a78-c653-401d-a7c3-9b689e005740",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
