@@ -28,11 +28,11 @@ export interface GraphData {
 export type {
   CardType,
   MicroCard,
-  CardConnection,
-  GenerateRequest,
-  GenerateResponse,
-  AskRequest,
-  AskResponse,
+  ExampleAnalysis,
+  ExtendedCard,
   MicroLearningRecord,
-  HistoryListItem,
+  MicroLearningListItem,
+  CreateMicroLearningRequest,
+  AskRequest,
+  RetryExampleRequest,
 } from "./micro-learning";

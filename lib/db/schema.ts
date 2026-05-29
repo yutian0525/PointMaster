@@ -45,12 +45,16 @@ export const questionKnowledge = sqliteTable("question_knowledge", {
   isPrimary: integer("is_primary").notNull().default(0),
 });
 
-export const microLearningRecords = sqliteTable("micro_learning_records", {
+export const microLearnings = sqliteTable("micro_learnings", {
   id: text("id").primaryKey(),
-  knowledgePointId: text("knowledge_point_id").notNull(),
-  bankId: text("bank_id").notNull(),
-  generatedCards: text("generated_cards").notNull(),
+  knowledgePointId: text("knowledge_point_id").notNull().references(() => knowledgePoints.id),
+  bankId: text("bank_id").notNull().references(() => questionBanks.id),
+  sessionId: text("session_id"),
+  focusHint: text("focus_hint"),
+  detailedExplanation: text("detailed_explanation").notNull(),
+  exampleAnalyses: text("example_analyses").notNull(),
   extendedCards: text("extended_cards"),
-  context: text("context"),
+  sourceQuestionIds: text("source_question_ids"),
   createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
 });
