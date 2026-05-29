@@ -1,6 +1,6 @@
 "use client";
 
-import type { CardConnection, CardType } from "@/types";
+import type { CardType } from "@/types";
 
 interface CardPosition {
   id: string;
@@ -11,17 +11,21 @@ interface CardPosition {
   height: number;
 }
 
+export interface SimpleConnection {
+  from: string;
+  to: string;
+  kind: "apply" | "extend";
+}
+
 interface CardConnectionsProps {
-  connections: CardConnection[];
+  connections: SimpleConnection[];
   cardPositions: CardPosition[];
 }
 
-const CONNECTION_COLORS: Record<string, string> = {
-  "提问延伸": "#c8aa68",
-  "模板应用": "#5a8ab8",
-  "识别依据": "#5a8ab8",
+const KIND_STYLE = {
+  apply:  { color: "#9fb997", label: "应用",     dashed: false, marker: "ml-arrow-green" },
+  extend: { color: "#c8aa68", label: "提问延伸", dashed: true,  marker: "ml-arrow-orange" },
 };
-const DEFAULT_CONNECTION_COLOR = "#9fb997";
 
 export function CardConnections({ connections, cardPositions }: CardConnectionsProps) {
   const getCenter = (cardId: string) => {
@@ -36,9 +40,6 @@ export function CardConnections({ connections, cardPositions }: CardConnectionsP
         <marker id="ml-arrow-green" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
           <path d="M0,0 L8,4 L0,8 z" fill="#9fb997" />
         </marker>
-        <marker id="ml-arrow-blue" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-          <path d="M0,0 L8,4 L0,8 z" fill="#5a8ab8" />
-        </marker>
         <marker id="ml-arrow-orange" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
           <path d="M0,0 L8,4 L0,8 z" fill="#c8aa68" />
         </marker>
@@ -49,44 +50,24 @@ export function CardConnections({ connections, cardPositions }: CardConnectionsP
         const to = getCenter(conn.to);
         if (!from || !to) return null;
 
-        const color = CONNECTION_COLORS[conn.label] || DEFAULT_CONNECTION_COLOR;
-        const markerId = color === "#c8aa68" ? "ml-arrow-orange" : color === "#5a8ab8" ? "ml-arrow-blue" : "ml-arrow-green";
-        const isDashed = conn.label === "提问延伸";
+        const s = KIND_STYLE[conn.kind];
         const midX = (from.x + to.x) / 2;
         const midY = (from.y + to.y) / 2;
 
         return (
-          <g key={i}>
+          <g key={`${conn.from}->${conn.to}-${i}`}>
             <path
               d={`M${from.x},${from.y} C${from.x},${midY} ${to.x},${midY} ${to.x},${to.y}`}
-              stroke={color}
+              stroke={s.color}
               strokeWidth="1.8"
               strokeOpacity="0.7"
               fill="none"
-              strokeDasharray={isDashed ? "6 3" : undefined}
-              markerEnd={`url(#${markerId})`}
+              strokeDasharray={s.dashed ? "6 3" : undefined}
+              markerEnd={`url(#${s.marker})`}
             />
-            <rect
-              x={midX - 28}
-              y={midY - 10}
-              width="56"
-              height="18"
-              rx="9"
-              fill="white"
-              stroke={color}
-              strokeWidth="1"
-              strokeOpacity="0.5"
-            />
-            <text
-              x={midX}
-              y={midY + 4}
-              textAnchor="middle"
-              fill={color}
-              fontSize="10"
-              fontFamily="'Plus Jakarta Sans', sans-serif"
-              fontWeight="600"
-            >
-              {conn.label}
+            <rect x={midX - 28} y={midY - 10} width="56" height="18" rx="9" fill="white" stroke={s.color} strokeWidth="1" strokeOpacity="0.5" />
+            <text x={midX} y={midY + 4} textAnchor="middle" fill={s.color} fontSize="10" fontFamily="'Plus Jakarta Sans', sans-serif" fontWeight="600">
+              {s.label}
             </text>
           </g>
         );
