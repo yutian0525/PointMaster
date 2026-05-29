@@ -1,0 +1,29 @@
+lib/db/migrations/meta/_journal.json
+  s_b24c08d70d590f::t_312578f6a8a501 25-31
+types/micro-learning.ts
+  s_b24c08d70d590f::t_6c5ca877e6ee59 23-28,39
+lib/db/schema.ts
+  s_b24c08d70d590f::t_3edd48afb27bd2 57
+lib/db/migrations/0003_dazzling_joshua_kane.sql
+  s_b24c08d70d590f::t_312578f6a8a501 1
+types/index.ts
+  s_b24c08d70d590f::t_f48da7c7c2d55c 33
+lib/db/migrations/meta/0003_snapshot.json
+  s_b24c08d70d590f::t_312578f6a8a501 1-471
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "a3c6ce6dde6d5e5b96149a6e302a7f03e3f83d7b",
+  "prompts": {},
+  "sessions": {
+    "s_b24c08d70d590f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "27f12a78-c653-401d-a7c3-9b689e005740",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "倪镭 <110873087+yutian0525@users.noreply.github.com>"
+    }
+  }
+}
