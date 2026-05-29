@@ -1,10 +1,14 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { LearningCard } from "./learning-card";
-import { CardConnections } from "./card-connections";
+import { CardConnections, type SimpleConnection } from "./card-connections";
 import { SelectionPopup } from "./selection-popup";
-import type { MicroCard, CardConnection, CardType } from "@/types";
+import type {
+  CardType,
+  ExampleAnalysis,
+  ExtendedCard,
+} from "@/types/micro-learning";
 
 interface CardPosition {
   id: string;
@@ -16,65 +20,135 @@ interface CardPosition {
 }
 
 interface MicroLearningCanvasProps {
-  cards: MicroCard[];
-  connections: CardConnection[];
-  knowledgePointId: string;
-  onCardsChange: (cards: MicroCard[]) => void;
-  onConnectionsChange: (connections: CardConnection[]) => void;
-  onPositionsChange?: (positions: CardPosition[]) => void;
-  savedPositions?: CardPosition[] | null;
+  recordId: string;
+  detailedExplanation: string;
+  knowledgePointName: string;
+  exampleAnalyses: ExampleAnalysis[];
+  extendedCards: ExtendedCard[];
+  onAddExtendedCard: (card: ExtendedCard) => void;
+  onRetryExample: (questionId: string, newAnalysis: string) => void;
 }
 
-function computeInitialPositions(cards: MicroCard[]): CardPosition[] {
-  const CARD_W = 280;
-  const CARD_H = 220;
-  const GAP_X = 80;
-  const GAP_Y = 60;
-  const START_X = 60;
-  const START_Y = 40;
+const DETAIL_X = 60;
+const DETAIL_Y = 40;
+const DETAIL_W = 320;
+const DETAIL_H = 360;
+const EXAMPLE_W = 280;
+const EXAMPLE_H = 260;
+const EXAMPLE_GAP_Y = 60;
+const COL_GAP_X = 100;
+const EXTENDED_W = 280;
+const EXTENDED_H = 200;
 
+function detailCardId(recordId: string) {
+  return `detail-${recordId}`;
+}
+
+function exampleCardId(questionId: string) {
+  return `example-${questionId}`;
+}
+
+function computePositions(
+  recordId: string,
+  examples: ExampleAnalysis[],
+  extended: ExtendedCard[]
+): CardPosition[] {
   const positions: CardPosition[] = [];
 
-  const col1Types: CardType[] = ["concept", "signal", "template"];
-  const col2Types: CardType[] = ["pitfall", "example"];
-  const extCards = cards.filter((c) => c.type === "extended");
+  positions.push({
+    id: detailCardId(recordId),
+    type: "detail",
+    x: DETAIL_X,
+    y: DETAIL_Y,
+    width: DETAIL_W,
+    height: DETAIL_H,
+  });
 
-  let col1Y = START_Y;
-  let col2Y = START_Y;
+  const sorted = [...examples].sort((a, b) => Number(b.isWrong ?? false) - Number(a.isWrong ?? false));
+  const exampleX = DETAIL_X + DETAIL_W + COL_GAP_X;
+  sorted.forEach((ex, i) => {
+    positions.push({
+      id: exampleCardId(ex.questionId),
+      type: "example",
+      x: exampleX,
+      y: DETAIL_Y + i * (EXAMPLE_H + EXAMPLE_GAP_Y),
+      width: EXAMPLE_W,
+      height: EXAMPLE_H,
+    });
+  });
 
-  for (const card of cards) {
-    if (col1Types.includes(card.type)) {
-      positions.push({ id: card.id, type: card.type, x: START_X, y: col1Y, width: CARD_W, height: CARD_H });
-      col1Y += CARD_H + GAP_Y;
-    } else if (col2Types.includes(card.type)) {
-      positions.push({ id: card.id, type: card.type, x: START_X + CARD_W + GAP_X, y: col2Y, width: CARD_W, height: CARD_H });
-      col2Y += CARD_H + GAP_Y;
-    }
-  }
-
-  const extX = START_X + (CARD_W + GAP_X) * 2;
-  let extY = START_Y;
-  for (const card of extCards) {
-    positions.push({ id: card.id, type: card.type, x: extX, y: extY, width: CARD_W, height: CARD_H });
-    extY += CARD_H + GAP_Y;
-  }
+  const extX = exampleX + EXAMPLE_W + COL_GAP_X;
+  extended.forEach((ec, i) => {
+    positions.push({
+      id: ec.id,
+      type: "extended",
+      x: extX,
+      y: DETAIL_Y + i * (EXTENDED_H + EXAMPLE_GAP_Y),
+      width: EXTENDED_W,
+      height: EXTENDED_H,
+    });
+  });
 
   return positions;
 }
 
-export function MicroLearningCanvas({
-  cards,
-  connections,
-  knowledgePointId,
-  onCardsChange,
-  onConnectionsChange,
-  onPositionsChange,
-  savedPositions,
-}: MicroLearningCanvasProps) {
-  const [positions, setPositions] = useState<CardPosition[]>(() => {
-    if (savedPositions && savedPositions.length > 0) return savedPositions;
-    return computeInitialPositions(cards);
+function buildConnections(
+  recordId: string,
+  examples: ExampleAnalysis[],
+  extended: ExtendedCard[]
+): SimpleConnection[] {
+  const connections: SimpleConnection[] = [];
+  const detail = detailCardId(recordId);
+
+  examples.forEach((ex) => {
+    connections.push({ from: detail, to: exampleCardId(ex.questionId), kind: "apply" });
   });
+
+  extended.forEach((ec) => {
+    connections.push({ from: ec.sourceCardId, to: ec.id, kind: "extend" });
+  });
+
+  return connections;
+}
+
+export function MicroLearningCanvas({
+  recordId,
+  detailedExplanation,
+  knowledgePointName,
+  exampleAnalyses,
+  extendedCards,
+  onAddExtendedCard,
+  onRetryExample,
+}: MicroLearningCanvasProps) {
+  const [positions, setPositions] = useState<CardPosition[]>(() =>
+    computePositions(recordId, exampleAnalyses, extendedCards)
+  );
+
+  const exampleSig = useMemo(
+    () => exampleAnalyses.map((e) => e.questionId).join(","),
+    [exampleAnalyses]
+  );
+  const extendedSig = useMemo(
+    () => extendedCards.map((e) => e.id).join(","),
+    [extendedCards]
+  );
+
+  useEffect(() => {
+    setPositions((prev) => {
+      const computed = computePositions(recordId, exampleAnalyses, extendedCards);
+      const merged = computed.map((c) => {
+        const existing = prev.find((p) => p.id === c.id);
+        return existing ? { ...c, x: existing.x, y: existing.y } : c;
+      });
+      return merged;
+    });
+  }, [recordId, exampleSig, extendedSig, exampleAnalyses, extendedCards]);
+
+  const connections = useMemo(
+    () => buildConnections(recordId, exampleAnalyses, extendedCards),
+    [recordId, exampleAnalyses, extendedCards]
+  );
+
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [isPanning, setIsPanning] = useState(false);
@@ -82,104 +156,75 @@ export function MicroLearningCanvas({
   const dragRef = useRef<{ cardId: string; offsetX: number; offsetY: number } | null>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
 
-  // Selection popup state
   const [selPopup, setSelPopup] = useState({
-    visible: false, x: 0, y: 0, text: "", cardId: "", cardContent: "",
+    visible: false,
+    x: 0,
+    y: 0,
+    text: "",
+    cardId: "",
+    cardContent: "",
   });
   const [askLoading, setAskLoading] = useState(false);
+  const [retryingMap, setRetryingMap] = useState<Record<string, boolean>>({});
 
-  // Re-layout when cards array fully resets (generation complete)
-  const prevCardCountRef = useRef(cards.length);
-  useEffect(() => {
-    if (cards.length > 0 && prevCardCountRef.current === 0) {
-      if (!savedPositions || savedPositions.length === 0) {
-        setPositions(computeInitialPositions(cards));
-      }
-    }
-    prevCardCountRef.current = cards.length;
-  }, [cards, savedPositions]);
-
-  // Add positions for new cards (extended cards added after ask)
-  useEffect(() => {
-    setPositions((prev) => {
-      const existingIds = new Set(prev.map((p) => p.id));
-      const newCards = cards.filter((c) => !existingIds.has(c.id));
-      if (newCards.length === 0) return prev;
-
-      const maxX = Math.max(...prev.map((p) => p.x + p.width), 0);
-      const newPositions = newCards.map((card, i) => ({
-        id: card.id,
-        type: card.type,
-        x: maxX + 80,
-        y: 40 + i * 280,
-        width: 280,
-        height: 220,
-      }));
-
-      return [...prev, ...newPositions];
-    });
-  }, [cards]);
-
-  // Notify parent of position changes (separate effect to avoid setState-during-render)
-  const isInitialMount = useRef(true);
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    onPositionsChange?.(positions);
-  }, [positions, onPositionsChange]);
-
-  // Drag handlers
-  const handleDragStart = useCallback((cardId: string, e: React.PointerEvent) => {
-    const pos = positions.find((p) => p.id === cardId);
-    if (!pos) return;
-
-    const worldEl = viewportRef.current?.firstElementChild as HTMLElement;
-    if (!worldEl) return;
-    const worldRect = worldEl.getBoundingClientRect();
-
-    dragRef.current = {
-      cardId,
-      offsetX: (e.clientX - worldRect.left) / scale - pos.x,
-      offsetY: (e.clientY - worldRect.top) / scale - pos.y,
-    };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  }, [positions, scale]);
-
-  const handleViewportPointerDown = useCallback((e: React.PointerEvent) => {
-    if (dragRef.current) return;
-    if ((e.target as HTMLElement).closest("[data-card-id]")) return;
-    setIsPanning(true);
-    panStartRef.current = { x: e.clientX, y: e.clientY, panX: panOffset.x, panY: panOffset.y };
-  }, [panOffset]);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (dragRef.current) {
+  const handleDragStart = useCallback(
+    (cardId: string, e: React.PointerEvent) => {
+      const pos = positions.find((p) => p.id === cardId);
+      if (!pos) return;
       const worldEl = viewportRef.current?.firstElementChild as HTMLElement;
       if (!worldEl) return;
       const worldRect = worldEl.getBoundingClientRect();
+      dragRef.current = {
+        cardId,
+        offsetX: (e.clientX - worldRect.left) / scale - pos.x,
+        offsetY: (e.clientY - worldRect.top) / scale - pos.y,
+      };
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    },
+    [positions, scale]
+  );
 
-      const { cardId, offsetX, offsetY } = dragRef.current;
-      const newX = (e.clientX - worldRect.left) / scale - offsetX;
-      const newY = (e.clientY - worldRect.top) / scale - offsetY;
+  const handleViewportPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (dragRef.current) return;
+      if ((e.target as HTMLElement).closest("[data-card-id]")) return;
+      setIsPanning(true);
+      panStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        panX: panOffset.x,
+        panY: panOffset.y,
+      };
+    },
+    [panOffset]
+  );
 
-      setPositions((prev) =>
-        prev.map((p) => (p.id === cardId ? { ...p, x: newX, y: newY } : p))
-      );
-    } else if (isPanning) {
-      const dx = e.clientX - panStartRef.current.x;
-      const dy = e.clientY - panStartRef.current.y;
-      setPanOffset({ x: panStartRef.current.panX + dx, y: panStartRef.current.panY + dy });
-    }
-  }, [isPanning, scale]);
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (dragRef.current) {
+        const worldEl = viewportRef.current?.firstElementChild as HTMLElement;
+        if (!worldEl) return;
+        const worldRect = worldEl.getBoundingClientRect();
+        const { cardId, offsetX, offsetY } = dragRef.current;
+        const newX = (e.clientX - worldRect.left) / scale - offsetX;
+        const newY = (e.clientY - worldRect.top) / scale - offsetY;
+        setPositions((prev) =>
+          prev.map((p) => (p.id === cardId ? { ...p, x: newX, y: newY } : p))
+        );
+      } else if (isPanning) {
+        const dx = e.clientX - panStartRef.current.x;
+        const dy = e.clientY - panStartRef.current.y;
+        setPanOffset({ x: panStartRef.current.panX + dx, y: panStartRef.current.panY + dy });
+      }
+    },
+    [isPanning, scale]
+  );
 
   const handlePointerUp = useCallback(() => {
     dragRef.current = null;
     setIsPanning(false);
   }, []);
 
-  // Zoom
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.08 : 0.08;
@@ -189,77 +234,90 @@ export function MicroLearningCanvas({
   const zoomIn = () => setScale((s) => Math.min(2, s + 0.12));
   const zoomOut = () => setScale((s) => Math.max(0.3, s - 0.12));
 
-  // Text selection — improved to handle multi-line selections
-  const handleTextSelect = useCallback((cardId: string, text: string, rect: DOMRect, cardContent: string) => {
-    if (rect.width === 0 && rect.height === 0) return;
-    setSelPopup({
-      visible: true,
-      x: rect.left + rect.width / 2,
-      y: rect.bottom + 8,
-      text,
-      cardId,
-      cardContent,
-    });
-  }, []);
+  const handleTextSelect = useCallback(
+    (cardId: string, text: string, rect: DOMRect, cardContent: string) => {
+      if (rect.width === 0 && rect.height === 0) return;
+      setSelPopup({
+        visible: true,
+        x: rect.left + rect.width / 2,
+        y: rect.bottom + 8,
+        text,
+        cardId,
+        cardContent,
+      });
+    },
+    []
+  );
 
-  // Card-level ask button
-  const handleAskCard = useCallback((cardId: string, cardContent: string) => {
-    const card = cards.find((c) => c.id === cardId);
-    const cardEl = viewportRef.current?.querySelector(`[data-card-id="${cardId}"]`);
-    if (!cardEl) return;
-    const rect = cardEl.getBoundingClientRect();
-    setSelPopup({
-      visible: true,
-      x: rect.right + 8,
-      y: rect.top,
-      text: card?.title || "",
-      cardId,
-      cardContent,
-    });
-  }, [cards]);
-
-  const handleAsk = useCallback(async (question: string) => {
+  const handleAsk = useCallback(async () => {
     if (askLoading) return;
     setAskLoading(true);
-
     try {
-      const res = await fetch("/api/micro-learning/ask", {
+      const res = await fetch(`/api/micro-learning/${recordId}/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          knowledgePointId,
-          selectedText: question,
+          selectedText: selPopup.text,
           sourceCardId: selPopup.cardId,
           sourceCardContent: selPopup.cardContent,
         }),
       });
+      if (!res.ok) {
+        console.error("[micro-learning] ask failed", await res.text());
+        return;
+      }
       const data = await res.json();
-
       if (data.card) {
-        onCardsChange([...cards, data.card]);
-        onConnectionsChange([...connections, data.connection]);
+        onAddExtendedCard(data.card as ExtendedCard);
       }
     } finally {
       setAskLoading(false);
       setSelPopup((s) => ({ ...s, visible: false }));
     }
-  }, [askLoading, knowledgePointId, selPopup, cards, connections, onCardsChange, onConnectionsChange]);
+  }, [askLoading, recordId, selPopup, onAddExtendedCard]);
 
   const handleClosePopup = useCallback(() => {
-    if (!askLoading) {
-      setSelPopup((s) => ({ ...s, visible: false }));
-    }
+    if (!askLoading) setSelPopup((s) => ({ ...s, visible: false }));
   }, [askLoading]);
 
-  // Dismiss popup on viewport click (but not on card or popup click)
-  const handleViewportClick = useCallback((e: React.MouseEvent) => {
-    if (selPopup.visible && !askLoading) {
-      const target = e.target as HTMLElement;
-      if (!target.closest("[data-card-id]")) {
-        setSelPopup((s) => ({ ...s, visible: false }));
+  const handleViewportClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (selPopup.visible && !askLoading) {
+        const target = e.target as HTMLElement;
+        if (!target.closest("[data-card-id]")) {
+          setSelPopup((s) => ({ ...s, visible: false }));
+        }
       }
-    }
-  }, [selPopup.visible, askLoading]);
+    },
+    [selPopup.visible, askLoading]
+  );
+
+  const handleRetry = useCallback(
+    async (questionId: string) => {
+      if (retryingMap[questionId]) return;
+      setRetryingMap((m) => ({ ...m, [questionId]: true }));
+      try {
+        const res = await fetch(`/api/micro-learning/${recordId}/retry-example`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ questionId }),
+        });
+        if (!res.ok) {
+          console.error("[micro-learning] retry failed", await res.text());
+          return;
+        }
+        const data = await res.json();
+        if (data.example?.analysis) {
+          onRetryExample(questionId, data.example.analysis);
+        }
+      } finally {
+        setRetryingMap((m) => ({ ...m, [questionId]: false }));
+      }
+    },
+    [recordId, retryingMap, onRetryExample]
+  );
+
+  const detailId = detailCardId(recordId);
 
   return (
     <>
@@ -286,29 +344,72 @@ export function MicroLearningCanvas({
         >
           <CardConnections connections={connections} cardPositions={positions} />
 
-          {cards.map((card) => {
-            const pos = positions.find((p) => p.id === card.id);
+          {(() => {
+            const pos = positions.find((p) => p.id === detailId);
             if (!pos) return null;
             return (
               <LearningCard
-                key={card.id}
-                id={card.id}
-                type={card.type}
-                title={card.title}
-                content={card.content}
-                importance={card.importance}
-                sourceKeyword={card.sourceKeyword}
+                key={detailId}
+                id={detailId}
+                type="detail"
+                title={knowledgePointName}
+                content={detailedExplanation}
                 x={pos.x}
                 y={pos.y}
                 onDragStart={handleDragStart}
                 onTextSelect={handleTextSelect}
-                onAskCard={handleAskCard}
+              />
+            );
+          })()}
+
+          {exampleAnalyses.map((ex) => {
+            const id = exampleCardId(ex.questionId);
+            const pos = positions.find((p) => p.id === id);
+            if (!pos) return null;
+            return (
+              <LearningCard
+                key={id}
+                id={id}
+                type="example"
+                title={ex.content}
+                content={ex.analysis}
+                questionId={ex.questionId}
+                questionMeta={{
+                  options: ex.options,
+                  answer: ex.answer,
+                  userAnswer: ex.userAnswer,
+                  isWrong: ex.isWrong,
+                }}
+                x={pos.x}
+                y={pos.y}
+                onDragStart={handleDragStart}
+                onTextSelect={handleTextSelect}
+                onRetryExample={handleRetry}
+                retrying={!!retryingMap[ex.questionId]}
+              />
+            );
+          })}
+
+          {extendedCards.map((ec) => {
+            const pos = positions.find((p) => p.id === ec.id);
+            if (!pos) return null;
+            return (
+              <LearningCard
+                key={ec.id}
+                id={ec.id}
+                type="extended"
+                title={ec.title}
+                content={ec.content}
+                sourceKeyword={ec.sourceKeyword}
+                x={pos.x}
+                y={pos.y}
+                onDragStart={handleDragStart}
+                onTextSelect={handleTextSelect}
               />
             );
           })}
         </div>
 
-        {/* Zoom controls */}
         <div className="absolute bottom-5 right-5 z-20 flex flex-col gap-1">
           <button onClick={zoomIn} className="w-[30px] h-[30px] rounded-lg bg-white border border-border flex items-center justify-center text-[16px] font-bold text-text-secondary shadow-sm hover:bg-background-alt hover:text-foreground transition-all">
             +
@@ -328,7 +429,7 @@ export function MicroLearningCanvas({
         y={selPopup.y}
         selectedText={selPopup.text}
         loading={askLoading}
-        onAsk={handleAsk}
+        onConfirm={handleAsk}
         onClose={handleClosePopup}
       />
     </>
