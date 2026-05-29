@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PointMaster · 练习</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    /* ===== 顶栏 ===== */
+    .practice-topbar {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 26px; border-bottom: 1px solid var(--border);
+      background: var(--white); flex-shrink: 0;
+    }
+    .pt-bank { display: flex; align-items: center; gap: 10px; }
+    .pt-bank-ic { font-size: 18px; }
+    .pt-bank-nm { font-family: var(--ff-d); font-size: 15px; font-weight: 700; color: var(--t1); }
+    .pt-divider { width: 1px; height: 18px; background: var(--border); }
+    .pt-kp {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(159,185,151,.14); border-radius: 50px;
+      padding: 4px 11px; font-size: 12px; color: var(--p-dk); font-weight: 600;
+    }
+    .pt-kp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--p); }
+    .pt-block-info {
+      font-size: 12.5px; color: var(--t2); font-weight: 600;
+    }
+    .pt-block-info strong { color: var(--t1); }
+    .pt-spacer { flex: 1; }
+    .pt-mode-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--agent-blue-lt); color: var(--agent-blue);
+      border-radius: 50px; padding: 4px 11px;
+      font-size: 11.5px; font-weight: 600;
+    }
+
+    /* ===== 主容器 ===== */
+    .practice-body {
+      flex: 1; display: grid; grid-template-columns: 1fr 280px;
+      gap: 20px; padding: 22px 26px; overflow: hidden; min-height: 0;
+    }
+
+    /* 主内容区（做题/微学习共用容器，淡入淡出切换） */
+    .pmain { overflow-y: auto; padding-right: 4px; min-height: 0; position: relative; }
+    .pmain-state {
+      animation: fadeIn .3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ===== 做题态 ===== */
+    .quiz-card { background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh-sm); }
+    .qc-head { padding: 18px 26px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; }
+    .q-num { font-size: 11.5px; font-weight: 600; color: var(--t3); letter-spacing: .04em; }
+    .q-meta { display: flex; align-items: center; gap: 10px; }
+    .q-diff { display: flex; gap: 3px; }
+    .dd { width: 6px; height: 6px; border-radius: 50%; background: var(--bg2); }
+    .dd.f { background: var(--p); }
+    .qc-body { padding: 26px; }
+    .q-text { font-size: 15.5px; line-height: 1.72; color: var(--t1);
+      font-weight: 500; margin-bottom: 24px; }
+    .q-opts { display: flex; flex-direction: column; gap: 10px; }
+    .q-opt {
+      display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
+      border: 1.5px solid var(--border); border-radius: var(--r-md); cursor: pointer;
+      transition: all .15s ease;
+    }
+    .q-opt:hover { border-color: var(--p); background: rgba(159,185,151,.05); }
+    .q-opt.sel { border-color: var(--p-dk); background: rgba(159,185,151,.1); }
+    .q-opt.ok { border-color: var(--p-dk); background: rgba(107,140,100,.07); }
+    .q-opt.ng { border-color: #c97070; background: rgba(201,112,112,.05); }
+    .opt-lt {
+      width: 26px; height: 26px; border-radius: 7px; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11.5px; font-weight: 700; color: var(--t2); flex-shrink: 0;
+      transition: all .15s ease;
+    }
+    .q-opt.sel .opt-lt { background: var(--p-dk); color: white; }
+    .q-opt.ok .opt-lt { background: var(--p-dk); color: white; }
+    .q-opt.ng .opt-lt { background: #c97070; color: white; }
+    .opt-tx { font-size: 13.5px; color: var(--t1); line-height: 1.5; padding-top: 3px; }
+    .qc-foot { padding: 16px 26px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; }
+    .answer-fb {
+      margin-top: 14px; padding: 16px 20px;
+      background: rgba(159,185,151,.06); border: 1px solid var(--p-lt);
+      border-radius: var(--r-md);
+    }
+    .fb-hdr { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+    .fb-ok { font-size: 14px; font-weight: 700; color: var(--p-dk); }
+    .fb-time { font-size: 11px; color: var(--t3); margin-left: auto; }
+    .fb-txt { font-size: 13px; color: var(--t2); line-height: 1.7; }
+    .fb-score {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--p-dk); color: white; padding: 2px 9px;
+      border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+
+    /* Block 进度条 */
+    .block-prog {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 14px 18px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .block-prog-lbl {
+      font-size: 11.5px; color: var(--t3); font-weight: 600;
+      letter-spacing: .04em; text-transform: uppercase; flex-shrink: 0;
+    }
+    .block-prog-dots { display: flex; gap: 6px; flex: 1; }
+    .bp-dot {
+      flex: 1; height: 6px; border-radius: 10px; background: var(--bg2);
+      transition: all .3s ease;
+    }
+    .bp-dot.done { background: linear-gradient(90deg, var(--p), var(--p-dk)); }
+    .bp-dot.wrong { background: linear-gradient(90deg, #c97878, #aa5050); }
+    .bp-dot.current { background: var(--p-lt); animation: pulse-dot 1.6s infinite; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: .55; }
+      50%      { opacity: 1; }
+    }
+    .block-prog-num { font-size: 12.5px; font-weight: 700; color: var(--t1); flex-shrink: 0; }
+
+    /* ===== 微学习态 ===== */
+    .ml-doc {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 32px 38px;
+      box-shadow: var(--sh-sm);
+    }
+    .ml-doc-hdr {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 22px;
+      padding-bottom: 18px; border-bottom: 1px solid var(--border);
+    }
+    .ml-doc-ic {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      background: linear-gradient(135deg, #ffd97a, #c89030);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .ml-doc-title {
+      font-family: var(--ff-d); font-size: 22px; font-weight: 700;
+      color: var(--t1); letter-spacing: -.02em;
+    }
+    .ml-doc-sub { font-size: 12.5px; color: var(--t3); margin-top: 2px; }
+    .ml-section-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--p-dk);
+      margin: 28px 0 14px; padding-left: 10px;
+      border-left: 3px solid var(--p);
+    }
+    .ml-explanation {
+      font-size: 14px; line-height: 1.85; color: var(--t1);
+      user-select: text;
+    }
+    .ml-explanation p { margin-bottom: 14px; }
+    .ml-explanation strong { color: var(--p-dk); font-weight: 700; }
+    .ml-explanation code {
+      background: var(--bg2); padding: 1px 6px; border-radius: 4px;
+      font-family: 'SF Mono', Monaco, monospace; font-size: 13px;
+      color: var(--t1);
+    }
+    .ml-explanation .formula {
+      display: block; background: var(--bg); border-left: 3px solid var(--p);
+      padding: 12px 18px; margin: 14px 0; border-radius: 0 8px 8px 0;
+      font-family: 'Cambria Math', Georgia, serif; font-size: 15px;
+      color: var(--t1); line-height: 1.5;
+    }
+    .ml-concept-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+    .ml-concept {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 16px 20px;
+      transition: border-color .15s ease;
+    }
+    .ml-concept:hover { border-color: var(--p-lt); }
+    .ml-concept-title {
+      font-family: var(--ff-d); font-size: 15px; font-weight: 600;
+      color: var(--t1); margin-bottom: 8px;
+    }
+    .ml-concept-content { font-size: 13.5px; color: var(--t2); line-height: 1.7; user-select: text; }
+    .ml-concept-formula {
+      background: var(--white); border: 1px solid var(--bord2);
+      border-radius: 8px; padding: 10px 14px; margin-top: 10px;
+      font-family: 'Cambria Math', Georgia, serif; font-size: 14px;
+      color: var(--p-dk); display: inline-block;
+    }
+    /* 追问记录 */
+    .ml-followups { margin-top: 8px; display: flex; flex-direction: column; gap: 14px; }
+    .ml-fq {
+      background: linear-gradient(135deg, rgba(111,141,181,.06), rgba(159,185,151,.04));
+      border: 1px solid rgba(111,141,181,.2);
+      border-radius: var(--r-md); padding: 14px 18px;
+    }
+    .ml-fq-q { display: flex; gap: 8px; font-size: 13px; color: var(--t1); margin-bottom: 8px; }
+    .ml-fq-q .label { font-weight: 700; color: var(--agent-blue); flex-shrink: 0; }
+    .ml-fq-q .label-q { color: var(--p-dk); }
+    .ml-fq-a { display: flex; gap: 8px; font-size: 13px; color: var(--t2); line-height: 1.65; }
+    .ml-fq-source { font-size: 11px; color: var(--t3); margin-top: 6px; padding-left: 22px; }
+    .ml-fq-source mark {
+      background: rgba(200,160,80,.15); color: var(--warn-dk);
+      padding: 0 4px; border-radius: 3px;
+    }
+
+    .ml-actions {
+      margin-top: 28px; padding-top: 22px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .ml-tip { font-size: 11.5px; color: var(--t3); }
+    .ml-tip mark {
+      background: rgba(159,185,151,.25); color: var(--p-dk);
+      padding: 1px 6px; border-radius: 3px; font-weight: 600;
+    }
+
+    /* ===== 侧栏 ===== */
+    .psb { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+    .psb-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 16px 18px;
+    }
+    .psb-tt { font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--t3); margin-bottom: 12px; }
+    .kp-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .kp-row:last-child { margin-bottom: 0; }
+    .kp-rh { display: flex; justify-content: space-between; align-items: center; }
+    .kp-rn { font-size: 12.5px; font-weight: 500; color: var(--t1); }
+    .kp-rn.curr { color: var(--p-dk); font-weight: 700; }
+    .kp-pct { font-size: 12px; font-weight: 700; color: var(--p-dk); }
+    .kp-pct-r { color: #aa5050; }
+    .kp-trend {
+      font-size: 10px; margin-left: 4px;
+    }
+    .kp-trend-up { color: var(--p-dk); }
+    .kp-trend-dn { color: #aa5050; }
+
+    .quiz-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .qnum-box { background: var(--bg); border-radius: var(--r-sm); padding: 12px; text-align: center; }
+    .qnum-big { font-family: var(--ff-d); font-size: 26px; font-weight: 700; line-height: 1; }
+    .qnum-lbl { font-size: 10.5px; color: var(--t3); margin-top: 2px; }
+    .session-stat-row {
+      display: flex; justify-content: space-between;
+      font-size: 12px; padding: 6px 0;
+    }
+    .session-stat-row + .session-stat-row { border-top: 1px solid var(--border); }
+    .session-stat-row .v { font-weight: 700; color: var(--t1); }
+    .session-stat-row .l { color: var(--t3); }
+
+    /* ============================================================
+       Agent 决策弹窗
+    ============================================================ */
+    .agent-modal-backdrop {
+      position: fixed; inset: 0; background: rgba(30,40,34,.32);
+      z-index: 2000; display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+    .agent-modal-backdrop.open { display: flex; animation: fadeIn .18s ease; }
+    .agent-modal {
+      background: var(--white); border-radius: var(--r-xl);
+      width: 520px; max-height: 86vh; overflow: hidden;
+      display: flex; flex-direction: column;
+      box-shadow: 0 20px 60px rgba(30,40,34,.28), 0 4px 16px rgba(30,40,34,.12);
+      animation: popUp .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popUp {
+      from { opacity:0; transform: scale(.9) translateY(12px); }
+      to   { opacity:1; transform: scale(1) translateY(0); }
+    }
+    .agent-modal-head {
+      padding: 22px 26px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+      background: linear-gradient(135deg, rgba(111,141,181,.08), rgba(159,185,151,.04));
+    }
+    .agent-avatar {
+      width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--agent-blue), #5a7395);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; box-shadow: 0 4px 12px rgba(111,141,181,.25);
+    }
+    .agent-modal-title {
+      font-family: var(--ff-d); font-size: 17px; font-weight: 700;
+      color: var(--t1); letter-spacing: -.01em;
+    }
+    .agent-modal-sub { font-size: 11.5px; color: var(--t3); margin-top: 1px; }
+    .agent-status-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--p);
+      box-shadow: 0 0 0 0 rgba(159,185,151,.5);
+      animation: pulse-dot-2 1.5s infinite;
+      margin-left: auto; flex-shrink: 0;
+    }
+    @keyframes pulse-dot-2 {
+      0%   { box-shadow: 0 0 0 0 rgba(159,185,151,.5); }
+      70%  { box-shadow: 0 0 0 8px rgba(159,185,151,0); }
+      100% { box-shadow: 0 0 0 0 rgba(159,185,151,0); }
+    }
+
+    .agent-modal-body { padding: 24px 26px; overflow-y: auto; }
+
+    /* 流式分析文本 */
+    .agent-analysis {
+      font-size: 13.5px; line-height: 1.75; color: var(--t1);
+      min-height: 60px;
+    }
+    .agent-analysis .typing::after {
+      content: '▍'; color: var(--p-dk); animation: blink 1s infinite;
+      font-weight: 100;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .agent-analysis strong { color: var(--p-dk); font-weight: 700; }
+
+    /* 加载点 */
+    .agent-loading {
+      display: inline-flex; gap: 5px; align-items: center;
+      color: var(--t3); font-size: 12.5px;
+    }
+    .agent-loading-dots { display: inline-flex; gap: 3px; }
+    .agent-loading-dots span {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--p-dk);
+      animation: bounce 1.2s infinite;
+    }
+    .agent-loading-dots span:nth-child(2) { animation-delay: .15s; }
+    .agent-loading-dots span:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce {
+      0%, 100% { opacity: .3; transform: translateY(0); }
+      50%      { opacity: 1; transform: translateY(-3px); }
+    }
+
+    /* 建议卡片 */
+    .agent-suggestion {
+      margin-top: 18px; padding: 16px 18px;
+      background: linear-gradient(135deg, rgba(159,185,151,.1), rgba(200,212,192,.06));
+      border: 1.5px solid var(--p);
+      border-radius: var(--r-md);
+      opacity: 0; transform: translateY(8px);
+      transition: opacity .3s ease, transform .3s ease;
+    }
+    .agent-suggestion.shown { opacity: 1; transform: translateY(0); }
+    .agent-sug-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--p-dk); margin-bottom: 8px;
+    }
+    .agent-sug-action {
+      font-size: 14.5px; font-weight: 700; color: var(--t1);
+      margin-bottom: 5px; display: flex; align-items: center; gap: 6px;
+    }
+    .agent-sug-detail { font-size: 12.5px; color: var(--t2); line-height: 1.55; }
+
+    /* 下一步预览 */
+    .agent-preview {
+      margin-top: 14px; padding: 12px 16px;
+      background: var(--bg); border-radius: var(--r-sm);
+      font-size: 11.5px; color: var(--t3); line-height: 1.6;
+      opacity: 0; transition: opacity .3s ease .15s;
+    }
+    .agent-preview.shown { opacity: 1; }
+    .agent-preview .label {
+      font-weight: 700; color: var(--t2); margin-bottom: 3px;
+      text-transform: uppercase; letter-spacing: .05em; font-size: 10px;
+    }
+
+    /* 操作按钮 */
+    .agent-modal-footer {
+      padding: 16px 26px 22px; border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .agent-actions-row {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .agent-actions-row .btn { flex: 1; justify-content: center; min-width: 0;
+      font-size: 12.5px; padding: 10px 12px; }
+    .agent-secondary-row {
+      display: flex; gap: 8px; justify-content: space-between;
+    }
+    .agent-secondary-row .btn { font-size: 12px; padding: 7px 14px; }
+
+    /* 知识点选择展开 */
+    .kp-picker {
+      display: none; flex-direction: column; gap: 6px;
+      margin-top: 10px; padding: 12px;
+      background: var(--bg); border-radius: var(--r-sm);
+      max-height: 200px; overflow-y: auto;
+    }
+    .kp-picker.open { display: flex; animation: fadeIn .2s ease; }
+    .kp-pick-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; background: var(--white); border-radius: 6px;
+      font-size: 12.5px; cursor: pointer;
+      border: 1px solid transparent; transition: all .15s ease;
+    }
+    .kp-pick-item:hover { border-color: var(--p); background: rgba(159,185,151,.05); }
+    .kp-pick-pct { font-size: 11px; font-weight: 700; color: var(--p-dk); }
+    .kp-pick-pct.r { color: #aa5050; }
+
+    /* Agent 弹窗内 - 知识点掌握度一览（PRD 5 页面4 要求） */
+    .agent-mastery-overview {
+      margin-top: 16px; padding: 12px 14px;
+      background: var(--bg); border-radius: var(--r-sm);
+      opacity: 0; transition: opacity .3s ease .25s;
+    }
+    .agent-mastery-overview.shown { opacity: 1; }
+    .amo-tt {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--t3); margin-bottom: 8px;
+    }
+    .amo-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
+    }
+    .amo-row:last-child { margin-bottom: 0; }
+    .amo-name { font-size: 11.5px; color: var(--t1); width: 64px; flex-shrink: 0; }
+    .amo-name.active { color: var(--p-dk); font-weight: 700; }
+    .amo-bar { flex: 1; height: 4px; background: var(--bg2); border-radius: 8px; overflow: hidden; }
+    .amo-bar-fill { height: 100%; border-radius: 8px;
+      background: linear-gradient(90deg, var(--p), var(--p-dk)); }
+    .amo-bar-fill.r { background: linear-gradient(90deg, #c97878, #aa5050); }
+    .amo-bar-fill.w { background: linear-gradient(90deg, #c8a850, #a07820); }
+    .amo-pct { font-size: 11px; font-weight: 700; color: var(--p-dk); width: 32px; text-align: right; flex-shrink: 0; }
+    .amo-pct.r { color: #aa5050; }
+
+    /* 主观题（填空/简答/计算）输入框 */
+    .q-input {
+      width: 100%; min-height: 46px;
+      border: 1.5px solid var(--bord2); border-radius: var(--r-sm);
+      padding: 12px 14px; font-family: inherit; font-size: 13.5px;
+      color: var(--t1); resize: vertical; transition: all .15s ease;
+      background: var(--white);
+    }
+    .q-input:focus { outline: none; border-color: var(--p);
+      background: rgba(159,185,151,.04); box-shadow: 0 0 0 3px rgba(159,185,151,.1); }
+    .q-input.short { min-height: 38px; max-height: 38px; resize: none; }
+
+    /* LLM 判分反馈（主观题） */
+    .answer-fb.llm {
+      background: linear-gradient(135deg, rgba(111,141,181,.05), rgba(159,185,151,.04));
+      border-color: rgba(111,141,181,.3);
+    }
+    .fb-llm-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--agent-blue); color: white;
+      padding: 2px 9px; border-radius: 20px;
+      font-size: 10.5px; font-weight: 700; letter-spacing: .03em;
+    }
+    .fb-partial {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--warn); color: white; padding: 2px 9px;
+      border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .fb-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;
+    }
+    .fb-cell {
+      background: var(--white); border-radius: var(--r-sm);
+      padding: 10px 12px; border: 1px solid var(--border);
+    }
+    .fb-cell-tt {
+      font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; margin-bottom: 4px;
+    }
+    .fb-cell.ok .fb-cell-tt { color: var(--p-dk); }
+    .fb-cell.ng .fb-cell-tt { color: #aa3838; }
+    .fb-cell-tx { font-size: 12px; color: var(--t2); line-height: 1.6; }
+
+    /* 题型切换演示条 */
+    .qtype-switcher {
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .qtype-switcher .btn { font-size: 10.5px; padding: 4px 10px; }
+    .qtype-switcher .btn.act { background: var(--p-dk); color: white; }
+
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        </div>
+        <div>
+          <div class="sb-name">PointMaster</div>
+          <div class="sb-sub">慧刷题</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-section">
+        <div class="nav-label">学习</div>
+        <a class="nav-item" href="index.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          首页
+        </a>
+        <a class="nav-item" href="banks.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          题库管理
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">进行中</div>
+        <a class="nav-item active" href="practice.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          练习
+          <span class="nav-badge">●</span>
+        </a>
+        <a class="nav-item" href="report.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          掌握报告
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-av">倪</div>
+        <div>
+          <div class="user-nm">倪镭</div>
+          <div class="user-st">🔥 连续 7 天</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN ==================== -->
+  <main class="main">
+
+    <!-- 顶栏 -->
+    <div class="practice-topbar">
+      <div class="pt-bank">
+        <span class="pt-bank-ic">📐</span>
+        <span class="pt-bank-nm">高等数学</span>
+      </div>
+      <div class="pt-divider"></div>
+      <div class="pt-kp">
+        <div class="pt-kp-dot"></div>
+        <span id="pt-kp-name">导数</span>
+      </div>
+      <div class="pt-block-info">
+        <strong id="pt-block-num">Block 4</strong>
+        <span id="pt-block-progress"> · 第 3/5 题</span>
+      </div>
+      <div class="pt-spacer"></div>
+      <span class="pt-mode-tag" id="pt-state-tag">📝 做题中</span>
+      <button class="btn btn-s" style="font-size:12px;padding:7px 12px"
+              onclick="if(confirm('结束本次练习？')) location.href='report.html'">结束练习</button>
+    </div>
+
+    <!-- 主体 -->
+    <div class="practice-body">
+
+      <!-- 主内容区（做题/微学习切换） -->
+      <div class="pmain">
+
+        <!-- ============ 做题态 ============ -->
+        <div class="pmain-state" id="state-quiz">
+
+          <!-- Block 进度条 -->
+          <div class="block-prog">
+            <span class="block-prog-lbl">Block 4 进度</span>
+            <div class="block-prog-dots" id="bp-dots">
+              <div class="bp-dot done"></div>
+              <div class="bp-dot wrong"></div>
+              <div class="bp-dot current"></div>
+              <div class="bp-dot"></div>
+              <div class="bp-dot"></div>
+            </div>
+            <span class="block-prog-num">3 / 5</span>
+          </div>
+
+          <!-- 题型切换（原型演示用） -->
+          <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:11px;color:var(--t3);flex-wrap:wrap">
+            <strong style="color:var(--t2);letter-spacing:.06em">题型演示：</strong>
+            <div class="qtype-switcher">
+              <button class="btn btn-s act" data-qt="choice" onclick="switchQType('choice')">单选</button>
+              <button class="btn btn-s" data-qt="multi" onclick="switchQType('multi')">多选</button>
+              <button class="btn btn-s" data-qt="tf" onclick="switchQType('tf')">判断</button>
+              <button class="btn btn-s" data-qt="fill" onclick="switchQType('fill')">填空</button>
+              <button class="btn btn-s" data-qt="short" onclick="switchQType('short')">简答</button>
+              <button class="btn btn-s" data-qt="calc" onclick="switchQType('calc')">计算（LLM 判分）</button>
+            </div>
+          </div>
+
+          <!-- ========== 题目卡片：选择题（默认） ========== -->
+          <div class="quiz-card" id="qc-choice">
+            <div class="qc-head">
+              <span class="q-num">第 18 题 / 共 320 题</span>
+              <div class="q-meta">
+                <div class="q-diff">
+                  <div class="dd f"></div><div class="dd f"></div>
+                  <div class="dd f"></div><div class="dd"></div><div class="dd"></div>
+                </div>
+                <span class="txs tm">中等难度</span>
+                <span class="chip chip-g" style="font-size:10.5px">单选</span>
+              </div>
+            </div>
+            <div class="qc-body">
+              <div class="q-text">设函数 f(x) = x³ − 3x + 2，下列关于 f(x) 极值的说法，正确的是？</div>
+              <div class="q-opts">
+                <div class="q-opt" onclick="pickOpt(this)">
+                  <div class="opt-lt">A</div>
+                  <div class="opt-tx">f(x) 在 x = 1 处取得极大值，在 x = −1 处取得极小值</div>
+                </div>
+                <div class="q-opt ok" onclick="pickOpt(this)">
+                  <div class="opt-lt">B</div>
+                  <div class="opt-tx">f(x) 在 x = −1 处取得极大值，在 x = 1 处取得极小值</div>
+                </div>
+                <div class="q-opt" onclick="pickOpt(this)">
+                  <div class="opt-lt">C</div>
+                  <div class="opt-tx">f(x) 在 x = 0 处取得极值</div>
+                </div>
+                <div class="q-opt" onclick="pickOpt(this)">
+                  <div class="opt-lt">D</div>
+                  <div class="opt-tx">f(x) 没有极值</div>
+                </div>
+              </div>
+              <div class="answer-fb">
+                <div class="fb-hdr">
+                  <span style="font-size:15px">✅</span>
+                  <span class="fb-ok">回答正确！</span>
+                  <span class="fb-score">+1.0 分</span>
+                  <span class="fb-time">用时 18 秒（预期 30 秒）</span>
+                </div>
+                <div class="fb-txt">
+                  <strong>解析：</strong>f'(x) = 3x² − 3 = 3(x+1)(x−1)，令 f'(x) = 0 得 x = ±1。
+                  f''(−1) = −6 &lt; 0，故 x = −1 为极大值点；f''(1) = 6 &gt; 0，故 x = 1 为极小值点。
+                </div>
+              </div>
+            </div>
+            <div class="qc-foot">
+              <button class="btn btn-g" style="font-size:12.5px">跳过此题</button>
+              <div class="flex g8">
+                <button class="btn btn-s" style="font-size:12.5px">查看解析</button>
+                <button class="btn btn-p" style="font-size:12.5px" onclick="nextQuestion()">下一题 →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ========== 题目卡片：多选题 ========== -->
+          <div class="quiz-card" id="qc-multi" style="display:none">
+            <div class="qc-head">
+              <span class="q-num">第 18 题 / 共 320 题</span>
+              <div class="q-meta">
+                <span class="txs tm">中等难度</span>
+                <span class="chip chip-g" style="font-size:10.5px">多选</span>
+              </div>
+            </div>
+            <div class="qc-body">
+              <div class="q-text">关于函数 f(x) 在 x₀ 处可导，下列说法正确的有（多选）？</div>
+              <div class="q-opts">
+                <div class="q-opt sel" onclick="pickOptMulti(this)">
+                  <div class="opt-lt">A</div>
+                  <div class="opt-tx">f(x) 必须在 x₀ 处连续</div>
+                </div>
+                <div class="q-opt" onclick="pickOptMulti(this)">
+                  <div class="opt-lt">B</div>
+                  <div class="opt-tx">f(x) 在 x₀ 处的左、右导数必须存在</div>
+                </div>
+                <div class="q-opt sel" onclick="pickOptMulti(this)">
+                  <div class="opt-lt">C</div>
+                  <div class="opt-tx">f(x) 在 x₀ 处的左、右导数必须相等</div>
+                </div>
+                <div class="q-opt" onclick="pickOptMulti(this)">
+                  <div class="opt-lt">D</div>
+                  <div class="opt-tx">f(x) 在 x₀ 的某邻域内必须有定义</div>
+                </div>
+              </div>
+              <div style="margin-top:10px;font-size:11.5px;color:var(--t3)">
+                💡 已选 <strong style="color:var(--p-dk)">A、C</strong> · 多选题至少选 1 项
+              </div>
+            </div>
+            <div class="qc-foot">
+              <button class="btn btn-g" style="font-size:12.5px">跳过此题</button>
+              <button class="btn btn-p" style="font-size:12.5px">提交答案 →</button>
+            </div>
+          </div>
+
+          <!-- ========== 题目卡片：判断题 ========== -->
+          <div class="quiz-card" id="qc-tf" style="display:none">
+            <div class="qc-head">
+              <span class="q-num">第 18 题 / 共 320 题</span>
+              <div class="q-meta">
+                <span class="txs tm">简单</span>
+                <span class="chip chip-g" style="font-size:10.5px">判断</span>
+              </div>
+            </div>
+            <div class="qc-body">
+              <div class="q-text">命题：若函数 f(x) 在某点连续，则 f(x) 在该点必可导。</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+                <div class="q-opt" style="justify-content:center;flex-direction:column;text-align:center;padding:22px"
+                     onclick="pickOpt(this)">
+                  <div style="font-size:30px;margin-bottom:4px">✓</div>
+                  <div style="font-size:14px;font-weight:600">正确</div>
+                </div>
+                <div class="q-opt ok" style="justify-content:center;flex-direction:column;text-align:center;padding:22px"
+                     onclick="pickOpt(this)">
+                  <div style="font-size:30px;margin-bottom:4px">✗</div>
+                  <div style="font-size:14px;font-weight:600">错误</div>
+                </div>
+              </div>
+              <div class="answer-fb" style="margin-top:14px">
+                <div class="fb-hdr">
+                  <span style="font-size:15px">✅</span>
+                  <span class="fb-ok">回答正确！</span>
+                  <span class="fb-score">+1.0 分</span>
+                </div>
+                <div class="fb-txt">
+                  <strong>解析：</strong>连续不一定可导。例如 f(x) = |x| 在 x = 0 处连续但不可导（左右导数不相等）。可导是连续的更强条件。
+                </div>
+              </div>
+            </div>
+            <div class="qc-foot">
+              <button class="btn btn-g" style="font-size:12.5px">跳过此题</button>
+              <button class="btn btn-p" style="font-size:12.5px" onclick="nextQuestion()">下一题 →</button>
+            </div>
+          </div>
+
+          <!-- ========== 题目卡片：填空题 ========== -->
+          <div class="quiz-card" id="qc-fill" style="display:none">
+            <div class="qc-head">
+              <span class="q-num">第 18 题 / 共 320 题</span>
+              <div class="q-meta">
+                <span class="txs tm">中等难度</span>
+                <span class="chip chip-g" style="font-size:10.5px">填空</span>
+              </div>
+            </div>
+            <div class="qc-body">
+              <div class="q-text">设 f(x) = sin(2x)，则 f'(π/4) = ______。</div>
+              <input type="text" class="q-input short" value="0" placeholder="请输入答案" />
+              <div style="margin-top:6px;font-size:11px;color:var(--t3)">
+                💡 支持简单数值或表达式 · 不匹配时由 AI 判断是否近义表述
+              </div>
+
+              <div class="answer-fb">
+                <div class="fb-hdr">
+                  <span style="font-size:15px">✅</span>
+                  <span class="fb-ok">回答正确！</span>
+                  <span class="fb-score">+1.0 分</span>
+                  <span class="fb-time">用时 24 秒</span>
+                </div>
+                <div class="fb-txt">
+                  <strong>标准答案：</strong>0 ｜ <strong>解析：</strong>f'(x) = 2cos(2x)，代入 x = π/4 得 2cos(π/2) = 0。
+                </div>
+              </div>
+            </div>
+            <div class="qc-foot">
+              <button class="btn btn-g" style="font-size:12.5px">跳过此题</button>
+              <button class="btn btn-p" style="font-size:12.5px" onclick="nextQuestion()">下一题 →</button>
+            </div>
+          </div>
+
+          <!-- ========== 题目卡片：简答题（LLM 判分） ========== -->
+          <div class="quiz-card" id="qc-short" style="display:none">
+            <div class="qc-head">
+              <span class="q-num">第 18 题 / 共 320 题</span>
+              <div class="q-meta">
+                <span class="txs tm">中等难度</span>
+                <span class="chip chip-b" style="font-size:10.5px">🤖 简答（LLM 判分）</span>
+              </div>
+            </div>
+            <div class="qc-body">
+              <div class="q-text">用自己的话解释「链式法则」的含义，并举一个具体的应用例子。</div>
+              <textarea class="q-input" rows="4">链式法则是用来求复合函数导数的，先对外层求导，再乘内层导数。比如 sin(2x) 的导数是 cos(2x) 乘 2。</textarea>
+              <div style="margin-top:6px;font-size:11px;color:var(--t3)">
+                🤖 提交后由 AI 判分（0~1 分） · 可获得详细评语
+              </div>
+
+              <div class="answer-fb llm">
+                <div class="fb-hdr">
+                  <span class="fb-llm-badge">🤖 AI 判分</span>
+                  <span class="fb-partial">部分正确 · 0.85 分</span>
+                  <span class="fb-time">用时 1 分 12 秒</span>
+                </div>
+                <div class="fb-txt">
+                  <strong>评语：</strong>对链式法则的理解基本到位，举例正确。但缺少了"内外层函数"概念的明确表述，可以补充更严格的数学描述。
+                </div>
+                <div class="fb-grid">
+                  <div class="fb-cell ok">
+                    <div class="fb-cell-tt">✓ 答对的部分</div>
+                    <div class="fb-cell-tx">正确把握了"先外后内、外乘内"的核心思想；sin(2x) 求导的例子完全正确。</div>
+                  </div>
+                  <div class="fb-cell ng">
+                    <div class="fb-cell-tt">✗ 缺失的部分</div>
+                    <div class="fb-cell-tx">未明确说明"复合函数"是由两个或多个函数嵌套构成；公式表述不够严谨。</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="qc-foot">
+              <button class="btn btn-g" style="font-size:12.5px">跳过此题</button>
+              <button class="btn btn-p" style="font-size:12.5px" onclick="nextQuestion()">下一题 →</button>
+            </div>
+          </div>
+
+          <!-- ========== 题目卡片：计算题（LLM 判分） ========== -->
+          <div class="quiz-card" id="qc-calc" style="display:none">
+            <div class="qc-head">
+              <span class="q-num">第 18 题 / 共 320 题</span>
+              <div class="q-meta">
+                <div class="q-diff">
+                  <div class="dd f"></div><div class="dd f"></div>
+                  <div class="dd f"></div><div class="dd f"></div><div class="dd"></div>
+                </div>
+                <span class="txs tm">较难</span>
+                <span class="chip chip-b" style="font-size:10.5px">🤖 计算（LLM 判分）</span>
+              </div>
+            </div>
+            <div class="qc-body">
+              <div class="q-text">求 y = ln(cos x) 的二阶导数 y''，写出完整推导过程。</div>
+              <textarea class="q-input" rows="6" style="font-family:'Cambria Math', Georgia, serif;font-size:14px">y' = -sin(x)/cos(x) = -tan(x)
+y'' = -sec²(x)</textarea>
+              <div style="margin-top:6px;font-size:11px;color:var(--t3)">
+                🤖 推导过程会被 AI 综合判分（步骤 + 结果）
+              </div>
+
+              <div class="answer-fb llm">
+                <div class="fb-hdr">
+                  <span class="fb-llm-badge">🤖 AI 判分</span>
+                  <span class="fb-partial">部分正确 · 0.6 分</span>
+                  <span class="fb-time">用时 2 分 5 秒</span>
+                </div>
+                <div class="fb-txt">
+                  <strong>评语：</strong>一阶导数推导正确，但二阶导数计算有误。对 y' = -tan(x) 求导应得 -sec²(x)，但你漏掉了链式法则中第二次嵌套，最终答案需要重新审视复合函数层级。
+                </div>
+                <div class="fb-grid">
+                  <div class="fb-cell ok">
+                    <div class="fb-cell-tt">✓ 答对的部分</div>
+                    <div class="fb-cell-tx">y' 计算正确，正确化简为 -tan(x)；运用链式法则的意识到位。</div>
+                  </div>
+                  <div class="fb-cell ng">
+                    <div class="fb-cell-tt">✗ 答错/缺失的部分</div>
+                    <div class="fb-cell-tx">二阶导数应当对 -tan(x) 直接求导得 -sec²(x)，<strong>本题答案正确</strong>但缺少推导步骤。建议写出 d(-tan x)/dx = -sec²(x) 的中间步骤。</div>
+                  </div>
+                </div>
+                <div style="margin-top:12px;padding:10px 12px;background:rgba(159,185,151,.07);border-left:3px solid var(--p);border-radius:0 6px 6px 0">
+                  <div style="font-size:11px;font-weight:700;color:var(--p-dk);margin-bottom:4px">📘 标准解答参考</div>
+                  <div style="font-size:12.5px;color:var(--t2);line-height:1.7;font-family:'Cambria Math', Georgia, serif">
+                    y = ln(cos x) → y' = (1/cos x) · (-sin x) = -tan x<br>
+                    y'' = -d(tan x)/dx = -sec²(x) = -1/cos²(x)
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="qc-foot">
+              <button class="btn btn-g" style="font-size:12.5px">跳过此题</button>
+              <button class="btn btn-p" style="font-size:12.5px" onclick="nextQuestion()">下一题 →</button>
+            </div>
+          </div>
+
+          <!-- 调试入口（仅原型） -->
+          <div style="margin-top:18px;padding:12px 16px;background:var(--white);border:1px dashed var(--bord2);border-radius:var(--r-sm);font-size:11.5px;color:var(--t3);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <strong style="color:var(--t2)">原型演示：</strong>
+            <button class="btn btn-s" style="padding:4px 10px;font-size:11px" onclick="openAgentModal()">触发 Agent 决策弹窗</button>
+            <button class="btn btn-s" style="padding:4px 10px;font-size:11px" onclick="switchToMicro()">切换到微学习态</button>
+          </div>
+
+        </div><!-- /state-quiz -->
+
+        <!-- ============ 微学习态 ============ -->
+        <div class="pmain-state" id="state-micro" style="display:none">
+          <div class="ml-doc">
+            <div class="ml-doc-hdr">
+              <div class="ml-doc-ic">📖</div>
+              <div>
+                <div class="ml-doc-title">微学习：导数 — 链式法则</div>
+                <div class="ml-doc-sub">由 Agent 推荐 · 重点关注：链式法则在复合函数求导中的应用</div>
+              </div>
+            </div>
+
+            <!-- 知识点详解 -->
+            <div class="ml-section-title">知识点详解</div>
+            <div class="ml-explanation" id="ml-explanation-block">
+              <p>
+                <strong>导数</strong>表示函数在某一点的<strong>瞬时变化率</strong>，几何意义为函数图像在该点的切线斜率。
+                它是微积分的核心概念之一，是研究函数性质（单调性、极值、凹凸性等）的重要工具。
+              </p>
+              <p>
+                对于复合函数 <code>y = f(g(x))</code>，求导时不能简单地对外层函数求导，而需要使用<strong>链式法则</strong>：
+              </p>
+              <span class="formula">(f(g(x)))' = f'(g(x)) · g'(x)</span>
+              <p>
+                也就是说：先对外层函数求导（保持内层函数不变），再乘以内层函数的导数。
+                这一规则可以推广到<strong>多层嵌套</strong>的复合函数：每加一层嵌套就多乘一个该层函数的导数。
+              </p>
+              <p>
+                <strong>常见误区：</strong>初学者容易在求导时忘记乘内层函数的导数。
+                例如 <code>(sin(2x))'</code> 的正确答案是 <code>2cos(2x)</code>，不是 <code>cos(2x)</code>。
+                请始终留意"是否还有内层函数没有求导"。
+              </p>
+            </div>
+
+            <!-- 核心概念 -->
+            <div class="ml-section-title">核心概念</div>
+            <div class="ml-concept-grid">
+              <div class="ml-concept">
+                <div class="ml-concept-title">导数定义</div>
+                <div class="ml-concept-content">
+                  函数 f(x) 在 x₀ 处的导数定义为差商的极限。
+                </div>
+                <div class="ml-concept-formula">f'(x₀) = lim[h→0] (f(x₀+h) − f(x₀)) / h</div>
+              </div>
+              <div class="ml-concept">
+                <div class="ml-concept-title">链式法则</div>
+                <div class="ml-concept-content">
+                  复合函数求导：外层导数乘以内层导数。
+                </div>
+                <div class="ml-concept-formula">(f∘g)'(x) = f'(g(x)) · g'(x)</div>
+              </div>
+              <div class="ml-concept">
+                <div class="ml-concept-title">极值判定</div>
+                <div class="ml-concept-content">
+                  驻点处二阶导数符号决定极值类型。
+                </div>
+                <div class="ml-concept-formula">f'(x₀)=0 且 f''(x₀)&lt;0 → 极大值</div>
+              </div>
+            </div>
+
+            <!-- 追问记录 -->
+            <div class="ml-section-title">追问记录</div>
+            <div class="ml-followups">
+              <div class="ml-fq">
+                <div class="ml-fq-q">
+                  <span class="label label-q">Q:</span>
+                  <span>为什么链式法则要乘内层导数？直观上怎么理解？</span>
+                </div>
+                <div class="ml-fq-a">
+                  <span class="label">A:</span>
+                  <span>可以从"变化率传递"的角度理解。如果 g(x) 变化 1 个单位会让 g 增加 g'(x) 个单位，而 f 对 g 的变化率是 f'(g(x))，那么 x 变化 1 个单位最终让 f 变化 f'(g(x)) · g'(x) 个单位。</span>
+                </div>
+                <div class="ml-fq-source">
+                  ↳ 由「<mark>链式法则</mark>」选词提问而来
+                </div>
+              </div>
+            </div>
+
+            <div class="ml-actions">
+              <span class="ml-tip">💡 选中任意文字可追问 · 已追问 <mark>1</mark> 次</span>
+              <button class="btn btn-p" onclick="finishMicro()">学完了，继续练习 →</button>
+            </div>
+          </div>
+        </div><!-- /state-micro -->
+
+      </div><!-- /pmain -->
+
+      <!-- ===== 侧栏 ===== -->
+      <div class="psb">
+        <div class="psb-card">
+          <div class="psb-tt">知识点掌握度</div>
+          <div class="kp-row">
+            <div class="kp-rh">
+              <span class="kp-rn curr">导数 ●</span>
+              <span class="kp-pct">72% <span class="kp-trend kp-trend-up">↑</span></span>
+            </div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:72%"></div></div>
+          </div>
+          <div class="kp-row">
+            <div class="kp-rh">
+              <span class="kp-rn">极限</span>
+              <span class="kp-pct">88% <span class="kp-trend kp-trend-up">↑</span></span>
+            </div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:88%"></div></div>
+          </div>
+          <div class="kp-row">
+            <div class="kp-rh">
+              <span class="kp-rn">求导法则</span>
+              <span class="kp-pct">65%</span>
+            </div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:65%"></div></div>
+          </div>
+          <div class="kp-row">
+            <div class="kp-rh">
+              <span class="kp-rn" style="color:#aa5050">积分</span>
+              <span class="kp-pct kp-pct-r">34% <span class="kp-trend kp-trend-dn">↓</span></span>
+            </div>
+            <div class="prog-wrap"><div class="prog-bar prog-bar-r" style="width:34%"></div></div>
+          </div>
+        </div>
+
+        <div class="psb-card">
+          <div class="psb-tt">本 Block 统计</div>
+          <div class="quiz-nums">
+            <div class="qnum-box">
+              <div class="qnum-big" style="color:var(--p-dk)">2</div>
+              <div class="qnum-lbl">正确</div>
+            </div>
+            <div class="qnum-box">
+              <div class="qnum-big" style="color:#aa5050">1</div>
+              <div class="qnum-lbl">错误</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="psb-card">
+          <div class="psb-tt">Session 概览</div>
+          <div class="session-stat-row">
+            <span class="l">已完成 Block</span>
+            <span class="v">3</span>
+          </div>
+          <div class="session-stat-row">
+            <span class="l">总答题数</span>
+            <span class="v">18</span>
+          </div>
+          <div class="session-stat-row">
+            <span class="l">微学习次数</span>
+            <span class="v">1</span>
+          </div>
+          <div class="session-stat-row">
+            <span class="l">练习时长</span>
+            <span class="v">25 分</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /practice-body -->
+  </main>
+</div>
+
+<!-- ============ Agent 决策弹窗 ============ -->
+<div class="agent-modal-backdrop" id="agent-backdrop">
+  <div class="agent-modal">
+    <div class="agent-modal-head">
+      <div class="agent-avatar">🤖</div>
+      <div>
+        <div class="agent-modal-title">Agent 分析</div>
+        <div class="agent-modal-sub" id="agent-sub">本 Block 已完成，正在分析你的表现…</div>
+      </div>
+      <div class="agent-status-dot"></div>
+    </div>
+
+    <div class="agent-modal-body">
+
+      <!-- 加载态 -->
+      <div class="agent-loading" id="agent-loading">
+        <span>正在分析本次 Block 表现</span>
+        <span class="agent-loading-dots"><span></span><span></span><span></span></span>
+      </div>
+
+      <!-- 流式分析文本 -->
+      <div class="agent-analysis" id="agent-analysis"></div>
+
+      <!-- 建议卡片 -->
+      <div class="agent-suggestion" id="agent-suggestion">
+        <div class="agent-sug-label">📌 建议</div>
+        <div class="agent-sug-action">📖 进入「导数」微学习</div>
+        <div class="agent-sug-detail">重点关注：链式法则在复合函数求导中的应用</div>
+      </div>
+
+      <!-- 下一步预览 -->
+      <div class="agent-preview" id="agent-preview">
+        <div class="label">下一步预览</div>
+        微学习后将用 5 道<strong style="color:var(--t1)">较简单</strong>的导数题验证你的掌握情况
+      </div>
+
+      <!-- 知识点掌握度一览（PRD 页面4 要求） -->
+      <div class="agent-mastery-overview" id="agent-mastery-overview">
+        <div class="amo-tt">当前知识点掌握度一览</div>
+        <div class="amo-row">
+          <span class="amo-name active">导数</span>
+          <div class="amo-bar"><div class="amo-bar-fill" style="width:42%"></div></div>
+          <span class="amo-pct">42%</span>
+        </div>
+        <div class="amo-row">
+          <span class="amo-name">极限</span>
+          <div class="amo-bar"><div class="amo-bar-fill" style="width:88%"></div></div>
+          <span class="amo-pct">88%</span>
+        </div>
+        <div class="amo-row">
+          <span class="amo-name">求导法则</span>
+          <div class="amo-bar"><div class="amo-bar-fill w" style="width:65%"></div></div>
+          <span class="amo-pct">65%</span>
+        </div>
+        <div class="amo-row">
+          <span class="amo-name">积分</span>
+          <div class="amo-bar"><div class="amo-bar-fill r" style="width:34%"></div></div>
+          <span class="amo-pct r">34%</span>
+        </div>
+      </div>
+
+      <!-- 知识点选择展开 -->
+      <div class="kp-picker" id="kp-picker">
+        <div style="font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:0 4px 4px">选择下一个知识点</div>
+        <div class="kp-pick-item" onclick="acceptDecision('kp-极限')">
+          <span>极限</span><span class="kp-pick-pct">88%</span>
+        </div>
+        <div class="kp-pick-item" onclick="acceptDecision('kp-求导法则')">
+          <span>求导法则</span><span class="kp-pick-pct">65%</span>
+        </div>
+        <div class="kp-pick-item" onclick="acceptDecision('kp-积分')">
+          <span>积分</span><span class="kp-pick-pct r">34%</span>
+        </div>
+        <div class="kp-pick-item" onclick="acceptDecision('kp-极值')">
+          <span>极值</span><span class="kp-pick-pct">68%</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="agent-modal-footer">
+      <div class="agent-actions-row">
+        <button class="btn btn-p" id="btn-accept" disabled
+                onclick="acceptDecision('micro')">接受建议</button>
+        <button class="btn btn-s" id="btn-continue" disabled
+                onclick="acceptDecision('continue')">继续刷题</button>
+        <button class="btn btn-s" id="btn-pick" disabled
+                onclick="togglePicker()">选择知识点</button>
+      </div>
+      <div class="agent-secondary-row">
+        <span class="txs tm" style="line-height:2.2">基于 Agent 路由决策 · 你可以覆盖此建议</span>
+        <button class="btn btn-g" id="btn-finish" disabled
+                style="font-size:12px;padding:7px 14px"
+                onclick="location.href='report.html'">结束练习</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 选词提问气泡 -->
+<div id="sel-pop">
+  💬 对「<span id="sel-word"></span>」提问
+</div>
+
+<script>
+/* ============ 做题：选项选择 ============ */
+function pickOpt(el) {
+  el.closest('.q-opts').querySelectorAll('.q-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function pickOptMulti(el) {
+  if (el.classList.contains('ok') || el.classList.contains('ng')) return;
+  el.classList.toggle('sel');
+}
+
+/* ============ 题型切换（原型演示） ============ */
+function switchQType(t) {
+  ['choice','multi','tf','fill','short','calc'].forEach(k => {
+    document.getElementById('qc-' + k).style.display = (k === t) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.qtype-switcher [data-qt]').forEach(b => {
+    b.classList.toggle('act', b.dataset.qt === t);
+  });
+}
+
+/* ============ 题目流转（演示用） ============ */
+function nextQuestion() {
+  // 演示：第 3 题完成后标记为 done，并触发 Agent 弹窗（模拟 block 末题）
+  alert('原型演示：在真实场景中此处会切到下一题；如需触发 Agent 决策请使用下方按钮');
+}
+
+/* ============ 状态切换：做题 ↔ 微学习 ============ */
+function switchToMicro() {
+  const q = document.getElementById('state-quiz');
+  const m = document.getElementById('state-micro');
+  q.style.opacity = '0';
+  setTimeout(() => {
+    q.style.display = 'none';
+    m.style.display = 'block';
+    m.style.opacity = '0';
+    requestAnimationFrame(() => { m.style.opacity = '1'; });
+    document.getElementById('pt-state-tag').textContent = '📖 微学习中';
+    document.getElementById('pt-state-tag').style.background = 'rgba(200,160,80,.14)';
+    document.getElementById('pt-state-tag').style.color = '#8a6010';
+    document.getElementById('pt-block-progress').textContent = ' · 链式法则';
+  }, 200);
+}
+function finishMicro() {
+  const q = document.getElementById('state-quiz');
+  const m = document.getElementById('state-micro');
+  m.style.opacity = '0';
+  setTimeout(() => {
+    m.style.display = 'none';
+    q.style.display = 'block';
+    q.style.opacity = '1';
+    document.getElementById('pt-state-tag').textContent = '📝 做题中';
+    document.getElementById('pt-state-tag').style.background = '';
+    document.getElementById('pt-state-tag').style.color = '';
+    document.getElementById('pt-block-num').textContent = 'Block 5';
+    document.getElementById('pt-block-progress').textContent = ' · 第 1/5 题';
+  }, 200);
+}
+
+/* ============ Agent 决策弹窗 ============ */
+const ANALYSIS_TEXT = '你在「<strong>导数</strong>」知识点连续两个 Block 正确率低于 60%，本 Block 答对 2/5 题，平均用时 35 秒（预期 30 秒），明显在<strong>链式法则</strong>的应用上存在困难。建议先进入微学习巩固后再继续练习。';
+
+let typingTimer = null;
+
+function openAgentModal() {
+  const bd = document.getElementById('agent-backdrop');
+  bd.classList.add('open');
+
+  // 重置
+  document.getElementById('agent-loading').style.display = 'inline-flex';
+  document.getElementById('agent-analysis').innerHTML = '';
+  document.getElementById('agent-analysis').classList.remove('typing');
+  document.getElementById('agent-suggestion').classList.remove('shown');
+  document.getElementById('agent-preview').classList.remove('shown');
+  document.getElementById('agent-mastery-overview').classList.remove('shown');
+  document.getElementById('kp-picker').classList.remove('open');
+  ['btn-accept','btn-continue','btn-pick','btn-finish'].forEach(id =>
+    document.getElementById(id).disabled = true
+  );
+
+  // 模拟分析延迟，然后开始流式打字
+  setTimeout(() => {
+    document.getElementById('agent-loading').style.display = 'none';
+    document.getElementById('agent-sub').textContent = '基于本 Block 表现 + 历史趋势分析';
+    typeStream(ANALYSIS_TEXT, 'agent-analysis', () => {
+      // 流式完成后显示建议卡片
+      document.getElementById('agent-suggestion').classList.add('shown');
+      setTimeout(() => {
+        document.getElementById('agent-preview').classList.add('shown');
+        document.getElementById('agent-mastery-overview').classList.add('shown');
+        // 启用按钮
+        ['btn-accept','btn-continue','btn-pick','btn-finish'].forEach(id =>
+          document.getElementById(id).disabled = false
+        );
+      }, 200);
+    });
+  }, 900);
+}
+
+function closeAgentModal() {
+  document.getElementById('agent-backdrop').classList.remove('open');
+  if (typingTimer) clearInterval(typingTimer);
+}
+
+/* 简单的打字机（按字符渐进显示，遇到 HTML 标签整段插入） */
+function typeStream(html, elId, onDone) {
+  const el = document.getElementById(elId);
+  el.classList.add('typing');
+  let i = 0;
+  let buf = '';
+  const tokens = [];
+  // 拆分为可见字符或 HTML 整段标签
+  let cur = '';
+  let inTag = false;
+  for (let c = 0; c < html.length; c++) {
+    const ch = html[c];
+    if (ch === '<') { if (cur) { tokens.push({t:'txt', v: cur}); cur=''; } inTag = true; cur = '<'; continue; }
+    if (inTag) { cur += ch; if (ch === '>') { tokens.push({t:'tag', v: cur}); cur=''; inTag = false; } continue; }
+    cur += ch;
+    tokens.push({t:'txt', v: ch});
+    cur = '';
+  }
+  if (cur) tokens.push({t:'txt', v: cur});
+
+  let idx = 0;
+  if (typingTimer) clearInterval(typingTimer);
+  typingTimer = setInterval(() => {
+    if (idx >= tokens.length) {
+      clearInterval(typingTimer);
+      el.classList.remove('typing');
+      if (onDone) onDone();
+      return;
+    }
+    const tk = tokens[idx++];
+    if (tk.t === 'tag') buf += tk.v;
+    else buf += tk.v;
+    el.innerHTML = buf;
+  }, 18);
+}
+
+function acceptDecision(action) {
+  closeAgentModal();
+  if (action === 'micro') {
+    switchToMicro();
+  } else if (action === 'continue') {
+    document.getElementById('pt-block-num').textContent = 'Block 5';
+    document.getElementById('pt-block-progress').textContent = ' · 第 1/5 题';
+  } else if (action.startsWith('kp-')) {
+    const kp = action.slice(3);
+    document.getElementById('pt-kp-name').textContent = kp;
+    document.getElementById('pt-block-num').textContent = 'Block 5';
+    document.getElementById('pt-block-progress').textContent = ' · 第 1/5 题';
+  }
+}
+
+function togglePicker() {
+  document.getElementById('kp-picker').classList.toggle('open');
+}
+
+/* ============ 选词提问气泡（仅微学习态） ============ */
+const pop   = document.getElementById('sel-pop');
+const sword = document.getElementById('sel-word');
+document.addEventListener('mouseup', e => {
+  // 只在微学习态显示
+  const m = document.getElementById('state-micro');
+  if (m.style.display === 'none') return;
+  const sel = window.getSelection();
+  const txt = sel ? sel.toString().trim() : '';
+  if (txt.length > 0 && txt.length < 30) {
+    const range = sel.getRangeAt(0);
+    const rect  = range.getBoundingClientRect();
+    pop.style.top  = (rect.top - 44) + 'px';
+    pop.style.left = (rect.left + rect.width/2 - 90) + 'px';
+    sword.textContent = txt.length > 12 ? txt.slice(0, 12) + '…' : txt;
+    pop.classList.add('vis');
+  } else {
+    pop.classList.remove('vis');
+  }
+});
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#sel-pop')) pop.classList.remove('vis');
+});
+</script>
+</body>
+</html>

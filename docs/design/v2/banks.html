@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PointMaster · 题库管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .upload-strip {
+      display: flex; align-items: center; gap: 16px;
+      border: 1.5px dashed var(--bord2); border-radius: var(--r-lg);
+      padding: 18px 22px; margin-bottom: 24px; cursor: pointer;
+      background: rgba(200,212,192,.04); transition: all .18s ease;
+    }
+    .upload-strip:hover { border-color: var(--p); background: rgba(159,185,151,.07); }
+    .upload-strip-ic {
+      width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--p-lt), var(--bg));
+      border: 1px solid var(--bord2); display: flex; align-items: center; justify-content: center;
+    }
+    .upload-strip-ic svg { width: 19px; height: 19px; stroke: var(--p-dk); fill: none; stroke-width: 2; }
+    .upload-strip-txt { flex: 1; }
+    .upload-strip-tt { font-size: 13.5px; font-weight: 600; color: var(--t1); margin-bottom: 2px; }
+    .upload-strip-st { font-size: 12px; color: var(--t3); }
+
+    .bank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+    .bank-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 18px;
+      transition: all .2s ease; position: relative; overflow: hidden;
+      cursor: pointer;
+    }
+    .bank-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--p), var(--p-dk)); border-radius: 3px 3px 0 0;
+    }
+    .bank-card:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+    .bank-ic { font-size: 28px; margin-bottom: 12px; }
+    .bank-nm { font-family: var(--ff-d); font-size: 15.5px; font-weight: 600;
+      color: var(--t1); margin-bottom: 3px; }
+    .bank-mt { font-size: 11.5px; color: var(--t3); margin-bottom: 12px; }
+    .bank-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+    .bank-btns { display: flex; gap: 7px; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        </div>
+        <div>
+          <div class="sb-name">PointMaster</div>
+          <div class="sb-sub">慧刷题</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-section">
+        <div class="nav-label">学习</div>
+        <a class="nav-item" href="index.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          首页
+        </a>
+        <a class="nav-item active" href="banks.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          题库管理
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">进行中</div>
+        <a class="nav-item" href="practice.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          练习
+          <span class="nav-badge">●</span>
+        </a>
+        <a class="nav-item" href="report.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          掌握报告
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-av">倪</div>
+        <div>
+          <div class="user-nm">倪镭</div>
+          <div class="user-st">🔥 连续 7 天</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page">
+      <div class="ph">
+        <div class="ph-ey">题库管理</div>
+        <div class="ph-tt">我的题库</div>
+        <div class="ph-st">点击题库进入详情，或直接开始一次新练习</div>
+      </div>
+      <div class="pc">
+
+        <!-- 上传 -->
+        <div class="upload-strip">
+          <div class="upload-strip-ic">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-strip-txt">
+            <div class="upload-strip-tt">导入新题库</div>
+            <div class="upload-strip-st">支持 Excel、JSON、TXT 格式 — AI 自动提取知识点并构建知识图谱</div>
+          </div>
+          <button class="btn btn-p" style="flex-shrink:0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            选择文件
+          </button>
+        </div>
+
+        <div class="sec-tt">全部题库（3）</div>
+        <div class="bank-grid">
+
+          <!-- bank 1 -->
+          <a class="bank-card" href="bank-detail.html">
+            <div class="bank-ic">📐</div>
+            <div class="bank-nm">高等数学</div>
+            <div class="bank-mt">320 题 · 12 知识点 · 导入 2026-05-20</div>
+            <div class="flex g8 mb8">
+              <span class="chip chip-g">进行中</span>
+              <span class="chip" style="background:rgba(111,141,181,.12);color:#46679a">Block 4</span>
+            </div>
+            <div class="bank-foot">
+              <span class="txs tm">上次练习：2 小时前</span>
+              <div class="bank-btns">
+                <a class="btn btn-s" style="padding:5px 10px;font-size:11.5px" href="bank-detail.html" onclick="event.stopPropagation();">详情</a>
+                <a class="btn btn-p" style="padding:5px 10px;font-size:11.5px" href="practice.html" onclick="event.stopPropagation();">开始新练习 →</a>
+              </div>
+            </div>
+          </a>
+
+          <!-- bank 2 -->
+          <a class="bank-card" href="bank-detail.html">
+            <div class="bank-ic">⚖️</div>
+            <div class="bank-nm">民法典精讲</div>
+            <div class="bank-mt">480 题 · 18 知识点 · 导入 2026-05-10</div>
+            <div class="flex g8 mb8">
+              <span class="chip chip-w">已暂停</span>
+            </div>
+            <div class="bank-foot">
+              <span class="txs tm">上次练习：昨天</span>
+              <div class="bank-btns">
+                <a class="btn btn-s" style="padding:5px 10px;font-size:11.5px" href="bank-detail.html" onclick="event.stopPropagation();">详情</a>
+                <a class="btn btn-p" style="padding:5px 10px;font-size:11.5px" href="practice.html" onclick="event.stopPropagation();">开始新练习 →</a>
+              </div>
+            </div>
+          </a>
+
+          <!-- bank 3 -->
+          <a class="bank-card" href="bank-detail.html">
+            <div class="bank-ic">💻</div>
+            <div class="bank-nm">Python 数据结构</div>
+            <div class="bank-mt">156 题 · 8 知识点 · 导入 2026-05-24</div>
+            <div class="flex g8 mb8">
+              <span class="chip" style="background:rgba(159,185,151,.1);color:var(--t3)">AI 解析中…</span>
+            </div>
+            <div class="bank-foot">
+              <span class="txs tm">尚未开始练习</span>
+              <div class="bank-btns">
+                <a class="btn btn-s" style="padding:5px 10px;font-size:11.5px" href="bank-detail.html" onclick="event.stopPropagation();">详情</a>
+                <a class="btn btn-p" style="padding:5px 10px;font-size:11.5px" href="practice.html" onclick="event.stopPropagation();">开始新练习 →</a>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

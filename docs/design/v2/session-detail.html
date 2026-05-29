@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PointMaster · 练习详情</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    /* 顶部摘要 */
+    .summary-card {
+      background: linear-gradient(135deg, var(--p-dk) 0%, #4a7044 100%);
+      border-radius: var(--r-xl); padding: 26px 30px; color: white;
+      margin-bottom: 26px; position: relative; overflow: hidden;
+    }
+    .summary-card::before {
+      content: ''; position: absolute; top: -50px; right: -50px;
+      width: 180px; height: 180px;
+      background: rgba(255,255,255,.08); border-radius: 50%;
+    }
+    .summary-title { font-family: var(--ff-d); font-size: 22px; font-weight: 700;
+      margin-bottom: 4px; position: relative; z-index: 1; }
+    .summary-meta { font-size: 12.5px; opacity: .8; position: relative; z-index: 1; }
+    .summary-stats { display: flex; gap: 30px; margin-top: 18px; position: relative; z-index: 1; }
+    .ss-num { font-family: var(--ff-d); font-size: 26px; font-weight: 700; line-height: 1; }
+    .ss-lbl { font-size: 11px; opacity: .7; margin-top: 1px; }
+    .summary-actions { display: flex; gap: 10px; margin-top: 20px; position: relative; z-index: 1; }
+    .btn-white-2 { background: white; color: var(--p-dk);
+      font-size: 12.5px; padding: 8px 16px; }
+    .btn-white-2:hover { background: rgba(255,255,255,.92); }
+    .btn-ghost-w { background: rgba(255,255,255,.15); color: white;
+      font-size: 12.5px; padding: 8px 16px; }
+    .btn-ghost-w:hover { background: rgba(255,255,255,.25); }
+
+    /* 时间线 */
+    .timeline {
+      position: relative; padding-left: 38px;
+    }
+    .timeline::before {
+      content: ''; position: absolute; left: 13px; top: 6px; bottom: 6px;
+      width: 2px; background: var(--border);
+    }
+    .tl-step {
+      position: relative; margin-bottom: 18px;
+    }
+    .tl-step:last-child { margin-bottom: 0; }
+    .tl-icon {
+      position: absolute; left: -38px; top: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--white); border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; z-index: 2; box-shadow: var(--sh-sm);
+    }
+    .tl-icon.block-ic { border-color: var(--p); background: rgba(159,185,151,.08); }
+    .tl-icon.agent-ic { border-color: var(--agent-blue); background: rgba(111,141,181,.1); }
+    .tl-icon.micro-ic { border-color: #c8a050; background: rgba(200,160,80,.08); }
+    .tl-icon.report-ic { border-color: var(--t3); background: var(--bg); }
+
+    .tl-content {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); overflow: hidden;
+      transition: box-shadow .15s ease;
+    }
+    .tl-content:hover { box-shadow: var(--sh-sm); }
+
+    .tl-head {
+      padding: 14px 18px; display: flex; align-items: center; gap: 10px;
+      cursor: pointer; user-select: none;
+    }
+    .tl-head:hover { background: rgba(159,185,151,.04); }
+    .tl-head-info { flex: 1; min-width: 0; }
+    .tl-head-title {
+      font-size: 13.5px; font-weight: 700; color: var(--t1);
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .tl-head-meta { font-size: 11.5px; color: var(--t3); margin-top: 2px;
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .tl-head-meta .dot { width: 3px; height: 3px; background: var(--t3);
+      border-radius: 50%; opacity: .6; }
+    .tl-chevron {
+      transition: transform .2s ease; color: var(--t3); flex-shrink: 0;
+    }
+    .tl-step.open .tl-chevron { transform: rotate(90deg); }
+
+    .tl-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height .3s ease;
+      border-top: 1px solid transparent;
+    }
+    .tl-step.open .tl-body {
+      max-height: 4000px; border-top-color: var(--border);
+    }
+    .tl-body-inner { padding: 18px; }
+
+    /* Block 题目列表 */
+    .q-record {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 14px; background: var(--bg); border-radius: var(--r-sm);
+      margin-bottom: 8px;
+    }
+    .q-record:last-child { margin-bottom: 0; }
+    .q-record-num {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+    .q-record-num.ok { background: rgba(107,140,100,.18); color: var(--p-dk); }
+    .q-record-num.ng { background: rgba(201,112,112,.18); color: #aa3838; }
+    .q-record-num.partial { background: rgba(200,160,80,.2); color: #8a6010; }
+    .q-record-info { flex: 1; min-width: 0; }
+    .q-record-q {
+      font-size: 13px; color: var(--t1); line-height: 1.55;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .q-record-meta {
+      font-size: 11px; color: var(--t3); margin-top: 4px;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .q-record-meta .dot { width: 3px; height: 3px; background: var(--t3);
+      border-radius: 50%; opacity: .5; }
+    .q-record-time { color: var(--t2); font-weight: 600; }
+    .q-record-expand {
+      font-size: 11px; color: var(--p-dk); cursor: pointer; flex-shrink: 0;
+      padding: 4px 10px; border-radius: 5px;
+      background: rgba(159,185,151,.12);
+    }
+    .q-record-expand:hover { background: rgba(159,185,151,.22); }
+
+    /* 答错题展开详情 */
+    .q-detail-panel {
+      display: none; margin-top: 8px; padding: 14px;
+      background: var(--white); border: 1px solid var(--bord2);
+      border-radius: var(--r-sm);
+    }
+    .q-detail-panel.open { display: block; animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    .qd-row { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.6;
+      color: var(--t2); margin-bottom: 6px; }
+    .qd-row:last-child { margin-bottom: 0; }
+    .qd-label {
+      flex-shrink: 0; width: 64px; color: var(--t3); font-weight: 600;
+    }
+    .qd-row.ng .qd-label { color: #aa3838; }
+    .qd-row.ok .qd-label { color: var(--p-dk); }
+
+    .block-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+      margin-top: 14px; padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .bstat { background: var(--bg); border-radius: var(--r-sm);
+      padding: 10px 12px; text-align: center; }
+    .bstat-num { font-family: var(--ff-d); font-size: 18px; font-weight: 700; color: var(--t1); line-height: 1; }
+    .bstat-lbl { font-size: 10.5px; color: var(--t3); margin-top: 2px; }
+
+    /* Agent 决策样式 */
+    .agent-step .tl-content { background: rgba(111,141,181,.04); }
+    .agent-detail {
+      display: flex; gap: 14px; padding: 14px;
+      background: rgba(111,141,181,.07); border: 1px solid rgba(111,141,181,.18);
+      border-radius: var(--r-sm); margin-bottom: 10px;
+    }
+    .agent-detail-ic { font-size: 20px; flex-shrink: 0; }
+    .agent-detail-body { flex: 1; }
+    .agent-detail-action {
+      font-size: 13.5px; font-weight: 700; color: var(--t1); margin-bottom: 4px;
+    }
+    .agent-detail-reason {
+      font-size: 12.5px; color: var(--t2); line-height: 1.6;
+    }
+    .agent-detail-choice {
+      display: flex; gap: 8px; align-items: center;
+      font-size: 12px; color: var(--t3); padding-top: 8px;
+      border-top: 1px dashed rgba(111,141,181,.2); margin-top: 10px;
+    }
+    .agent-detail-choice .v {
+      color: var(--p-dk); font-weight: 700;
+    }
+
+    /* 微学习样式 */
+    .micro-step .tl-content { background: rgba(200,160,80,.04); }
+    .micro-content-preview {
+      font-size: 13px; color: var(--t2); line-height: 1.7;
+      max-height: 80px; overflow: hidden;
+      position: relative;
+    }
+    .micro-content-preview::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 30px; background: linear-gradient(transparent, var(--white));
+    }
+    .micro-meta-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+      margin-top: 14px;
+    }
+    .micro-meta-cell { background: rgba(200,160,80,.06);
+      border-radius: var(--r-sm); padding: 10px 12px; }
+    .micro-meta-cell .l {
+      font-size: 10.5px; color: var(--t3); text-transform: uppercase;
+      letter-spacing: .04em; margin-bottom: 3px;
+    }
+    .micro-meta-cell .v { font-size: 13px; font-weight: 700; color: var(--t1); }
+
+    /* 主观题 LLM 判分回顾 */
+    .q-record-num.llm { background: rgba(111,141,181,.18); color: var(--agent-blue); }
+    .qd-llm-panel {
+      background: linear-gradient(135deg, rgba(111,141,181,.06), rgba(159,185,151,.04));
+      border: 1px solid rgba(111,141,181,.25);
+      border-radius: var(--r-sm); padding: 14px; margin-top: 8px;
+    }
+    .qd-llm-head {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+      padding-bottom: 8px; border-bottom: 1px dashed rgba(111,141,181,.2);
+    }
+    .qd-llm-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--agent-blue); color: white; padding: 2px 9px;
+      border-radius: 20px; font-size: 10.5px; font-weight: 700;
+    }
+    .qd-llm-score {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--warn); color: white; padding: 2px 9px;
+      border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .qd-llm-fb-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;
+    }
+    .qd-llm-cell {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 6px; padding: 9px 11px;
+    }
+    .qd-llm-cell .l {
+      font-size: 10px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; margin-bottom: 3px;
+    }
+    .qd-llm-cell.ok .l { color: var(--p-dk); }
+    .qd-llm-cell.ng .l { color: #aa3838; }
+    .qd-llm-cell .v { font-size: 11.5px; color: var(--t2); line-height: 1.55; }
+    .qd-user-ans {
+      background: var(--bg2); border-radius: 6px;
+      padding: 9px 11px; margin-top: 8px;
+      font-family: 'Cambria Math', Georgia, serif; font-size: 12px;
+      color: var(--t1); line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        </div>
+        <div>
+          <div class="sb-name">PointMaster</div>
+          <div class="sb-sub">慧刷题</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-section">
+        <div class="nav-label">学习</div>
+        <a class="nav-item" href="index.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          首页
+        </a>
+        <a class="nav-item" href="banks.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          题库管理
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">进行中</div>
+        <a class="nav-item" href="practice.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          练习
+          <span class="nav-badge">●</span>
+        </a>
+        <a class="nav-item" href="report.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          掌握报告
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-av">倪</div>
+        <div>
+          <div class="user-nm">倪镭</div>
+          <div class="user-st">🔥 连续 7 天</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page">
+      <div class="ph">
+        <div class="ph-ey" style="display:flex;align-items:center;gap:10px">
+          <a class="btn btn-g" style="padding:3px 8px;font-size:12px;gap:4px" href="index.html">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+            首页
+          </a>
+          <span style="color:var(--border)">／</span>
+          <span>练习详情</span>
+        </div>
+        <div class="ph-tt" style="margin-top:8px">练习记录回顾</div>
+      </div>
+
+      <div class="pc">
+
+        <!-- 顶部摘要 -->
+        <div class="summary-card">
+          <div class="summary-title">📐 高等数学</div>
+          <div class="summary-meta">2026-05-29  09:00 — 10:12  ·  历时 72 分钟</div>
+          <div class="summary-stats">
+            <div><div class="ss-num">25</div><div class="ss-lbl">总答题数</div></div>
+            <div><div class="ss-num">3</div><div class="ss-lbl">Block 数</div></div>
+            <div><div class="ss-num">1</div><div class="ss-lbl">微学习次数</div></div>
+            <div><div class="ss-num">+22%</div><div class="ss-lbl">导数掌握度提升</div></div>
+          </div>
+          <div class="summary-actions">
+            <a class="btn btn-white-2" href="practice.html">继续练习 →</a>
+            <a class="btn btn-ghost-w" href="report.html">查看完整报告</a>
+          </div>
+        </div>
+
+        <!-- 时间线 -->
+        <div class="sec-tt">完整时间线</div>
+
+        <div class="timeline">
+
+          <!-- ===== Block 1 ===== -->
+          <div class="tl-step block-step open">
+            <div class="tl-icon block-ic">📝</div>
+            <div class="tl-content">
+              <div class="tl-head" onclick="toggleStep(this)">
+                <div class="tl-head-info">
+                  <div class="tl-head-title">
+                    Block 1 · <span class="chip chip-g" style="font-size:10.5px">导数</span>
+                    <span class="chip chip-r" style="font-size:10.5px">正确率 40%</span>
+                  </div>
+                  <div class="tl-head-meta">
+                    <span>09:00 — 09:08</span><span class="dot"></span>
+                    <span>5 题</span><span class="dot"></span>
+                    <span>用时 8 分钟</span><span class="dot"></span>
+                    <span>掌握度 35% → 42%</span>
+                  </div>
+                </div>
+                <svg class="tl-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-body-inner">
+
+                  <!-- Question records -->
+                  <div class="q-record">
+                    <div class="q-record-num ok">1</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">求函数 f(x) = x² + 2x 在 x = 1 处的导数值</div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 12s</span>
+                        <span class="dot"></span>
+                        <span>预期 20s</span>
+                        <span class="dot"></span>
+                        <span style="color:var(--p-dk)">+1.0 分</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="q-record">
+                    <div class="q-record-num ng">2</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">设 f(x) = sin(2x)，求 f'(π/4)</div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 45s</span>
+                        <span class="dot"></span>
+                        <span>预期 30s</span>
+                        <span class="dot"></span>
+                        <span style="color:#aa3838">+0 分</span>
+                      </div>
+                      <!-- 错题展开详情 -->
+                      <div class="q-detail-panel open" style="margin-top:10px">
+                        <div class="qd-row">
+                          <span class="qd-label">题目</span>
+                          <span>设 f(x) = sin(2x)，求 f'(π/4)</span>
+                        </div>
+                        <div class="qd-row ng">
+                          <span class="qd-label">你的答案</span>
+                          <span>cos(π/2) = 0（B 选项）</span>
+                        </div>
+                        <div class="qd-row ok">
+                          <span class="qd-label">正确答案</span>
+                          <span>2cos(π/2) = 0（C 选项）</span>
+                        </div>
+                        <div class="qd-row">
+                          <span class="qd-label">解析</span>
+                          <span>使用链式法则：f'(x) = cos(2x) · 2 = 2cos(2x)。代入 x = π/4 得 2cos(π/2) = 0。注意必须乘以内层导数 2。</span>
+                        </div>
+                      </div>
+                    </div>
+                    <span class="q-record-expand" onclick="toggleQDetail(this); event.stopPropagation();">收起</span>
+                  </div>
+
+                  <div class="q-record">
+                    <div class="q-record-num ok">3</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">下列函数中，在 x = 0 处不可导的是？</div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 20s</span>
+                        <span class="dot"></span>
+                        <span>预期 25s</span>
+                        <span class="dot"></span>
+                        <span style="color:var(--p-dk)">+1.0 分</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="q-record">
+                    <div class="q-record-num ng">4</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">求 (e^x · cos x)' 的结果</div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 38s</span>
+                        <span class="dot"></span>
+                        <span>预期 30s</span>
+                        <span class="dot"></span>
+                        <span style="color:#aa3838">+0 分</span>
+                      </div>
+                    </div>
+                    <span class="q-record-expand" onclick="toggleQDetail(this); event.stopPropagation();">展开</span>
+                  </div>
+
+                  <div class="q-record">
+                    <div class="q-record-num ng">5</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">设 y = ln(sin x)，求 dy/dx</div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 52s</span>
+                        <span class="dot"></span>
+                        <span>预期 30s</span>
+                        <span class="dot"></span>
+                        <span style="color:#aa3838">+0 分</span>
+                      </div>
+                    </div>
+                    <span class="q-record-expand" onclick="toggleQDetail(this); event.stopPropagation();">展开</span>
+                  </div>
+
+                  <!-- Block 统计 -->
+                  <div class="block-stats">
+                    <div class="bstat"><div class="bstat-num" style="color:var(--p-dk)">2</div><div class="bstat-lbl">正确</div></div>
+                    <div class="bstat"><div class="bstat-num" style="color:#aa3838">3</div><div class="bstat-lbl">错误</div></div>
+                    <div class="bstat"><div class="bstat-num">33s</div><div class="bstat-lbl">平均用时</div></div>
+                    <div class="bstat"><div class="bstat-num" style="color:var(--p-dk)">+7%</div><div class="bstat-lbl">掌握度变化</div></div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Agent Decision 1 ===== -->
+          <div class="tl-step agent-step open">
+            <div class="tl-icon agent-ic">🤖</div>
+            <div class="tl-content">
+              <div class="tl-head" onclick="toggleStep(this)">
+                <div class="tl-head-info">
+                  <div class="tl-head-title">
+                    Agent 决策
+                    <span class="chip chip-b" style="font-size:10.5px">建议微学习</span>
+                  </div>
+                  <div class="tl-head-meta">
+                    <span>09:08:05</span><span class="dot"></span>
+                    <span>你的选择：<strong style="color:var(--p-dk)">接受</strong></span>
+                  </div>
+                </div>
+                <svg class="tl-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-body-inner">
+                  <div class="agent-detail">
+                    <div class="agent-detail-ic">📖</div>
+                    <div class="agent-detail-body">
+                      <div class="agent-detail-action">建议进入「导数」微学习</div>
+                      <div class="agent-detail-reason">
+                        你在「导数」连续两个 Block 正确率低于 50%，本 Block 在<strong>链式法则</strong>相关题目上 3 题全错。建议先学习巩固后再继续验证。
+                      </div>
+                      <div class="agent-detail-choice">
+                        <span>你的选择：</span>
+                        <span class="v">✓ 接受建议（进入微学习）</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Micro Learning ===== -->
+          <div class="tl-step micro-step">
+            <div class="tl-icon micro-ic">📖</div>
+            <div class="tl-content">
+              <div class="tl-head" onclick="toggleStep(this)">
+                <div class="tl-head-info">
+                  <div class="tl-head-title">
+                    微学习：导数 — 链式法则
+                    <span class="chip chip-w" style="font-size:10.5px">4 分钟</span>
+                  </div>
+                  <div class="tl-head-meta">
+                    <span>09:08:10 — 09:12:30</span><span class="dot"></span>
+                    <span>3 张概念卡片</span><span class="dot"></span>
+                    <span>1 次追问</span>
+                  </div>
+                </div>
+                <svg class="tl-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-body-inner">
+                  <div class="micro-content-preview">
+                    导数表示函数在某一点的瞬时变化率，几何意义为函数图像在该点的切线斜率。
+                    对于复合函数 y = f(g(x))，求导时不能简单地对外层函数求导，而需要使用链式法则：
+                    (f(g(x)))' = f'(g(x)) · g'(x)。也就是说先对外层函数求导（保持内层函数不变），
+                    再乘以内层函数的导数。这一规则可以推广到多层嵌套的复合函数…
+                  </div>
+
+                  <div class="micro-meta-grid">
+                    <div class="micro-meta-cell">
+                      <div class="l">详细解读</div>
+                      <div class="v">628 字 · 含公式</div>
+                    </div>
+                    <div class="micro-meta-cell">
+                      <div class="l">核心概念</div>
+                      <div class="v">3 张</div>
+                    </div>
+                    <div class="micro-meta-cell">
+                      <div class="l">追问</div>
+                      <div class="v">1 次（关于「链式法则」）</div>
+                    </div>
+                  </div>
+
+                  <div style="margin-top:14px">
+                    <a class="btn btn-w" href="practice.html" style="font-size:12px;padding:7px 14px">📖 查看完整内容 →</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Block 2 ===== -->
+          <div class="tl-step block-step">
+            <div class="tl-icon block-ic">📝</div>
+            <div class="tl-content">
+              <div class="tl-head" onclick="toggleStep(this)">
+                <div class="tl-head-info">
+                  <div class="tl-head-title">
+                    Block 2 · <span class="chip chip-g" style="font-size:10.5px">导数</span>
+                    <span class="chip chip-g" style="font-size:10.5px">正确率 80%</span>
+                  </div>
+                  <div class="tl-head-meta">
+                    <span>09:12:35 — 09:24:00</span><span class="dot"></span>
+                    <span>5 题</span><span class="dot"></span>
+                    <span>掌握度 42% → 64%</span><span class="dot"></span>
+                    <span style="color:var(--p-dk);font-weight:700">显著提升 ↑</span>
+                  </div>
+                </div>
+                <svg class="tl-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-body-inner">
+                  <div class="q-record">
+                    <div class="q-record-num ok">1</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">设 f(x) = (3x + 1)²，求 f'(x)</div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 18s</span>
+                        <span class="dot"></span>
+                        <span style="color:var(--p-dk)">+1.0 分</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="q-record">
+                    <div class="q-record-num ok">2</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">求 y = e^(x²) 的导数</div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 14s</span>
+                        <span class="dot"></span>
+                        <span style="color:var(--p-dk)">+1.0 分</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="q-record">
+                    <div class="q-record-num ok">3</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">设 y = sin(3x + 1)，求 dy/dx</div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 22s</span>
+                        <span class="dot"></span>
+                        <span style="color:var(--p-dk)">+1.0 分</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="q-record">
+                    <div class="q-record-num llm">4</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">
+                        <span class="chip chip-b" style="font-size:9.5px;margin-right:6px">🤖 计算</span>
+                        求 y = ln(cos x) 的二阶导数（写出推导）
+                      </div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 2 分 5 秒</span>
+                        <span class="dot"></span>
+                        <span>预期 90s</span>
+                        <span class="dot"></span>
+                        <span style="color:#8a6010">+0.6 分（LLM 判分）</span>
+                      </div>
+                      <!-- LLM 判分回顾详情 -->
+                      <div class="qd-llm-panel" style="margin-top:10px">
+                        <div class="qd-llm-head">
+                          <span class="qd-llm-badge">🤖 AI 判分</span>
+                          <span class="qd-llm-score">部分正确 · 0.6 分</span>
+                          <span style="margin-left:auto;font-size:10.5px;color:var(--t3)">DeepSeek-Chat · 2026-05-29 09:18</span>
+                        </div>
+                        <div class="qd-row">
+                          <span class="qd-label">你的作答</span>
+                          <span></span>
+                        </div>
+                        <div class="qd-user-ans">y' = -sin(x)/cos(x) = -tan(x)
+y'' = -sec²(x)</div>
+                        <div class="qd-row" style="margin-top:10px">
+                          <span class="qd-label">AI 评语</span>
+                          <span>一阶导数推导正确，但二阶导数缺少推导步骤；最终结果正确但过程过于简略。</span>
+                        </div>
+                        <div class="qd-llm-fb-grid">
+                          <div class="qd-llm-cell ok">
+                            <div class="l">✓ 答对的部分</div>
+                            <div class="v">y' 化简为 -tan(x) 完全正确，正确运用了链式法则。</div>
+                          </div>
+                          <div class="qd-llm-cell ng">
+                            <div class="l">✗ 缺失的部分</div>
+                            <div class="v">缺少 d(-tan x)/dx = -sec²(x) 的中间推导，未体现完整过程。</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <span class="q-record-expand" onclick="toggleQDetail(this); event.stopPropagation();">收起</span>
+                  </div>
+                  <div class="q-record">
+                    <div class="q-record-num ok">5</div>
+                    <div class="q-record-info">
+                      <div class="q-record-q">求 y = (sin x)^x 在 x = π/2 处的导数</div>
+                      <div class="q-record-meta">
+                        <span class="q-record-time">用时 35s</span>
+                        <span class="dot"></span>
+                        <span style="color:var(--p-dk)">+1.0 分</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="block-stats">
+                    <div class="bstat"><div class="bstat-num" style="color:var(--p-dk)">4</div><div class="bstat-lbl">正确</div></div>
+                    <div class="bstat"><div class="bstat-num" style="color:#aa3838">1</div><div class="bstat-lbl">错误</div></div>
+                    <div class="bstat"><div class="bstat-num">28s</div><div class="bstat-lbl">平均用时</div></div>
+                    <div class="bstat"><div class="bstat-num" style="color:var(--p-dk)">+22%</div><div class="bstat-lbl">掌握度变化</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Agent Decision 2 ===== -->
+          <div class="tl-step agent-step">
+            <div class="tl-icon agent-ic">🤖</div>
+            <div class="tl-content">
+              <div class="tl-head" onclick="toggleStep(this)">
+                <div class="tl-head-info">
+                  <div class="tl-head-title">
+                    Agent 决策
+                    <span class="chip chip-b" style="font-size:10.5px">切换知识点</span>
+                  </div>
+                  <div class="tl-head-meta">
+                    <span>09:24:08</span><span class="dot"></span>
+                    <span>你的选择：<strong style="color:var(--p-dk)">接受</strong></span>
+                  </div>
+                </div>
+                <svg class="tl-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-body-inner">
+                  <div class="agent-detail">
+                    <div class="agent-detail-ic">🔄</div>
+                    <div class="agent-detail-body">
+                      <div class="agent-detail-action">建议切换到「极值」知识点</div>
+                      <div class="agent-detail-reason">
+                        「导数」掌握度已达 64%，本 Block 正确率 80% 显示微学习效果显著。继续在导数上练习边际收益递减，建议切换到关联的「极值」（前置：求导法则）开始新一轮。
+                      </div>
+                      <div class="agent-detail-choice">
+                        <span>你的选择：</span>
+                        <span class="v">✓ 接受建议（切换到极值）</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Block 3 ===== -->
+          <div class="tl-step block-step">
+            <div class="tl-icon block-ic">📝</div>
+            <div class="tl-content">
+              <div class="tl-head" onclick="toggleStep(this)">
+                <div class="tl-head-info">
+                  <div class="tl-head-title">
+                    Block 3 · <span class="chip chip-g" style="font-size:10.5px">极值</span>
+                    <span class="chip chip-g" style="font-size:10.5px">正确率 70%</span>
+                  </div>
+                  <div class="tl-head-meta">
+                    <span>09:24:15 — 10:10:30</span><span class="dot"></span>
+                    <span>10 题</span><span class="dot"></span>
+                    <span>掌握度 50% → 68%</span>
+                  </div>
+                </div>
+                <svg class="tl-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+              </div>
+              <div class="tl-body">
+                <div class="tl-body-inner">
+                  <div style="font-size:12.5px;color:var(--t3);text-align:center;padding:12px">
+                    包含 10 道题（7 正确 / 3 错误） · <a href="#" style="color:var(--p-dk);font-weight:600">展开全部 →</a>
+                  </div>
+                  <div class="block-stats">
+                    <div class="bstat"><div class="bstat-num" style="color:var(--p-dk)">7</div><div class="bstat-lbl">正确</div></div>
+                    <div class="bstat"><div class="bstat-num" style="color:#aa3838">3</div><div class="bstat-lbl">错误</div></div>
+                    <div class="bstat"><div class="bstat-num">42s</div><div class="bstat-lbl">平均用时</div></div>
+                    <div class="bstat"><div class="bstat-num" style="color:var(--p-dk)">+18%</div><div class="bstat-lbl">掌握度变化</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Session Report ===== -->
+          <div class="tl-step report-step">
+            <div class="tl-icon report-ic">📊</div>
+            <div class="tl-content">
+              <div class="tl-head" style="cursor:default" onclick="event.stopPropagation()">
+                <div class="tl-head-info">
+                  <div class="tl-head-title">
+                    练习报告
+                    <span class="chip chip-g" style="font-size:10.5px">已生成</span>
+                  </div>
+                  <div class="tl-head-meta">
+                    <span>10:12:00</span><span class="dot"></span>
+                    <span>总用时 72 分</span><span class="dot"></span>
+                    <span>整体提升 +18%</span>
+                  </div>
+                </div>
+                <a class="btn btn-p" href="report.html" style="font-size:12px;padding:6px 14px">查看完整报告 →</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+function toggleStep(headEl) {
+  const step = headEl.closest('.tl-step');
+  step.classList.toggle('open');
+}
+function toggleQDetail(btn) {
+  const record = btn.closest('.q-record');
+  const panel = record.querySelector('.q-detail-panel');
+  if (!panel) {
+    // 演示用：动态创建简单详情
+    const newPanel = document.createElement('div');
+    newPanel.className = 'q-detail-panel open';
+    newPanel.style.marginTop = '10px';
+    newPanel.innerHTML = `
+      <div class="qd-row"><span class="qd-label">题目</span><span>${record.querySelector('.q-record-q').textContent}</span></div>
+      <div class="qd-row ng"><span class="qd-label">你的答案</span><span>(模拟数据)</span></div>
+      <div class="qd-row ok"><span class="qd-label">正确答案</span><span>(模拟数据)</span></div>
+      <div class="qd-row"><span class="qd-label">解析</span><span>详细解析将在真实数据中展示</span></div>
+    `;
+    record.querySelector('.q-record-info').appendChild(newPanel);
+    btn.textContent = '收起';
+    return;
+  }
+  panel.classList.toggle('open');
+  btn.textContent = panel.classList.contains('open') ? '收起' : '展开';
+}
+</script>
+
+</body>
+</html>

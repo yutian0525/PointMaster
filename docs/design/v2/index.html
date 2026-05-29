@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PointMaster · 首页</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    /* PAGE-SPECIFIC: HOME */
+    .today-row { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .today-pill {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 50px; padding: 6px 14px;
+    }
+    .today-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--p); }
+    .today-lbl { font-size: 12px; color: var(--t3); }
+    .today-val { font-size: 12.5px; font-weight: 700; color: var(--t1); }
+
+    .active-card {
+      background: linear-gradient(135deg, var(--p-dk) 0%, #4a7044 100%);
+      border-radius: var(--r-xl); padding: 28px; color: white;
+      margin-bottom: 24px; position: relative; overflow: hidden;
+    }
+    .active-card::before {
+      content: ''; position: absolute; top: -50px; right: -50px;
+      width: 180px; height: 180px;
+      background: rgba(255,255,255,.08); border-radius: 50%;
+    }
+    .active-card::after {
+      content: ''; position: absolute; bottom: -40px; right: 80px;
+      width: 110px; height: 110px;
+      background: rgba(255,255,255,.05); border-radius: 50%;
+    }
+    .ac-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,.18); border-radius: 20px;
+      padding: 3px 10px; font-size: 10.5px; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .ac-pulse { width: 7px; height: 7px; border-radius: 50%;
+      background: #a0f080; box-shadow: 0 0 0 0 rgba(160,240,128,.5);
+      animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(160,240,128,.5); }
+      70%  { box-shadow: 0 0 0 6px rgba(160,240,128,0); }
+      100% { box-shadow: 0 0 0 0 rgba(160,240,128,0); }
+    }
+    .ac-title { font-family: var(--ff-d); font-size: 22px; font-weight: 700;
+      letter-spacing: -.02em; margin-bottom: 4px; position: relative; z-index: 1; }
+    .ac-sub { font-size: 12.5px; opacity: .8; margin-bottom: 18px;
+      position: relative; z-index: 1; }
+    .ac-meta { display: flex; gap: 20px; margin-bottom: 18px; position: relative; z-index: 1; }
+    .ac-meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .ac-meta-lbl { font-size: 10.5px; opacity: .65; letter-spacing: .04em; text-transform: uppercase; }
+    .ac-meta-val { font-size: 14px; font-weight: 700; }
+    .ac-progress { margin-bottom: 20px; position: relative; z-index: 1; }
+    .ac-prog-lbl { display: flex; justify-content: space-between;
+      font-size: 11.5px; opacity: .8; margin-bottom: 6px; }
+    .ac-prog-track { height: 6px; background: rgba(255,255,255,.2);
+      border-radius: 10px; overflow: hidden; }
+    .ac-prog-fill { height: 100%; border-radius: 10px;
+      background: rgba(255,255,255,.85); }
+    .ac-actions { display: flex; gap: 10px; position: relative; z-index: 1; }
+    .btn-white { background: white; color: var(--p-dk);
+      font-size: 13px; padding: 9px 20px; }
+    .btn-white:hover { background: rgba(255,255,255,.9); transform: translateY(-1px); }
+    .btn-ghost-white { background: rgba(255,255,255,.15); color: white; border: none;
+      font-size: 12.5px; padding: 9px 16px; }
+    .btn-ghost-white:hover { background: rgba(255,255,255,.25); }
+
+    .session-list { display: flex; flex-direction: column; gap: 10px; }
+    .session-row {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 14px 18px;
+      display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: all .15s ease;
+    }
+    .session-row:hover { box-shadow: var(--sh-sm); border-color: var(--bord2); transform: translateX(2px); }
+    .session-ic { font-size: 22px; flex-shrink: 0; }
+    .session-info { flex: 1; min-width: 0; }
+    .session-nm { font-size: 13.5px; font-weight: 600; color: var(--t1); }
+    .session-mt { font-size: 11.5px; color: var(--t3); margin-top: 2px;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .session-mt .dot { width: 3px; height: 3px; border-radius: 50%;
+      background: var(--t3); display: inline-block; opacity: .6; }
+    .session-right { display: flex; flex-direction: column; align-items: flex-end;
+      gap: 5px; flex-shrink: 0; }
+    .session-arrow { color: var(--t3); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        </div>
+        <div>
+          <div class="sb-name">PointMaster</div>
+          <div class="sb-sub">慧刷题</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-section">
+        <div class="nav-label">学习</div>
+        <a class="nav-item active" href="index.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          首页
+        </a>
+        <a class="nav-item" href="banks.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          题库管理
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">进行中</div>
+        <a class="nav-item" href="practice.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          练习
+          <span class="nav-badge">●</span>
+        </a>
+        <a class="nav-item" href="report.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          掌握报告
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-av">倪</div>
+        <div>
+          <div class="user-nm">倪镭</div>
+          <div class="user-st">🔥 连续 7 天</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN ==================== -->
+  <main class="main">
+    <div class="page">
+      <div class="ph">
+        <div class="ph-ey">2026年5月29日 · 星期五</div>
+        <div class="ph-tt">你好，倪镭 👋</div>
+        <div class="ph-st">Agent 已为你规划好下一步学习路线</div>
+        <div class="today-row">
+          <div class="today-pill">
+            <div class="today-dot"></div>
+            <span class="today-lbl">今日已刷</span>
+            <span class="today-val">18 题</span>
+          </div>
+          <div class="today-pill">
+            <div class="today-dot" style="background:#c0a050"></div>
+            <span class="today-lbl">学习时长</span>
+            <span class="today-val">32 分钟</span>
+          </div>
+          <div class="today-pill">
+            <div class="today-dot" style="background:#9898c0"></div>
+            <span class="today-lbl">连续打卡</span>
+            <span class="today-val">🔥 7 天</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pc">
+
+        <!-- 进行中（去掉模式标签，新增 Block 信息） -->
+        <div class="active-card">
+          <div class="ac-badge"><div class="ac-pulse"></div>进行中</div>
+          <div class="ac-title">高等数学</div>
+          <div class="ac-sub">上次练习：2 小时前</div>
+
+          <div class="ac-meta">
+            <div class="ac-meta-item">
+              <span class="ac-meta-lbl">当前 Block</span>
+              <span class="ac-meta-val">Block 4</span>
+            </div>
+            <div class="ac-meta-item">
+              <span class="ac-meta-lbl">已完成</span>
+              <span class="ac-meta-val">18 题</span>
+            </div>
+            <div class="ac-meta-item">
+              <span class="ac-meta-lbl">当前知识点</span>
+              <span class="ac-meta-val">导数</span>
+            </div>
+            <div class="ac-meta-item">
+              <span class="ac-meta-lbl">微学习</span>
+              <span class="ac-meta-val">1 次</span>
+            </div>
+          </div>
+
+          <div class="ac-progress">
+            <div class="ac-prog-lbl">
+              <span>导数 · 知识点掌握度</span>
+              <span style="font-weight:700">72%</span>
+            </div>
+            <div class="ac-prog-track">
+              <div class="ac-prog-fill" style="width:72%"></div>
+            </div>
+          </div>
+          <div class="ac-actions">
+            <a class="btn btn-white" href="practice.html">继续练习 →</a>
+            <a class="btn btn-ghost-white" href="report.html">查看报告</a>
+          </div>
+        </div>
+
+        <!-- 近期练习记录（去掉模式标签，点击进入回顾页） -->
+        <div class="sec-tt">近期练习记录</div>
+        <div class="session-list">
+          <a class="session-row" href="session-detail.html">
+            <div class="session-ic">⚖️</div>
+            <div class="session-info">
+              <div class="session-nm">民法典精讲</div>
+              <div class="session-mt">
+                <span>昨天 20:14</span><span class="dot"></span>
+                <span>3 个 Block</span><span class="dot"></span>
+                <span>22 题</span><span class="dot"></span>
+                <span>1 次微学习</span>
+              </div>
+            </div>
+            <div class="session-right">
+              <span class="chip chip-g" style="font-size:10.5px">已完成</span>
+            </div>
+            <svg class="session-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+          </a>
+
+          <a class="session-row" href="session-detail.html">
+            <div class="session-ic">📐</div>
+            <div class="session-info">
+              <div class="session-nm">高等数学</div>
+              <div class="session-mt">
+                <span>5月26日</span><span class="dot"></span>
+                <span>5 个 Block</span><span class="dot"></span>
+                <span>30 题</span><span class="dot"></span>
+                <span>2 次微学习</span>
+              </div>
+            </div>
+            <div class="session-right">
+              <span class="chip chip-g" style="font-size:10.5px">已完成</span>
+            </div>
+            <svg class="session-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+          </a>
+
+          <a class="session-row" href="session-detail.html">
+            <div class="session-ic">📐</div>
+            <div class="session-info">
+              <div class="session-nm">高等数学</div>
+              <div class="session-mt">
+                <span>5月25日</span><span class="dot"></span>
+                <span>2 个 Block</span><span class="dot"></span>
+                <span>15 题</span>
+              </div>
+            </div>
+            <div class="session-right">
+              <span class="chip chip-w" style="font-size:10.5px">未完成</span>
+            </div>
+            <svg class="session-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

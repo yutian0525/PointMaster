@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PointMaster · 题库详情</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .detail-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+    .info-chips { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+    .stats4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
+    .stat-card { background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 18px; }
+    .stat-big { font-family: var(--ff-d); font-size: 34px; font-weight: 700;
+      color: var(--t1); line-height: 1; }
+    .stat-sub { font-size: 12.5px; color: var(--t3); margin-top: 2px; }
+    .stat-note { font-size: 11.5px; color: var(--p-dk); margin-top: 8px; }
+
+    /* Graph */
+    .graph-wrap {
+      position: relative; background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--r-lg); margin-top: 22px; overflow: hidden; height: 340px;
+    }
+    .graph-lbl { padding: 16px 22px 0; font-size: 12.5px; font-weight: 600;
+      color: var(--t2); letter-spacing: .02em; }
+    .graph-node {
+      position: absolute; transform: translate(-50%, -50%);
+      background: var(--white); border: 2px solid var(--p);
+      border-radius: 50px; padding: 6px 14px;
+      font-size: 12px; font-weight: 600; color: var(--p-dk);
+      white-space: nowrap; cursor: pointer; z-index: 2;
+      box-shadow: var(--sh-sm); transition: all .18s ease;
+    }
+    .graph-node:hover { background: var(--p); color: white;
+      transform: translate(-50%,-50%) scale(1.05); box-shadow: 0 4px 14px rgba(107,140,100,.3); }
+    .graph-node.root { background: var(--p-dk); color: white; border-color: var(--p-dk);
+      font-size: 13px; padding: 8px 18px; }
+    .graph-svg { position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 1; pointer-events: none; }
+
+    /* Node popup */
+    .node-popup-backdrop {
+      position: fixed; inset: 0; background: rgba(30,40,34,.32);
+      z-index: 2000; display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+    .node-popup-backdrop.open { display: flex; animation: fadeIn .18s ease; }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    .node-popup {
+      background: var(--white); border-radius: var(--r-xl);
+      width: 520px; max-height: 80vh; overflow: hidden;
+      display: flex; flex-direction: column;
+      box-shadow: 0 20px 60px rgba(30,40,34,.22), 0 4px 16px rgba(30,40,34,.1);
+      animation: popUp .2s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popUp {
+      from { opacity:0; transform: scale(.9) translateY(12px); }
+      to   { opacity:1; transform: scale(1) translateY(0); }
+    }
+    .np-head {
+      padding: 22px 24px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .np-title { font-family: var(--ff-d); font-size: 22px; font-weight: 700;
+      color: var(--t1); letter-spacing: -.03em; margin-bottom: 6px; }
+    .np-desc { font-size: 13px; color: var(--t2); line-height: 1.65; max-width: 380px; }
+    .np-close {
+      width: 30px; height: 30px; border-radius: 50%; background: var(--bg);
+      border: none; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; color: var(--t3); transition: all .15s;
+    }
+    .np-close:hover { background: var(--bg2); color: var(--t1); }
+    .np-body { overflow-y: auto; padding: 20px 24px 24px; }
+    .np-chips { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 18px; }
+    .np-sec { font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--t3); margin-bottom: 10px; }
+    .np-q {
+      background: var(--bg); border-radius: var(--r-sm); padding: 12px 14px;
+      font-size: 13px; color: var(--t2); line-height: 1.6; margin-bottom: 8px;
+      border-left: 3px solid var(--p);
+    }
+    .np-q-ans { font-size: 12px; color: var(--p-dk); font-weight: 600; margin-top: 6px; }
+    .np-footer { padding: 14px 24px; border-top: 1px solid var(--border);
+      display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        </div>
+        <div>
+          <div class="sb-name">PointMaster</div>
+          <div class="sb-sub">慧刷题</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-section">
+        <div class="nav-label">学习</div>
+        <a class="nav-item" href="index.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          首页
+        </a>
+        <a class="nav-item active" href="banks.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          题库管理
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">进行中</div>
+        <a class="nav-item" href="practice.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          练习
+          <span class="nav-badge">●</span>
+        </a>
+        <a class="nav-item" href="report.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          掌握报告
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-av">倪</div>
+        <div>
+          <div class="user-nm">倪镭</div>
+          <div class="user-st">🔥 连续 7 天</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page">
+      <div class="ph">
+        <div class="ph-ey" style="display:flex;align-items:center;gap:10px">
+          <a class="btn btn-g" style="padding:3px 8px;font-size:12px;gap:4px" href="banks.html">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+            题库管理
+          </a>
+          <span style="color:var(--border)">／</span>
+          <span>高等数学</span>
+        </div>
+        <div class="detail-hdr" style="margin-top:8px">
+          <div>
+            <div class="ph-tt">📐 高等数学</div>
+            <div class="info-chips">
+              <span class="chip chip-g">320 题</span>
+              <span class="chip chip-g">12 知识点</span>
+              <span class="chip chip-g">6 种题型</span>
+              <span class="chip chip-w">难度：中等</span>
+              <span class="chip chip-g">导入 2026-05-20</span>
+            </div>
+          </div>
+          <a class="btn btn-p" href="practice.html" style="margin-top:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16 10,8"/></svg>
+            开始新练习 →
+          </a>
+        </div>
+      </div>
+      <div class="pc">
+        <div class="stats4">
+          <div class="stat-card">
+            <div class="stat-big">320</div>
+            <div class="stat-sub">题目总数</div>
+            <div class="stat-note" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
+              <span class="chip chip-g" style="font-size:10.5px">单选 180</span>
+              <span class="chip chip-g" style="font-size:10.5px">多选 30</span>
+              <span class="chip chip-g" style="font-size:10.5px">判断 26</span>
+              <span class="chip chip-g" style="font-size:10.5px">填空 40</span>
+              <span class="chip chip-b" style="font-size:10.5px">🤖 简答 28</span>
+              <span class="chip chip-b" style="font-size:10.5px">🤖 计算 16</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-big">12</div>
+            <div class="stat-sub">知识点总数</div>
+            <div class="stat-note">AI 自动提取，含依赖关系</div>
+          </div>
+          <div class="stat-card" style="grid-column:span 2">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div>
+                <div class="stat-big" style="font-size:24px">AI 解析完成</div>
+                <div class="stat-sub">题目解析任务进度</div>
+              </div>
+              <span class="chip chip-g">✓ 100%</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+              <div style="background:var(--bg);border-radius:var(--r-sm);padding:10px;text-align:center">
+                <div style="font-family:var(--ff-d);font-size:18px;font-weight:700;color:var(--t1)">320</div>
+                <div style="font-size:10.5px;color:var(--t3)">知识点标注</div>
+              </div>
+              <div style="background:var(--bg);border-radius:var(--r-sm);padding:10px;text-align:center">
+                <div style="font-family:var(--ff-d);font-size:18px;font-weight:700;color:var(--t1)">320</div>
+                <div style="font-size:10.5px;color:var(--t3)">难度评分</div>
+              </div>
+              <div style="background:var(--bg);border-radius:var(--r-sm);padding:10px;text-align:center">
+                <div style="font-family:var(--ff-d);font-size:18px;font-weight:700;color:#46679a">44</div>
+                <div style="font-size:10.5px;color:var(--t3)">主观题（待 LLM 判分）</div>
+              </div>
+              <div style="background:var(--bg);border-radius:var(--r-sm);padding:10px;text-align:center">
+                <div style="font-family:var(--ff-d);font-size:18px;font-weight:700;color:var(--t1)">16</div>
+                <div style="font-size:10.5px;color:var(--t3)">知识图谱依赖</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Knowledge Graph -->
+        <div class="graph-wrap">
+          <div class="graph-lbl">知识图谱 — AI 自动构建的知识点依赖关系</div>
+          <svg class="graph-svg" id="graph-svg"></svg>
+          <div class="graph-node root" id="n0" style="left:50%;top:20%" onclick="openNodePopup('n0')">高等数学</div>
+          <div class="graph-node" id="n1" style="left:18%;top:40%" onclick="openNodePopup('n1')">极限</div>
+          <div class="graph-node" id="n2" style="left:50%;top:40%" onclick="openNodePopup('n2')">导数</div>
+          <div class="graph-node" id="n3" style="left:82%;top:40%" onclick="openNodePopup('n3')">积分</div>
+          <div class="graph-node" id="n4" style="left:10%;top:63%" onclick="openNodePopup('n4')">连续性</div>
+          <div class="graph-node" id="n5" style="left:35%;top:63%" onclick="openNodePopup('n5')">求导法则</div>
+          <div class="graph-node" id="n6" style="left:60%;top:63%" onclick="openNodePopup('n6')">极值</div>
+          <div class="graph-node" id="n7" style="left:84%;top:63%" onclick="openNodePopup('n7')">定积分</div>
+          <div class="graph-node" id="n8" style="left:32%;top:84%" onclick="openNodePopup('n8')">单调性</div>
+          <div class="graph-node" id="n9" style="left:57%;top:84%" onclick="openNodePopup('n9')">曲线积分</div>
+          <div class="graph-node" id="n10" style="left:80%;top:84%" onclick="openNodePopup('n10')">级数</div>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--t3)">
+          → 点击任意节点可查看知识点详情及例题 · 箭头方向 = 学习依赖关系
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Node popup -->
+<div class="node-popup-backdrop" id="np-backdrop" onclick="closeNodePopup(event)">
+  <div class="node-popup" id="np-panel">
+    <div class="np-head">
+      <div>
+        <div class="np-title" id="np-title"></div>
+        <div class="np-desc" id="np-desc"></div>
+      </div>
+      <button class="np-close" onclick="closeNodePopup()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="np-body" id="np-body"></div>
+    <div class="np-footer">
+      <button class="btn btn-s" style="font-size:12.5px" onclick="closeNodePopup()">关闭</button>
+      <a class="btn btn-p" style="font-size:12.5px" href="practice.html">开始新练习 →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function drawGraph() {
+  const wrap = document.querySelector('.graph-wrap');
+  const svg  = document.getElementById('graph-svg');
+  if (!wrap || !svg) return;
+  const edges = [
+    ['n0','n1'],['n0','n2'],['n0','n3'],
+    ['n1','n4'],['n2','n5'],['n2','n6'],
+    ['n3','n7'],['n5','n8'],['n6','n8'],
+    ['n7','n9'],['n7','n10']
+  ];
+  const cr = wrap.getBoundingClientRect();
+  const defs = `<defs><marker id="arr" viewBox="0 0 8 8" refX="7" refY="4"
+    markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+    <path d="M0,0 L8,4 L0,8 z" fill="#9fb997" opacity=".7"/>
+  </marker></defs>`;
+  let html = defs;
+  edges.forEach(([a, b]) => {
+    const na = document.getElementById(a), nb = document.getElementById(b);
+    if (!na || !nb) return;
+    const ra = na.getBoundingClientRect(), rb = nb.getBoundingClientRect();
+    const x1 = ra.left + ra.width/2  - cr.left, y1 = ra.top  + ra.height/2 - cr.top;
+    const x2 = rb.left + rb.width/2  - cr.left, y2 = rb.top  + rb.height/2 - cr.top;
+    const cy = (y1 + y2) / 2;
+    html += `<path d="M${x1},${y1} C${x1},${cy} ${x2},${cy} ${x2},${y2}"
+      stroke="#9fb997" stroke-width="1.5" stroke-opacity=".55" fill="none"
+      marker-end="url(#arr)"/>`;
+  });
+  svg.innerHTML = html;
+}
+
+const NODE_DATA = {
+  n0: { name: '高等数学', desc: '本题库的根知识域，涵盖极限、导数、积分等核心模块。',
+        count: 320, prereqs: [], examples: [] },
+  n1: { name: '极限', desc: '描述函数在某点附近的趋近行为，是导数和积分的基础概念。',
+        count: 28, prereqs: [],
+        examples: [
+          { q: '求 lim(x→0) sin(x)/x 的值', a: '答案：1（重要极限）' },
+          { q: '求 lim(x→∞) (1 + 1/x)^x 的值', a: '答案：e（自然常数）' }
+        ] },
+  n2: { name: '导数', desc: '函数在某点处的瞬时变化率，几何意义为切线斜率。',
+        count: 46, prereqs: ['极限'],
+        examples: [
+          { q: "设 f(x) = x³ - 3x，求 f'(x)", a: "答案：f'(x) = 3x² - 3" },
+          { q: "设 f(x) = e^x·sin(x)，求 f'(0)", a: "答案：f'(0) = 1" }
+        ] },
+  n3: { name: '积分', desc: '求函数在区间上的累积量，是导数的逆运算。',
+        count: 52, prereqs: ['极限', '导数'],
+        examples: [
+          { q: '求 ∫(2x + 3)dx', a: '答案：x² + 3x + C' },
+          { q: '求 ∫₀¹ x² dx', a: '答案：1/3' }
+        ] },
+  n4: { name: '连续性', desc: '函数在某点处极限值等于函数值，是可导的必要条件。',
+        count: 18, prereqs: ['极限'], examples: [] },
+  n5: { name: '求导法则', desc: '系统化的求导规则，包括四则运算法则、链式法则、隐函数求导等。',
+        count: 38, prereqs: ['导数'], examples: [] },
+  n6: { name: '极值', desc: '函数的局部最大值或最小值，通过导数分析确定。',
+        count: 34, prereqs: ['求导法则'],
+        examples: [
+          { q: '求 f(x) = x³ - 3x + 2 的极值', a: 'x=-1 极大值；x=1 极小值' }
+        ] },
+  n7: { name: '定积分', desc: '函数在闭区间上的黎曼积分，几何上表示曲线下面积。',
+        count: 40, prereqs: ['积分'], examples: [] },
+  n8: { name: '单调性', desc: '通过导数符号判断函数在某区间的递增/递减性。',
+        count: 22, prereqs: ['求导法则', '极值'], examples: [] },
+  n9: { name: '曲线积分', desc: '沿曲线路径对函数积分，分为第一类和第二类。',
+        count: 30, prereqs: ['定积分'], examples: [] },
+  n10:{ name: '级数', desc: '无穷序列的求和，包括数项级数和函数项级数。',
+        count: 32, prereqs: ['极限'], examples: [] }
+};
+
+function openNodePopup(nodeId) {
+  const d = NODE_DATA[nodeId];
+  if (!d) return;
+  document.getElementById('np-title').textContent = d.name;
+  document.getElementById('np-desc').textContent = d.desc;
+
+  let body = `<div class="np-chips">`;
+  body += `<span class="chip chip-g">${d.count} 道题</span>`;
+  if (d.prereqs.length) {
+    d.prereqs.forEach(p => body += `<span class="chip chip-w">前置：${p}</span>`);
+  } else {
+    body += `<span class="chip" style="background:rgba(159,185,151,.1);color:var(--t3)">无前置要求</span>`;
+  }
+  body += `</div>`;
+
+  if (d.examples.length) {
+    body += `<div class="np-sec">典型例题</div>`;
+    d.examples.forEach(ex => {
+      body += `<div class="np-q">${ex.q}<div class="np-q-ans">✓ ${ex.a}</div></div>`;
+    });
+  } else {
+    body += `<div style="font-size:13px;color:var(--t3);padding:12px 0">此节点为总览节点，包含 ${d.count} 道题目</div>`;
+  }
+  document.getElementById('np-body').innerHTML = body;
+  document.getElementById('np-backdrop').classList.add('open');
+}
+function closeNodePopup(e) {
+  if (e && e.target !== document.getElementById('np-backdrop')) return;
+  document.getElementById('np-backdrop').classList.remove('open');
+}
+
+window.addEventListener('load', () => setTimeout(drawGraph, 60));
+window.addEventListener('resize', drawGraph);
+</script>
+
+</body>
+</html>

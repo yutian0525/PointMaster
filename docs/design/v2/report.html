@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PointMaster · 掌握度报告</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    .report-hero {
+      background: linear-gradient(135deg, var(--p) 0%, var(--p-dk) 100%);
+      border-radius: var(--r-lg); padding: 28px; color: white;
+      margin-bottom: 22px; position: relative; overflow: hidden;
+    }
+    .report-hero::before { content: ''; position: absolute; top: -40px; right: -40px;
+      width: 160px; height: 160px; background: rgba(255,255,255,.08); border-radius: 50%; }
+    .report-hero::after { content: ''; position: absolute; bottom: -60px; right: 80px;
+      width: 100px; height: 100px; background: rgba(255,255,255,.05); border-radius: 50%; }
+    .rh-tt { font-family: var(--ff-d); font-size: 22px; font-weight: 700;
+      margin-bottom: 5px; position: relative; z-index: 1; }
+    .rh-st { font-size: 12.5px; opacity: .8; position: relative; z-index: 1; }
+    .rh-stats { display: flex; gap: 28px; margin-top: 20px; position: relative; z-index: 1; flex-wrap: wrap; }
+    .rhs-num { font-family: var(--ff-d); font-size: 30px; font-weight: 700; line-height: 1; }
+    .rhs-lbl { font-size: 11.5px; opacity: .7; margin-top: 1px; }
+    .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .mast-list { display: flex; flex-direction: column; gap: 14px; }
+    .mast-row { display: flex; flex-direction: column; gap: 5px; }
+    .mast-rh { display: flex; align-items: center; justify-content: space-between; }
+    .mast-nm { font-size: 13px; font-weight: 600; color: var(--t1); }
+    .mast-pct { font-size: 12.5px; font-weight: 700; }
+    .mst { font-size: 10.5px; padding: 1px 8px; border-radius: 20px; }
+    .mst-ok { background: rgba(107,140,100,.14); color: var(--p-dk); }
+    .mst-wn { background: rgba(200,155,70,.14); color: #7a5818; }
+    .mst-bd { background: rgba(200,90,90,.14); color: #9a2828; }
+    .mast-delta {
+      font-size: 11px; font-weight: 700; margin-left: 6px;
+    }
+    .mast-delta.up { color: var(--p-dk); }
+    .mast-delta.dn { color: #aa5050; }
+    .ai-box { background: linear-gradient(135deg, rgba(159,185,151,.07), rgba(200,212,192,.04));
+      border: 1px solid var(--bord2); border-radius: var(--r-md); padding: 22px; }
+    .ai-hdr { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+    .ai-badge { background: linear-gradient(135deg, var(--agent-blue), #5a7395);
+      color: white; font-size: 9.5px; font-weight: 700; letter-spacing: .06em;
+      padding: 2px 10px; border-radius: 20px; }
+    .ai-tt { font-size: 13.5px; font-weight: 700; color: var(--t1); }
+    .ai-tx { font-size: 13px; color: var(--t2); line-height: 1.8; }
+    .ai-tx strong { color: var(--p-dk); font-weight: 700; }
+    .lift-grid { display: flex; flex-direction: column; gap: 7px; }
+    .lift-row { display: flex; justify-content: space-between; font-size: 12.5px; }
+    .lift-nm { color: var(--t2); }
+    .lift-val { color: var(--p-dk); font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        </div>
+        <div>
+          <div class="sb-name">PointMaster</div>
+          <div class="sb-sub">慧刷题</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="nav-section">
+        <div class="nav-label">学习</div>
+        <a class="nav-item" href="index.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          首页
+        </a>
+        <a class="nav-item" href="banks.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          题库管理
+        </a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">进行中</div>
+        <a class="nav-item" href="practice.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          练习
+          <span class="nav-badge">●</span>
+        </a>
+        <a class="nav-item active" href="report.html">
+          <svg class="nav-ic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          掌握报告
+        </a>
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-av">倪</div>
+        <div>
+          <div class="user-nm">倪镭</div>
+          <div class="user-st">🔥 连续 7 天</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page">
+      <div class="ph">
+        <div class="ph-ey">练习已结束</div>
+        <div class="ph-tt">知识掌握报告</div>
+      </div>
+
+      <div class="pc">
+
+        <!-- Hero -->
+        <div class="report-hero">
+          <div class="rh-tt">本次练习已完成 🎉</div>
+          <div class="rh-st">高等数学  ·  2026-05-29  09:00 — 10:12  ·  历时 72 分钟</div>
+          <div class="rh-stats">
+            <div><div class="rhs-num">25</div><div class="rhs-lbl">题目完成</div></div>
+            <div><div class="rhs-num">3</div><div class="rhs-lbl">Block 数</div></div>
+            <div><div class="rhs-num">1</div><div class="rhs-lbl">微学习次数</div></div>
+            <div><div class="rhs-num">76%</div><div class="rhs-lbl">本次正确率</div></div>
+            <div><div class="rhs-num">+18%</div><div class="rhs-lbl">整体掌握度提升</div></div>
+          </div>
+        </div>
+
+        <div class="report-grid">
+          <!-- 各知识点掌握度 -->
+          <div class="card">
+            <div class="sec-tt">各知识点掌握度</div>
+            <div class="mast-list">
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">导数</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:var(--p-dk)">78%</span>
+                    <span class="mast-delta up">+36% ↑</span>
+                    <span class="mst mst-ok">良好 ✅</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar" style="width:78%"></div></div>
+              </div>
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">极值</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:var(--p-dk)">68%</span>
+                    <span class="mast-delta up">+18% ↑</span>
+                    <span class="mst mst-wn">待提升 📌</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar" style="width:68%"></div></div>
+              </div>
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">求导法则</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:var(--p-dk)">72%</span>
+                    <span class="mast-delta up">+7% ↑</span>
+                    <span class="mst mst-ok">良好 ✅</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar" style="width:72%"></div></div>
+              </div>
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">极限</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:#8a6010">61%</span>
+                    <span class="mst mst-wn">待提升 📌</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar prog-bar-w" style="width:61%"></div></div>
+              </div>
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">积分</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:#aa4040">34%</span>
+                    <span class="mst mst-bd">薄弱 ⚠️</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar prog-bar-r" style="width:34%"></div></div>
+              </div>
+              <div class="mast-row">
+                <div class="mast-rh">
+                  <span class="mast-nm">曲线积分</span>
+                  <div class="flex aic g8">
+                    <span class="mast-pct" style="color:#aa4040">28%</span>
+                    <span class="mst mst-bd">薄弱 ⚠️</span>
+                  </div>
+                </div>
+                <div class="prog-wrap"><div class="prog-bar prog-bar-r" style="width:28%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 答题行为 + 提升 -->
+          <div class="flex fcol g16">
+            <div class="card">
+              <div class="sec-tt" style="margin-bottom:12px">本次答题行为</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px;text-align:center">
+                  <div style="font-family:var(--ff-d);font-size:22px;font-weight:700;color:var(--t1)">32s</div>
+                  <div class="txs tm">平均答题时间</div>
+                </div>
+                <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px;text-align:center">
+                  <div style="font-family:var(--ff-d);font-size:22px;font-weight:700;color:var(--p-dk)">76%</div>
+                  <div class="txs tm">正确率</div>
+                </div>
+                <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px;text-align:center">
+                  <div style="font-family:var(--ff-d);font-size:22px;font-weight:700;color:var(--t1)">2</div>
+                  <div class="txs tm">涉及知识点</div>
+                </div>
+                <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px;text-align:center">
+                  <div style="font-family:var(--ff-d);font-size:22px;font-weight:700;color:#c09040">3</div>
+                  <div class="txs tm">Agent 决策接受率 100%</div>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="background:rgba(159,185,151,.04);border-color:var(--p-lt)">
+              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">本次掌握度提升</div>
+              <div class="lift-grid">
+                <div class="lift-row"><span class="lift-nm">导数</span><span class="lift-val">+36% ↑</span></div>
+                <div class="lift-row"><span class="lift-nm">极值</span><span class="lift-val">+18% ↑</span></div>
+                <div class="lift-row"><span class="lift-nm">求导法则</span><span class="lift-val">+7% ↑</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI 学习建议（来自 Agent） -->
+        <div class="ai-box">
+          <div class="ai-hdr">
+            <span class="ai-badge">🤖 AGENT 总结</span>
+            <span class="ai-tt">个性化学习建议</span>
+          </div>
+          <div class="ai-tx">
+            本次练习在「<strong>导数</strong>」知识点上进步明显，微学习后正确率从 40% 提升到 80%，掌握度跃升 36 个百分点。
+            说明针对链式法则的微学习起到了关键作用。<br><br>
+            从答题行为分析，你在涉及<strong>多层嵌套链式法则</strong>的题目上仍偶有失误（如 ln(cos x) 的二阶导），
+            建议下次练习时重点关注这类复合函数的逐层求导。<br><br>
+            后续学习路径推荐：
+            <strong>① 极值（已起步）</strong> →
+            <strong>② 单调性</strong>（依赖极值，可顺势学习）→
+            <strong>③ 积分</strong>（当前最薄弱，建议次次安排）。
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex g12 mt24">
+          <a class="btn btn-p" href="practice.html" style="flex:1;justify-content:center;padding:13px;font-size:13.5px">开始新练习 →</a>
+          <a class="btn btn-s" href="session-detail.html" style="padding:13px 22px;font-size:13.5px">查看完整时间线</a>
+          <a class="btn btn-s" href="index.html" style="padding:13px 22px;font-size:13.5px">返回首页</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
