@@ -22,7 +22,8 @@ interface AIRawResult {
   example_analyses: Array<{ questionId: string; analysis: string }>;
 }
 
-const SYSTEM_PROMPT = `你是一位教学设计专家，针对指定知识点给学生做一对一辅导。
+const SYSTEM_PROMPT = `你是教学设计专家，针对指定知识点做一对一辅导。
+原则：内容精炼、直击要点，不要套话、不要冗余结构。
 输出严格遵循 JSON 格式，不要包裹 markdown 代码块。`;
 
 function buildUserPrompt(input: GenerateInput): string {
@@ -38,11 +39,11 @@ function buildUserPrompt(input: GenerateInput): string {
 
   prompt += `\n### 输出格式（严格 JSON，不要 markdown 包裹）
 {
-  "detailed_explanation": "Markdown 文本：按子标题组织（## 定义 / ## 原理 / ## 适用场景 / ## 常见误区 / ## 学习建议），500-1000 字",
+  "detailed_explanation": "Markdown 文本：用 ## 子标题组织（定义 / 原理 / 适用场景 / 常见误区 / 学习建议）。每段 1-2 句话直击要点，全文 250-400 字。不要套话、不要重复举例。",
   "example_analyses": [
     {
       "questionId": "必须与上面例题 id 严格对应",
-      "analysis": "Markdown 文本：审题 → 解题思路 → 关键步骤 → 若答错则指出错误根源；200-400 字"
+      "analysis": "Markdown 文本：直接给关键解题步骤；若用户答错额外指出错误根源。不要审题/解题思路这类无信息量的标题段落。控制在 80-150 字。"
     }
   ]
 }`;
@@ -123,7 +124,7 @@ export async function regenerateExampleAnalysis(
 选项：${opts}
 标准答案：${example.answer}
 ${userPart}
-请输出该题的解题分析（Markdown 格式，200-400 字）：审题 → 解题思路 → 关键步骤 → 若答错则指出错误根源。直接输出分析正文，不要任何前缀或代码块。`;
+请输出该题的解题分析（Markdown 格式，80-150 字）：直接给关键解题步骤，若用户答错额外指出错误根源。不要审题/解题思路这类标题段落，不要任何前缀或代码块。`;
 
   const response = await client.chat.completions.create({
     model: getModel(),
