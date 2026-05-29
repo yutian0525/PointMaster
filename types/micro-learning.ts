@@ -75,7 +75,8 @@ export interface CreateMicroLearningRequest {
 }
 
 export interface AskRequest {
-  selectedText: string;
+  question: string;
+  selectedText?: string;
   sourceCardId: string;
   sourceCardContent: string;
 }

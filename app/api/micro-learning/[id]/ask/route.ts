@@ -8,7 +8,8 @@ import { askAboutSelection } from "@/lib/ai/ask-question";
 import type { ExtendedCard } from "@/types/micro-learning";
 
 const AskSchema = z.object({
-  selectedText: z.string().min(1).max(30),
+  question: z.string().min(1).max(200),
+  selectedText: z.string().max(50).optional(),
   sourceCardId: z.string().min(1),
   sourceCardContent: z.string().min(1),
 });
@@ -44,7 +45,12 @@ export async function POST(
 
   let answer: string;
   try {
-    answer = await askAboutSelection(row.kpName, parsed.data.selectedText, parsed.data.sourceCardContent);
+    answer = await askAboutSelection(
+      row.kpName,
+      parsed.data.question,
+      parsed.data.sourceCardContent,
+      parsed.data.selectedText
+    );
   } catch (err) {
     console.error("[micro-learning] ask failed", err);
     return NextResponse.json({ error: "ai_ask_failed" }, { status: 503 });
@@ -64,13 +70,19 @@ export async function POST(
     existing = [];
   }
 
+  const titleText = parsed.data.selectedText
+    ? `关于「${parsed.data.selectedText}」`
+    : parsed.data.question.length > 18
+    ? parsed.data.question.slice(0, 18) + "…"
+    : parsed.data.question;
+
   const newCard: ExtendedCard = {
     id: uuid(),
     type: "extended",
-    title: `什么是${parsed.data.selectedText}？`,
+    title: titleText,
     content: answer,
     sourceCardId: parsed.data.sourceCardId,
-    sourceKeyword: parsed.data.selectedText,
+    sourceKeyword: parsed.data.selectedText ?? titleText,
     createdAt: Date.now(),
   };
 
