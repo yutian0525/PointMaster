@@ -346,7 +346,7 @@ QuizPage
     └── BankOverview                所有 KP 的 mastery 进度条
 ```
 
-**Zustand store** (`lib/stores/quiz-store.ts`)：
+**状态管理**（`useState`，对齐项目现有风格，不引入 Zustand）：
 - 临时态：`selectedAnswer / submitted / loading / askInputDraft`
 - `payload`：服务端响应整体覆盖
 - 不做客户端乐观更新
@@ -461,7 +461,7 @@ ResumeBanner.tsx        题库详情页用
 
 ## 11. 测试策略
 
-- **单测**：`lib/practice/` 全覆盖（mastery / grader / selector / completion）；vitest
+- **单测**：`lib/practice/` 全覆盖（mastery 公式 / grader 多选规范化 / selector 三种 mode 选题 / completion 判定）；引入 **vitest** 作为新 devDep（`npm run test` 启动）
 - **手测**：API 路由 + 前端页面，按 §9 每个 milestone 验收点测一遍
 - **不写**：API route 单测、E2E、组件 Storybook
 
