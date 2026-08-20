@@ -9,7 +9,7 @@ const navItems = [
     items: [
       { label: "首页", href: "/", icon: "home", enabled: true },
       { label: "题库管理", href: "/banks", icon: "book", enabled: true },
-      { label: "练习模式", href: "#", icon: "play", enabled: false, badge: "新" },
+      { label: "练习模式", href: "/practice/new", icon: "play", enabled: true },
     ],
   },
   {
@@ -111,11 +111,6 @@ export function Sidebar() {
                   >
                     <NavIcon name={item.icon} />
                     {item.label}
-                    {item.badge && (
-                      <span className="ml-auto bg-primary text-white text-[9.5px] font-bold px-1.5 py-0.5 rounded-full">
-                        {item.badge}
-                      </span>
-                    )}
                   </div>
                 );
               }

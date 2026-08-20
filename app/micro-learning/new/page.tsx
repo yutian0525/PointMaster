@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-export default function MicroLearningNewPage() {
+function MicroLearningNewInner() {
   const router = useRouter();
   const search = useSearchParams();
   const startedRef = useRef(false);
@@ -58,6 +58,10 @@ export default function MicroLearningNewPage() {
     })();
   }, [router, search]);
 
+  return null;
+}
+
+export default function MicroLearningNewPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-3 text-text-secondary">
@@ -65,6 +69,9 @@ export default function MicroLearningNewPage() {
         <div className="text-[14px] font-semibold text-foreground">AI 正在生成学习卡片…</div>
         <div className="text-[12px] text-text-muted">通常需要 6-12 秒，请稍候</div>
       </div>
+      <Suspense fallback={null}>
+        <MicroLearningNewInner />
+      </Suspense>
     </div>
   );
 }

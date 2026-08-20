@@ -1,9 +1,17 @@
 import { db } from "@/lib/db";
-import { questionBanks, knowledgePoints } from "@/lib/db/schema";
-import { eq, count } from "drizzle-orm";
+import {
+  questionBanks,
+  knowledgePoints,
+  practiceSessions,
+  answerRecords,
+} from "@/lib/db/schema";
+import { and, count, eq, sql } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { BankDetailClient } from "@/components/banks/bank-detail-client";
+import { ResumeBanner } from "@/components/practice/resume-banner";
+import { safeJson } from "@/lib/practice/session-state";
+import type { OrderedKnowledgePoint } from "@/lib/practice/types";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +37,56 @@ export default async function BankDetailPage({
     ...bank,
     knowledgePointCount: kpCount?.count || 0,
   };
+
+  // 查活跃 session（ResumeBanner）
+  const activeSession = db
+    .select()
+    .from(practiceSessions)
+    .where(
+      and(
+        eq(practiceSessions.bankId, id),
+        eq(practiceSessions.status, "active")
+      )
+    )
+    .limit(1)
+    .get();
+
+  let resumeProps: {
+    sessionId: string;
+    bankId: string;
+    bankName: string;
+    currentKpName: string;
+    answeredCount: number;
+    totalQuestions: number;
+  } | null = null;
+
+  if (activeSession) {
+    const order: OrderedKnowledgePoint[] = safeJson(
+      activeSession.knowledgePointOrder,
+      []
+    );
+    const currentKp = order[activeSession.currentKpIndex];
+    if (currentKp) {
+      const answeredRow = db
+        .select({ cnt: sql<number>`count(distinct ${answerRecords.questionId})`.as("cnt") })
+        .from(answerRecords)
+        .where(
+          and(
+            eq(answerRecords.sessionId, activeSession.id),
+            eq(answerRecords.knowledgePointId, currentKp.id)
+          )
+        )
+        .get();
+      resumeProps = {
+        sessionId: activeSession.id,
+        bankId: id,
+        bankName: bank.name,
+        currentKpName: currentKp.name,
+        answeredCount: Number(answeredRow?.cnt ?? 0),
+        totalQuestions: currentKp.totalQuestions,
+      };
+    }
+  }
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -72,6 +130,7 @@ export default async function BankDetailPage({
             </div>
           </div>
         </div>
+        {resumeProps && <ResumeBanner {...resumeProps} />}
       </div>
 
       <BankDetailClient bankId={id} initialBank={initialBank} />
